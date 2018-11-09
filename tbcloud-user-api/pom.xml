@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>tbcloud-plugin</artifactId>
+        <groupId>cn.treebear</groupId>
+        <version>2018.11.30</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>tbcloud-user-api</artifactId>
+
+    <properties>
+        <resteasy.version>3.6.2.Final</resteasy.version>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <classifier>plugin</classifier>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.31.Final</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jaxrs</artifactId>
+            <version>${resteasy.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-netty4</artifactId>
+            <version>${resteasy.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-all</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jackson-provider</artifactId>
+            <version>${resteasy.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-user-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-lib-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.dzh</groupId>
+            <artifactId>jframe-jedis</artifactId>
+            <classifier>plugin</classifier>
+        </dependency>
+
+    </dependencies>
+
+
+</project>
