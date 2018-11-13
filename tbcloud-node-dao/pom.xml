@@ -9,8 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>tbcloud-user-dao</artifactId>
-
+    <artifactId>tbcloud-node-dao</artifactId>
 
     <build>
         <plugins>
@@ -29,12 +28,13 @@
 
         <dependency>
             <groupId>cn.treebear</groupId>
-            <artifactId>tbcloud-user-model</artifactId>
+            <artifactId>tbcloud-node-model</artifactId>
         </dependency>
         <dependency>
             <groupId>cn.treebear</groupId>
             <artifactId>tbcloud-lib-api</artifactId>
         </dependency>
+
 
         <dependency>
             <groupId>io.github.dzh</groupId>
@@ -48,5 +48,6 @@
             <classifier>plugin</classifier>
         </dependency>
     </dependencies>
+
 
 </project>

@@ -9,6 +9,8 @@
     <modules>
         <module>tbcloud-user-api</module>
         <module>tbcloud-user-dao</module>
+        <module>tbcloud-node-dao</module>
+        <module>tbcloud-node-api</module>
     </modules>
 
     <properties>
@@ -149,6 +151,18 @@
             <dependency>
                 <groupId>cn.treebear</groupId>
                 <artifactId>tbcloud-user-dao</artifactId>
+                <version>${tbcloud.version}</version>
+                <classifier>plugin</classifier>
+            </dependency>
+            <dependency>
+                <groupId>cn.treebear</groupId>
+                <artifactId>tbcloud-node-dao</artifactId>
+                <version>${tbcloud.version}</version>
+                <classifier>plugin</classifier>
+            </dependency>
+            <dependency>
+                <groupId>cn.treebear</groupId>
+                <artifactId>tbcloud-node-api</artifactId>
                 <version>${tbcloud.version}</version>
                 <classifier>plugin</classifier>
             </dependency>

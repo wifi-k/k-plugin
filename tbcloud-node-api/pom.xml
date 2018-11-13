@@ -9,8 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>tbcloud-user-dao</artifactId>
-
+    <artifactId>tbcloud-node-api</artifactId>
 
     <build>
         <plugins>
@@ -25,28 +24,5 @@
         </plugins>
     </build>
 
-    <dependencies>
-
-        <dependency>
-            <groupId>cn.treebear</groupId>
-            <artifactId>tbcloud-user-model</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>cn.treebear</groupId>
-            <artifactId>tbcloud-lib-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.github.dzh</groupId>
-            <artifactId>jframe-mybatis</artifactId>
-            <classifier>plugin</classifier>
-        </dependency>
-
-        <dependency>
-            <groupId>io.github.dzh</groupId>
-            <artifactId>jframe-jedis</artifactId>
-            <classifier>plugin</classifier>
-        </dependency>
-    </dependencies>
 
 </project>
