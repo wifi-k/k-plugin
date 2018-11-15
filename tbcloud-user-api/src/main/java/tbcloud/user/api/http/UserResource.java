@@ -25,6 +25,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -429,6 +430,56 @@ public class UserResource extends BaseResource {
         return r;
     }
 
+    /**
+     * @param ui
+     * @param version
+     * @param token
+     * @param req
+     * @return
+     */
+    @POST
+    @Path("node/bindbatch")
+    public Result<Void> bindBatchNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, Map<String, String> req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<Void> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        String fileType = req.get("fileType"); //TODO
+        String file = req.get("file");
+        if (StringUtil.isEmpty(fileType) || StringUtil.isEmpty(file)) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            r.setMsg("miss param");
+            return r;
+        }
+
+        switch (fileType) { //TODO aysnc
+            case "1": { //换行符
+                String[] nodeIdList = file.split("\n", 1000);
+                List<NodeInfo> nodeInfoList = new ArrayList<>(nodeIdList.length);
+                long bindTime = System.currentTimeMillis();
+                for (int i = 0; i < nodeIdList.length; ++i) {
+                    NodeInfo nodeInfo = new NodeInfo();
+                    nodeInfo.setNodeId(nodeIdList[i].trim());
+                    nodeInfo.setBindTime(bindTime);
+                    nodeInfo.setIsBind(NodeConst.IS_BIND);
+                    nodeInfo.setUserId(userInfo.getId());
+
+                    nodeInfoList.add(nodeInfo);
+                }
+                NodeDao.batchInsertNodeInfo(nodeInfoList);
+                break;
+            }
+        }
+
+        return r;
+    }
+
     @POST
     @Path("node/unbind")
     public Result<Void> unbindNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, Map<String, String> req) {
@@ -480,7 +531,7 @@ public class UserResource extends BaseResource {
 
     @POST
     @Path("node/list")
-    public Result<PageRsp<NodeInfo>> unbindNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, PageReq req) {
+    public Result<PageRsp<NodeInfo>> listNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, PageReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
         Result<PageRsp<NodeInfo>> r = new Result<>();
 

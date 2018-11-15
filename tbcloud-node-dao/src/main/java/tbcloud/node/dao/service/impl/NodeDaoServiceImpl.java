@@ -60,6 +60,27 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     }
 
     @Override
+    public void batchInsertNodeInfo(List<NodeInfo> nodeInfoList) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                for (NodeInfo nodeInfo : nodeInfoList) {
+                    long st = System.currentTimeMillis();
+                    nodeInfo.setCreateTime(st);
+                    nodeInfo.setUpdateTime(st);
+
+                    session.getMapper(NodeInfoMapper.class).insertSelective(nodeInfo);
+
+                    LOG.info("batch insert {}", GsonUtil.toJson(nodeInfo));
+                }
+                session.commit();
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+    }
+
+    @Override
     public List<NodeInfo> selectNodeInfo(NodeInfoExample example) {
         List<NodeInfo> nodeInfoList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {

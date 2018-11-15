@@ -13,6 +13,8 @@ public interface NodeDao {
 
     int insertNodeInfo(NodeInfo nodeInfo);
 
+    void batchInsertNodeInfo(List<NodeInfo> nodeInfoList);
+
     List<NodeInfo> selectNodeInfo(NodeInfoExample example);
 
     NodeInfo selectNodeInfo(String nodeId);
