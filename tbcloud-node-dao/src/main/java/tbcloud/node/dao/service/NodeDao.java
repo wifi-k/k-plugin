@@ -36,4 +36,6 @@ public interface NodeDao {
 
     long countNodeRt(NodeRtExample example);
 
+    void batchInsertNodeRt(List<NodeRt> nodeRtList);
+
 }

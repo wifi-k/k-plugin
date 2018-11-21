@@ -540,21 +540,33 @@ public class UserResource extends BaseResource {
             return r;
         }
 
-        switch (fileType) { //TODO aysnc
+        switch (fileType) { //TODO aysnc to insert
             case "1": { //换行符
                 String[] nodeIdList = file.split("\n", 1000);
                 List<NodeInfo> nodeInfoList = new ArrayList<>(nodeIdList.length);
+                List<NodeRt> nodeRtList = new ArrayList<>(nodeIdList.length);
+
                 long bindTime = System.currentTimeMillis();
                 for (int i = 0; i < nodeIdList.length; ++i) {
+                    String nodeId = nodeIdList[i].trim();
+
                     NodeInfo nodeInfo = new NodeInfo();
-                    nodeInfo.setNodeId(nodeIdList[i].trim());
+                    nodeInfo.setNodeId(nodeId);
                     nodeInfo.setBindTime(bindTime);
                     nodeInfo.setIsBind(NodeConst.IS_BIND);
                     nodeInfo.setUserId(userInfo.getId());
 
                     nodeInfoList.add(nodeInfo);
+
+                    // node rt
+                    NodeRt nodeRt = new NodeRt();
+                    nodeRt.setNodeId(nodeId);
+                    nodeRt.setStatus(ApiConst.NODE_STATUS_OFFLINE);
+                    nodeRt.setUserId(userInfo.getId());
+                    nodeRtList.add(nodeRt);
                 }
                 NodeDao.batchInsertNodeInfo(nodeInfoList);
+                NodeDao.batchInsertNodeRt(nodeRtList);
                 break;
             }
         }

@@ -70,9 +70,9 @@ public class NodeDaoServiceImpl implements NodeDaoService {
                     nodeInfo.setUpdateTime(st);
 
                     session.getMapper(NodeInfoMapper.class).insertSelective(nodeInfo);
-
-                    LOG.info("batch insert {}", GsonUtil.toJson(nodeInfo));
                 }
+
+                LOG.info("batch insert {}", GsonUtil.toJson(nodeInfoList));
                 session.commit();
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
@@ -239,6 +239,26 @@ public class NodeDaoServiceImpl implements NodeDaoService {
             }
         }
         return -1L;
+    }
+
+    @Override
+    public void batchInsertNodeRt(List<NodeRt> nodeRtList) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                for (NodeRt node : nodeRtList) {
+                    long st = System.currentTimeMillis();
+                    node.setCreateTime(st);
+                    node.setUpdateTime(st);
+
+                    session.getMapper(NodeRtMapper.class).insertSelective(node);
+                }
+                session.commit();
+                LOG.info("batch insert {}", GsonUtil.toJson(nodeRtList));
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
     }
 
     private String getFromRedis(String id, String key) {
