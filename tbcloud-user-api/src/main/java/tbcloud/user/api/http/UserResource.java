@@ -16,10 +16,9 @@ import tbcloud.node.model.*;
 import tbcloud.user.api.http.req.*;
 import tbcloud.user.api.http.rsp.ImgCodeRsp;
 import tbcloud.user.api.http.rsp.PageRsp;
+import tbcloud.user.api.http.rsp.ShareSumRsp;
 import tbcloud.user.api.http.rsp.SignInRsp;
-import tbcloud.user.model.UserImgCode;
-import tbcloud.user.model.UserInfo;
-import tbcloud.user.model.UserInfoExample;
+import tbcloud.user.model.*;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -787,6 +786,84 @@ public class UserResource extends BaseResource {
 
         //TODO user_online
 
+        return r;
+    }
+
+
+    @POST
+    @Path("share/stat/sum")
+    public Result<ShareSumRsp> sumStatShare(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<ShareSumRsp> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        UserShareSum shareSum = UserDao.selectUserShareSum(userInfo.getId());
+        if (shareSum == null) {
+            r.setCode(ApiCode.DB_NOT_FOUND_RECORD);
+            r.setMsg("不存在共享收益记录");
+            return r;
+        }
+
+        ShareSumRsp data = new ShareSumRsp();
+        data.setSum(shareSum.getSum());
+        data.setBalance(shareSum.getBalance());
+        if (shareSum.getLatestTime() != null && (System.currentTimeMillis() - shareSum.getLatestTime()) < 48 * 3600 * 1000)
+            data.setYesterday(shareSum.getLatest());
+        r.setData(data);
+        return r;
+    }
+
+    @POST
+    @Path("share/stat/day")
+    public Result<PageRsp<UserShareDay>> dayStatShare(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, DatePageReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<PageRsp<UserShareDay>> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        Long startTime = req.getStartTime();
+        Long endTime = req.getEndTime();
+        if (startTime == null || endTime == null) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            r.setMsg("缺少请求参数");
+            return r;
+        }
+
+        Long period = endTime - startTime;
+        if (period < 0) {
+            r.setCode(ApiCode.INVALID_PARAM);
+            r.setMsg("非法请求参数");
+            return r;
+        }
+//        if(period>  90 * 24 * 3600 * 1000){ //TODO 不能超过90
+//        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        Integer pageNo = req.getPageNo();
+        Integer pageCount = req.getPageCount();
+
+        UserShareDayExample example = new UserShareDayExample();
+        example.createCriteria().andUserIdEqualTo(userInfo.getId()).andDateBetween(startTime, endTime).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        example.setOrderByClause("date desc limit " + (pageNo - 1) * pageCount + "," + pageCount);
+        List<UserShareDay> page = UserDao.selectUserShareDay(example);
+        long count = UserDao.countUserShareDay(example);
+
+        PageRsp<UserShareDay> data = new PageRsp<>();
+        data.setPage(page);
+        data.setCount(count);
+        r.setData(data);
         return r;
     }
 }

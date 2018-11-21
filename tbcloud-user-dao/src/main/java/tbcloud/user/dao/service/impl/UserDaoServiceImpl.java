@@ -14,11 +14,8 @@ import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.user.dao.UserDaoPlugin;
 import tbcloud.user.dao.service.UserDaoService;
-import tbcloud.user.model.UserImgCode;
-import tbcloud.user.model.UserInfo;
-import tbcloud.user.model.UserInfoExample;
-import tbcloud.user.model.mapper.UserImgCodeMapper;
-import tbcloud.user.model.mapper.UserInfoMapper;
+import tbcloud.user.model.*;
+import tbcloud.user.model.mapper.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -163,5 +160,132 @@ public class UserDaoServiceImpl implements UserDaoService {
             }
         }
         return 0;
+    }
+
+    @Override
+    public List<UserShareRecord> selectUserShareRecord(UserShareRecordExample example) {
+        List<UserShareRecord> shareRecordList = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                shareRecordList = session.getMapper(UserShareRecordMapper.class).selectByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return shareRecordList;
+    }
+
+    @Override
+    public int insertUserShareRecord(UserShareRecord userShareRecord) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                userShareRecord.setCreateTime(st);
+                userShareRecord.setUpdateTime(st);
+
+                int r = session.getMapper(UserShareRecordMapper.class).insertSelective(userShareRecord);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(userShareRecord));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public List<UserShareDay> selectUserShareDay(UserShareDayExample example) {
+        List<UserShareDay> shareDayList = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                shareDayList = session.getMapper(UserShareDayMapper.class).selectByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return shareDayList;
+    }
+
+    @Override
+    public int insertUserShareDay(UserShareDay userShareDay) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                userShareDay.setCreateTime(st);
+                userShareDay.setUpdateTime(st);
+
+                int r = session.getMapper(UserShareDayMapper.class).insertSelective(userShareDay);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(userShareDay));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public List<UserShareSum> selectUserShareSum(UserShareSumExample example) {
+        List<UserShareSum> shareSumList = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                shareSumList = session.getMapper(UserShareSumMapper.class).selectByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return shareSumList;
+    }
+
+    @Override
+    public int insertUserShareSum(UserShareSum userShareSum) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                userShareSum.setCreateTime(st);
+                userShareSum.setUpdateTime(st);
+
+                int r = session.getMapper(UserShareSumMapper.class).insertSelective(userShareSum);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(userShareSum));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public UserShareSum selectUserShareSum(long userId) {
+        UserShareSum shareSum = null;
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                shareSum = session.getMapper(UserShareSumMapper.class).selectByPrimaryKey(userId);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return shareSum;
+    }
+
+    @Override
+    public long countUserShareDay(UserShareDayExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                return session.getMapper(UserShareDayMapper.class).countByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return -1L;
     }
 }
