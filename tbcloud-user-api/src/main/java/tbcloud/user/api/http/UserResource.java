@@ -1,15 +1,18 @@
 package tbcloud.user.api.http;
 
+import jframe.core.msg.PluginMsg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
+import tbcloud.lib.api.ApiField;
 import tbcloud.lib.api.Result;
+import tbcloud.lib.api.msg.EmailModify;
+import tbcloud.lib.api.msg.MobileVCode;
+import tbcloud.lib.api.msg.MsgType;
 import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
-import tbcloud.node.model.NodeConst;
-import tbcloud.node.model.NodeInfo;
-import tbcloud.node.model.NodeInfoExample;
+import tbcloud.node.model.*;
 import tbcloud.user.api.http.req.*;
 import tbcloud.user.api.http.rsp.ImgCodeRsp;
 import tbcloud.user.api.http.rsp.PageRsp;
@@ -21,13 +24,11 @@ import tbcloud.user.model.UserInfoExample;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author dzh
@@ -41,18 +42,14 @@ public class UserResource extends BaseResource {
 
     static Logger LOG = LoggerFactory.getLogger(UserResource.class);
 
-    private int innerImgCodeId(String imgCodeId) {
-        return Math.abs(imgCodeId.hashCode() % ApiConst.IMGCODE_MAX_ID) + 1;
-    }
-
     @POST
     @Path("imgcode/get")
     public Result<ImgCodeRsp> getImgCode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version) {
         LOG.info("{} {}", ui.getPath(), version);
         Result<ImgCodeRsp> r = new Result<>();
 
-        String imgCodeIdStr = IDUtil.genImgCodeId(version); //TODO ip
-        UserImgCode imgCode = UserDao.selectUserImgCode(innerImgCodeId(imgCodeIdStr));
+        String imgCodeId = IDUtil.genImgCodeId(version); //TODO ip
+        UserImgCode imgCode = UserDao.selectUserImgCode(IDUtil.innerImgCodeId(imgCodeId));
 
         if (imgCode == null) {
             r.setCode(ApiCode.INVALID_PARAM);
@@ -61,7 +58,7 @@ public class UserResource extends BaseResource {
         }
 
         ImgCodeRsp data = new ImgCodeRsp();
-        data.setImgCodeId(imgCodeIdStr);
+        data.setImgCodeId(imgCodeId);
         data.setImgCodeUrl(String.join("/", Plugin.getConfig(ApiConst.QINIU_DOMAIN), imgCode.getImgPath()));
         r.setData(data);
         return r;
@@ -76,8 +73,7 @@ public class UserResource extends BaseResource {
         // TODO check mobile 11 digital
 
         // validate imgCode
-        int imgCodeId = innerImgCodeId(req.getImgCodeId());
-        if (!isValidImgCode(imgCodeId, req.getImgCode())) {
+        if (!isValidImgCode(req.getImgCodeId(), req.getImgCode())) {
             r.setCode(ApiCode.INVALID_PARAM);
             r.setMsg("invalid param imgCode:" + req.getImgCode());
             return r;
@@ -86,12 +82,18 @@ public class UserResource extends BaseResource {
         // TODO 重复发送
 
         String vcode = IDUtil.genMobileVcode(4);
-        if (isDebug()) { //only debug mode
+        if (Plugin.isDebug() && !Plugin.envName().equals(ApiConst.ENV_ONLINE)) {
             r.setData(vcode);
+            r.setMsg("测试时返回");
         }
 
-        // TODO aync to send to mobile
         String mobile = req.getMobile();
+
+        MobileVCode msg = new MobileVCode();
+        msg.setType(req.getType());
+        msg.setMobile(mobile);
+        msg.setCode(vcode);
+        Plugin.send(new PluginMsg<MobileVCode>().setType(MsgType.MOBILE_VCODE).setValue(msg));
 
         // cache
         setToRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_VCODE_ + mobile, vcode, 60);
@@ -108,6 +110,7 @@ public class UserResource extends BaseResource {
 
         String mobile = req.getMobile();
         String vcode = req.getVcode();
+
 
         if (StringUtil.isEmpty(mobile) || StringUtil.isEmpty(vcode) || StringUtil.isEmpty(req.getPasswd())) {
             r.setCode(ApiCode.HTTP_MISS_PARAM);
@@ -134,6 +137,7 @@ public class UserResource extends BaseResource {
         // insert user
         UserInfo userInfo = new UserInfo();
         userInfo.setMobile(req.getMobile());
+        userInfo.setName(req.getName());
         //TODO userInfo.setInviteCode("");
         userInfo.setPasswd(StringUtil.MD5Encode(req.getPasswd() + ApiConst.USER_PASSWD_SALT_1));
 
@@ -163,8 +167,7 @@ public class UserResource extends BaseResource {
         // TODO check mobile 11 digital
 
         // validate imgCode
-        int imgCodeId = innerImgCodeId(req.getImgCodeId());
-        if (!isValidImgCode(imgCodeId, req.getImgCode())) {
+        if (!isValidImgCode(req.getImgCodeId(), req.getImgCode())) {
             r.setCode(ApiCode.INVALID_PARAM);
             r.setMsg("invalid param imgCode:" + req.getImgCode());
             return r;
@@ -343,11 +346,20 @@ public class UserResource extends BaseResource {
     }
 
 
+    /**
+     * 请求修改email,将异步发送确认邮件到新邮箱。通过用verifyEmail认证后修改成功
+     *
+     * @param ui
+     * @param version
+     * @param token
+     * @param req
+     * @return
+     */
     @POST
     @Path("email/modify")
-    public Result<Void> modifyMobile(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, Map<String, String> req) {
+    public Result<String> modifyEmail(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, Map<String, String> req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
-        Result<Void> r = new Result<>();
+        Result<String> r = new Result<>();
 
         ReqContext reqContext = ReqContext.create(version, token);
         r.setCode(validateToken(reqContext));
@@ -355,28 +367,83 @@ public class UserResource extends BaseResource {
             return r;
         }
 
-        //TODO limit req
+        // TODO 验证必要参数
 
-        // TODO generate token , save to redis, and async to send email
-        String email = req.get("email");
+        UserInfo userInfo = reqContext.getUserInfo();
+        String name = userInfo.getName();
 
+
+        String email = req.get(ApiField.F_email);
+        String emailToken = IDUtil.genEmailToken(userInfo.getId());
+
+        if (Plugin.isDebug() && !Plugin.envName().equals(ApiConst.ENV_ONLINE)) {
+            r.setData(emailToken);
+            r.setMsg("测试时返回");
+        }
+
+        // email saved into redis
+        setToRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_EMAIL_TOKEN_ + emailToken, email, ApiConst.REDIS_EXPIRED_1H);
+
+        // async to send email
+        EmailModify em = new EmailModify();
+        em.setEmail(email);
+        em.setName(Optional.ofNullable(name).orElse(userInfo.getMobile()));
+        em.setToken(emailToken);
+
+        Plugin.send(new PluginMsg<EmailModify>().setType(MsgType.EMAIL_MODIFY).setValue(em));
         return r;
     }
 
-    @GET
+    @POST
     @Path("email/verify")
-    public void modifyMobile(@Context UriInfo ui, @QueryParam("token") String token) {
-        LOG.info("{} {} ", ui.getPath(), token);
-//        Result<Void> r = new Result<>();
+    public Result<Void> verifyEmail(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, Map<String, String> req) {
+        LOG.info("{} {} {}", ui.getPath(), version, req);
+        Result<Void> r = new Result<>();
 
-        // TODO retrieve email info from redis,token maybe expired
-
-        // TODO redirect
-        try {
-            Response.seeOther(new URI("")); //
-        } catch (URISyntaxException e) {
-            LOG.error(e.getMessage(), e);
+        String emailToken = req.get(ApiField.F_token);
+        String passwd = req.get(ApiField.F_passwd);
+        if (StringUtil.isEmpty(emailToken) || StringUtil.isEmpty(passwd)) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            return r;
         }
+
+        //TODO limit req
+
+        // retrieve email info from redis,token maybe expired
+        String email = getFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_EMAIL_TOKEN_ + emailToken);
+        if (StringUtil.isEmpty(email)) {
+            r.setCode(ApiCode.TOKEN_EXPIRED);
+            r.setMsg("邮件链接已经超过有效期，请重新发起邮件修改请求");
+            return r;
+        }
+
+        long userId = IDUtil.decodeUserIDFromEmailToken(emailToken);
+        UserInfo userInfo = UserDao.selectUserInfo(userId);
+        if (userInfo == null) {
+            r.setCode(ApiCode.TOKEN_INVALID);
+            r.setMsg("邮件链接包含无效的参数，请联系树熊云");
+            return r;
+        }
+
+        // TODO 最多允许输入3次
+        if (!passwd.equalsIgnoreCase(userInfo.getPasswd())) {
+            r.setCode(ApiCode.USR_INVALID);
+            r.setMsg("请输入正确的用户密码");
+            return r;
+        }
+
+        // update email
+        UserInfo updateEmail = new UserInfo();
+        updateEmail.setId(userId);
+        updateEmail.setEmail(email);
+        UserDao.updateUserInfo(updateEmail);
+
+//        try {
+//            Response.seeOther(new URI("")); //
+//        } catch (URISyntaxException e) {
+//            LOG.error(e.getMessage(), e);
+//        }
+        return r;
     }
 
     @POST
@@ -393,7 +460,7 @@ public class UserResource extends BaseResource {
 
         UserInfo userInfo = reqContext.getUserInfo();
 
-        String nodeId = req.get("nodeId");
+        String nodeId = req.get(ApiField.F_nodeId);
         if (StringUtil.isEmpty(nodeId)) {
             r.setCode(ApiCode.HTTP_MISS_PARAM);
             r.setMsg("miss nodeId");
@@ -414,7 +481,6 @@ public class UserResource extends BaseResource {
             }
         } else {  //update
             //TODO check binded
-
             NodeInfo rebindNode = new NodeInfo();
             rebindNode.setNodeId(nodeId);
             rebindNode.setBindTime(System.currentTimeMillis());
@@ -425,6 +491,22 @@ public class UserResource extends BaseResource {
                 r.setMsg(nodeId + " bind error!");
                 return r;
             }
+        }
+
+        // upsert node_rt
+        NodeRt nodeRt = NodeDao.selectNodeRt(nodeId);
+        if (nodeRt == null) {
+            nodeRt = new NodeRt();
+            nodeRt.setNodeId(nodeId);
+            nodeRt.setStatus(ApiConst.NODE_STATUS_OFFLINE);
+            nodeRt.setUserId(userInfo.getId());
+            NodeDao.insertNodeRt(nodeRt);
+        } else {
+            NodeRt rebindNode = new NodeRt();
+            rebindNode.setNodeId(nodeId);
+            rebindNode.setUserId(userInfo.getId());
+            rebindNode.setStatus(ApiConst.NODE_STATUS_OFFLINE);
+            NodeDao.updateNodeRt(rebindNode);
         }
 
         return r;
@@ -450,8 +532,9 @@ public class UserResource extends BaseResource {
         }
         UserInfo userInfo = reqContext.getUserInfo();
 
-        String fileType = req.get("fileType"); //TODO
-        String file = req.get("file");
+        // TODO
+        String fileType = req.get(ApiField.F_fileType);
+        String file = req.get(ApiField.F_file);
         if (StringUtil.isEmpty(fileType) || StringUtil.isEmpty(file)) {
             r.setCode(ApiCode.HTTP_MISS_PARAM);
             r.setMsg("miss param");
@@ -494,7 +577,7 @@ public class UserResource extends BaseResource {
 
         UserInfo userInfo = reqContext.getUserInfo();
 
-        String nodeId = req.get("nodeId");
+        String nodeId = req.get(ApiField.F_nodeId);
         if (StringUtil.isEmpty(nodeId)) {
             r.setCode(ApiCode.HTTP_MISS_PARAM);
             r.setMsg("miss nodeId");
@@ -526,14 +609,21 @@ public class UserResource extends BaseResource {
         unbindNode.setUnbindTime(System.currentTimeMillis());
         NodeDao.updateNodeInfo(unbindNode);
 
+        // update node_rt
+        NodeRt nodeRt = new NodeRt();
+        nodeRt.setNodeId(nodeId);
+        nodeRt.setStatus(ApiConst.NODE_STATUS_UNKNOWN);
+        nodeRt.setUserId(0L);
+        NodeDao.updateNodeRt(nodeRt);
+
         return r;
     }
 
     @POST
     @Path("node/list")
-    public Result<PageRsp<NodeInfo>> listNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, PageReq req) {
+    public Result<PageRsp<NodeInfoRt>> listNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeListReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
-        Result<PageRsp<NodeInfo>> r = new Result<>();
+        Result<PageRsp<NodeInfoRt>> r = new Result<>();
 
         ReqContext reqContext = ReqContext.create(version, token);
         r.setCode(validateToken(reqContext));
@@ -546,15 +636,29 @@ public class UserResource extends BaseResource {
         Integer pageNo = req.getPageNo();
         Integer pageCount = req.getPageCount();
 
-        NodeInfoExample example = new NodeInfoExample();
-        example.createCriteria().andUserIdEqualTo(userInfo.getId()).andIsBindEqualTo(NodeConst.IS_BIND).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
-        example.setOrderByClause("bind_time desc limit " + (pageNo - 1) * pageCount + "," + pageCount);
-        List<NodeInfo> nodeList = NodeDao.selectNodeInfo(example);
-        long count = NodeDao.countNodeInfo(example);
+        NodeRtInfoExample example = new NodeRtInfoExample();
+        NodeRtExample countExample = new NodeRtExample(); //TODO opt
+        Integer status = req.getStatus();
+        if (status == null || status < 0) { //search all
+            example.createCriteria().andUserIdEqualTo(userInfo.getId()).andStatusGreaterThanOrEqualTo(0).
+                    andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+            countExample.createCriteria().andUserIdEqualTo(userInfo.getId()).andStatusGreaterThanOrEqualTo(0).
+                    andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        } else {
+            example.createCriteria().andUserIdEqualTo(userInfo.getId()).andStatusEqualTo(status).
+                    andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+            countExample.createCriteria().andUserIdEqualTo(userInfo.getId()).andStatusEqualTo(status).
+                    andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        }
+        example.setOrderByClause("create_time desc limit " + (pageNo - 1) * pageCount + "," + pageCount);
+        List<NodeInfoRt> nodeList = NodeDao.selectNodeRtLeftJoinInfo(example);
+
+
+        long count = NodeDao.countNodeRt(countExample); //TODO cache
 
         // TODO firmwareUpgrade NodeRsp
 
-        PageRsp<NodeInfo> data = new PageRsp<>();
+        PageRsp<NodeInfoRt> data = new PageRsp<>();
         data.setCount(count);
         data.setPage(nodeList);
         r.setData(data);

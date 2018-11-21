@@ -6,9 +6,18 @@ package tbcloud.user.api.http.req;
  */
 public class SignUpPasswdReq {
 
+    private String name;
     private String mobile;
     private String passwd;
     private String vcode;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getMobile() {
         return mobile;

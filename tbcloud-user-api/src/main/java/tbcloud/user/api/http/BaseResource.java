@@ -141,19 +141,10 @@ public class BaseResource {
         }
     }
 
-    // 开启调试模式 用于测试
-    public boolean isDebug() {
-        return "true".equalsIgnoreCase(Plugin.getConfig(ApiConst.DEBUG_ENABLED, "false").trim());
-    }
-
-    public String envName() {
-        return Plugin.getConfig(ApiConst.ENV_NAME, ApiConst.ENV_ONLINE).trim();
-    }
-
-    public boolean isValidImgCode(int imgCodeId, String imgCode) {
-        UserImgCode imgCodeReal = UserDao.selectUserImgCode(imgCodeId);
+    public boolean isValidImgCode(String imgCodeId, String imgCode) {
+        UserImgCode imgCodeReal = UserDao.selectUserImgCode(IDUtil.innerImgCodeId(imgCodeId));
         if (imgCodeReal == null || !imgCodeReal.getImgCode().equalsIgnoreCase(imgCode)) {
-            LOG.warn("invalid imgCode {} {}", imgCode, imgCodeReal);
+            LOG.warn("invalid imgCode {} {}", imgCode, imgCodeReal.getImgCode());
             return false;
         }
         return true;

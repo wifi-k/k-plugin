@@ -13,9 +13,10 @@ import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.node.dao.NodeDaoPlugin;
 import tbcloud.node.dao.service.NodeDaoService;
-import tbcloud.node.model.NodeInfo;
-import tbcloud.node.model.NodeInfoExample;
+import tbcloud.node.model.*;
 import tbcloud.node.model.mapper.NodeInfoMapper;
+import tbcloud.node.model.mapper.NodeInfoRtMapper;
+import tbcloud.node.model.mapper.NodeRtMapper;
 
 import java.util.Collections;
 import java.util.List;
@@ -130,6 +131,109 @@ public class NodeDaoServiceImpl implements NodeDaoService {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
             try {
                 return session.getMapper(NodeInfoMapper.class).countByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return -1L;
+    }
+
+    @Override
+    public List<NodeInfoRt> selectNodeInfoLeftJoinRt(NodeInfoRtExample example) {
+        List<NodeInfoRt> nodeInfoList = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                nodeInfoList = session.getMapper(NodeInfoRtMapper.class).selectByExampleLeftJoinRt(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return nodeInfoList;
+    }
+
+    @Override
+    public List<NodeInfoRt> selectNodeRtLeftJoinInfo(NodeRtInfoExample example) {
+        List<NodeInfoRt> nodeInfoList = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                nodeInfoList = session.getMapper(NodeInfoRtMapper.class).selectByExampleLeftJoinInfo(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return nodeInfoList;
+    }
+
+    @Override
+    public int insertNodeRt(NodeRt nodeRt) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                nodeRt.setCreateTime(st);
+                nodeRt.setUpdateTime(st);
+
+                int r = session.getMapper(NodeRtMapper.class).insertSelective(nodeRt);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(nodeRt));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public List<NodeRt> selectNodeRt(NodeRtExample example) {
+        List<NodeRt> nodeRtList = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                nodeRtList = session.getMapper(NodeRtMapper.class).selectByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return nodeRtList;
+    }
+
+    @Override
+    public NodeRt selectNodeRt(String nodeId) {
+        NodeRt nodeRt = null;
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                nodeRt = session.getMapper(NodeRtMapper.class).selectByPrimaryKey(nodeId);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return nodeRt;
+    }
+
+    @Override
+    public int updateNodeRt(NodeRt nodeRt) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                nodeRt.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeRtMapper.class).updateByPrimaryKeySelective(nodeRt);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            } finally {
+                //TODO rm cache redis
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public long countNodeRt(NodeRtExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                return session.getMapper(NodeRtMapper.class).countByExample(example);
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
             }

@@ -1,7 +1,6 @@
 package tbcloud.node.dao.service;
 
-import tbcloud.node.model.NodeInfo;
-import tbcloud.node.model.NodeInfoExample;
+import tbcloud.node.model.*;
 
 import java.util.List;
 
@@ -22,4 +21,19 @@ public interface NodeDao {
     int updateNodeInfo(NodeInfo nodeInfo);
 
     long countNodeInfo(NodeInfoExample example);
+
+    List<NodeInfoRt> selectNodeInfoLeftJoinRt(NodeInfoRtExample example);
+
+    List<NodeInfoRt> selectNodeRtLeftJoinInfo(NodeRtInfoExample example);
+
+    int insertNodeRt(NodeRt nodeRt);
+
+    List<NodeRt> selectNodeRt(NodeRtExample example);
+
+    NodeRt selectNodeRt(String nodeId);
+
+    int updateNodeRt(NodeRt nodeRt);
+
+    long countNodeRt(NodeRtExample example);
+
 }

@@ -7,10 +7,12 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>tbcloud-node-api</module>
+        <module>tbcloud-node-dao</module>
+
         <module>tbcloud-user-api</module>
         <module>tbcloud-user-dao</module>
-        <module>tbcloud-node-dao</module>
-        <module>tbcloud-node-api</module>
+        <module>tbcloud-user-job</module>
     </modules>
 
     <properties>
@@ -116,6 +118,12 @@
             <dependency>
                 <groupId>io.github.dzh</groupId>
                 <artifactId>jframe-jedis</artifactId>
+                <version>${jframe.version}</version>
+                <classifier>plugin</classifier>
+            </dependency>
+            <dependency>
+                <groupId>io.github.dzh</groupId>
+                <artifactId>jframe-aliyun</artifactId>
                 <version>${jframe.version}</version>
                 <classifier>plugin</classifier>
             </dependency>

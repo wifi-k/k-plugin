@@ -5,6 +5,7 @@ import jframe.core.plugin.PluginSender;
 import jframe.core.plugin.annotation.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tbcloud.lib.api.ApiConst;
 
 /**
  * @author dzh
@@ -30,6 +31,15 @@ public class UserApiPlugin extends PluginSender {
     public void stop() throws PluginException {
         super.stop();
         httpServer.stopHttpServer();
+    }
+
+    // 开启调试模式 用于测试
+    public boolean isDebug() {
+        return "true".equalsIgnoreCase(getConfig(ApiConst.DEBUG_ENABLED, "false").trim());
+    }
+
+    public String envName() {
+        return getConfig(ApiConst.ENV_NAME, ApiConst.ENV_ONLINE).trim();
     }
 
 }
