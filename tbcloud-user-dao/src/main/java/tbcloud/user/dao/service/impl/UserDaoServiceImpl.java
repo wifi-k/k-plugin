@@ -163,6 +163,58 @@ public class UserDaoServiceImpl implements UserDaoService {
     }
 
     @Override
+    public UserOnline selectUserOnline(long userId) {
+        UserOnline userOnline = null;
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                userOnline = session.getMapper(UserOnlineMapper.class).selectByPrimaryKey(userId);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return userOnline;
+    }
+
+    @Override
+    public int insertUserOnline(UserOnline userOnline) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                userOnline.setCreateTime(st);
+                userOnline.setUpdateTime(st);
+
+                int r = session.getMapper(UserOnlineMapper.class).insertSelective(userOnline);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(userOnline));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateUserOnline(UserOnline userOnline) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                userOnline.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(UserOnlineMapper.class).updateByPrimaryKeySelective(userOnline);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            } finally {
+                //TODO rm cache redis
+            }
+        }
+        return 0;
+    }
+
+    @Override
     public List<UserShareRecord> selectUserShareRecord(UserShareRecordExample example) {
         List<UserShareRecord> shareRecordList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.user.job.impl.EmailModifyJob;
 import tbcloud.user.job.impl.MobileVCodeJob;
+import tbcloud.user.job.impl.UserLoginJob;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,9 +30,10 @@ public class UserJobPlugin extends PluginSenderRecver {
         startJobs();
     }
 
-    private void startJobs() {
+    private void startJobs() { //TODO
         startJob(MobileVCodeJob.class);
         startJob(EmailModifyJob.class);
+        startJob(UserLoginJob.class);
     }
 
     void startJob(Class<? extends UserJob> clazz) {

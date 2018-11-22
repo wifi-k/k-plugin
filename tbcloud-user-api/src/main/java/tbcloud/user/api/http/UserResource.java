@@ -10,6 +10,7 @@ import tbcloud.lib.api.Result;
 import tbcloud.lib.api.msg.EmailModify;
 import tbcloud.lib.api.msg.MobileVCode;
 import tbcloud.lib.api.msg.MsgType;
+import tbcloud.lib.api.msg.UserLogin;
 import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.model.*;
@@ -65,11 +66,9 @@ public class UserResource extends BaseResource {
 
     @POST
     @Path("vcode/get")
-    public Result<String> getVcode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, MobileVcodeReq req) {
+    public Result<String> getVCode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, MobileVcodeReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, req.toString());
         Result<String> r = new Result<>();
-
-        // TODO check mobile 11 digital
 
         // validate imgCode
         if (!isValidImgCode(req.getImgCodeId(), req.getImgCode())) {
@@ -87,12 +86,15 @@ public class UserResource extends BaseResource {
         }
 
         String mobile = req.getMobile();
+        // TODO check mobile 11 digital
 
-        MobileVCode msg = new MobileVCode();
-        msg.setType(req.getType());
-        msg.setMobile(mobile);
-        msg.setCode(vcode);
-        Plugin.send(new PluginMsg<MobileVCode>().setType(MsgType.MOBILE_VCODE).setValue(msg));
+        if (!ApiConst.ENV_DEV.equals(Plugin.envName())) { // not send if dev
+            MobileVCode msg = new MobileVCode();
+            msg.setType(req.getType());
+            msg.setMobile(mobile);
+            msg.setCode(vcode);
+            Plugin.send(new PluginMsg<MobileVCode>().setType(MsgType.MOBILE_VCODE).setValue(msg));
+        }
 
         // cache
         setToRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_VCODE_ + mobile, vcode, 60);
@@ -188,6 +190,14 @@ public class UserResource extends BaseResource {
         String token = IDUtil.genToken(userInfo.getId());
         // save to redis
         setToRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_TOKEN_ + userInfo.getId(), token, ApiConst.REDIS_EXPIRED_24H);
+
+        // send UserLogin
+        UserLogin msg = new UserLogin();
+        msg.setUserId(userInfo.getId());
+        msg.setDate(System.currentTimeMillis());
+        msg.setStatus(ApiConst.USER_ONLINE);
+        msg.setToken(token);
+        Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.USER_LOGIN).setValue(msg));
 
         SignInRsp rsp = new SignInRsp();
         rsp.setToken(token);
@@ -497,14 +507,14 @@ public class UserResource extends BaseResource {
         if (nodeRt == null) {
             nodeRt = new NodeRt();
             nodeRt.setNodeId(nodeId);
-            nodeRt.setStatus(ApiConst.NODE_STATUS_OFFLINE);
+            nodeRt.setStatus(NodeConst.STATUS_OFFLINE);
             nodeRt.setUserId(userInfo.getId());
             NodeDao.insertNodeRt(nodeRt);
         } else {
             NodeRt rebindNode = new NodeRt();
             rebindNode.setNodeId(nodeId);
             rebindNode.setUserId(userInfo.getId());
-            rebindNode.setStatus(ApiConst.NODE_STATUS_OFFLINE);
+            rebindNode.setStatus(NodeConst.STATUS_OFFLINE);
             NodeDao.updateNodeRt(rebindNode);
         }
 
@@ -561,7 +571,7 @@ public class UserResource extends BaseResource {
                     // node rt
                     NodeRt nodeRt = new NodeRt();
                     nodeRt.setNodeId(nodeId);
-                    nodeRt.setStatus(ApiConst.NODE_STATUS_OFFLINE);
+                    nodeRt.setStatus(NodeConst.STATUS_OFFLINE);
                     nodeRt.setUserId(userInfo.getId());
                     nodeRtList.add(nodeRt);
                 }
@@ -591,26 +601,26 @@ public class UserResource extends BaseResource {
         String nodeId = req.get(ApiField.F_nodeId);
         if (StringUtil.isEmpty(nodeId)) {
             r.setCode(ApiCode.HTTP_MISS_PARAM);
-            r.setMsg("miss nodeId");
+            r.setMsg("缺少请求参数");
             return r;
         }
 
         NodeInfo nodeInfo = NodeDao.selectNodeInfo(nodeId);
         if (nodeInfo == null) {
             r.setCode(ApiCode.DB_NOT_FOUND_RECORD);
-            r.setMsg(nodeId + " not found");
+            r.setMsg(nodeId + "没有找到");
             return r;
         }
 
         if (nodeInfo.getIsBind() == NodeConst.IS_UNBIND) {
             r.setCode(ApiCode.DB_UPDATE_ERROR);
-            r.setMsg(nodeId + "is unbinded");
+            r.setMsg(nodeId + "已经绑定了!");
             return r;
         }
 
         if (nodeInfo.getUserId() != userInfo.getId()) {
             r.setCode(ApiCode.USR_INVALID);
-            r.setMsg("cann't not unbind others' node");
+            r.setMsg("非法绑定");
             return r;
         }
 
@@ -623,7 +633,7 @@ public class UserResource extends BaseResource {
         // update node_rt
         NodeRt nodeRt = new NodeRt();
         nodeRt.setNodeId(nodeId);
-        nodeRt.setStatus(ApiConst.NODE_STATUS_UNKNOWN);
+        nodeRt.setStatus(NodeConst.STATUS_UNKNOWN);
         nodeRt.setUserId(0L);
         NodeDao.updateNodeRt(nodeRt);
 
@@ -796,7 +806,12 @@ public class UserResource extends BaseResource {
         // rm token
         deleteFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_TOKEN_ + userInfo.getId());
 
-        //TODO user_online
+        // user_online
+        UserLogin msg = new UserLogin();
+        msg.setUserId(userInfo.getId());
+        msg.setDate(System.currentTimeMillis());
+        msg.setStatus(ApiConst.USER_OFFLINE);
+        Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.USER_LOGIN).setValue(msg));
 
         return r;
     }

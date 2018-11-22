@@ -34,10 +34,10 @@ public abstract class UserJob extends AbstractJob {
     private volatile boolean closed = false;
 
     @InjectService(id = "jframe.service.jedis")
-    static JedisService Jedis;
+    protected static JedisService Jedis;
 
     @InjectService(id = "tbcloud.service.user.dao")
-    static UserDaoService UserDao;
+    protected static UserDaoService UserDao;
 
 
     public UserJob() {
@@ -58,7 +58,8 @@ public abstract class UserJob extends AbstractJob {
 
     public void start() {
         // TODO rejected handle
-        threads = new ThreadPoolExecutor(threadSize(), threadSize() * 2, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(10000));
+        // TODO threadpool is too simple
+        threads = new ThreadPoolExecutor(1, threadSize(), 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(1000));
         LOG.info("start job msgType-{}", msgType());
     }
 
