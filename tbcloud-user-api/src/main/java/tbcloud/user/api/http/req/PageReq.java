@@ -7,7 +7,7 @@ package tbcloud.user.api.http.req;
 public class PageReq {
 
     private Integer pageNo;
-    private Integer pageCount;
+    private Integer pageSize;
 
     public Integer getPageNo() {
         if (pageNo == null || pageNo < 1) return 1;
@@ -18,13 +18,13 @@ public class PageReq {
         this.pageNo = pageNo;
     }
 
-    public Integer getPageCount() {
-        if (pageCount == null || pageCount < 0) return 10;
-        if (pageCount > 100) return 100;
-        return pageCount;
+    public Integer getPageSize() {
+        if (pageSize == null || pageSize < 0) return 10;
+        if (pageSize > 100) return 100;
+        return pageSize;
     }
 
-    public void setPageCount(Integer pageCount) {
-        this.pageCount = pageCount;
+    public void setPageSize(Integer pageSizef) {
+        this.pageSize = pageSize;
     }
 }

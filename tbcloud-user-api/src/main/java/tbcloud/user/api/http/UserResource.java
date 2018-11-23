@@ -655,7 +655,7 @@ public class UserResource extends BaseResource {
         UserInfo userInfo = reqContext.getUserInfo();
 
         Integer pageNo = req.getPageNo();
-        Integer pageCount = req.getPageCount();
+        Integer pageSize = req.getPageSize();
 
         NodeRtInfoExample example = new NodeRtInfoExample();
         NodeRtExample countExample = new NodeRtExample(); //TODO opt
@@ -671,7 +671,7 @@ public class UserResource extends BaseResource {
             countExample.createCriteria().andUserIdEqualTo(userInfo.getId()).andStatusEqualTo(status).
                     andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
         }
-        example.setOrderByClause("create_time desc limit " + (pageNo - 1) * pageCount + "," + pageCount);
+        example.setOrderByClause("create_time desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
         List<NodeInfoRt> nodeList = NodeDao.selectNodeRtLeftJoinInfo(example);
 
 
@@ -879,11 +879,11 @@ public class UserResource extends BaseResource {
         UserInfo userInfo = reqContext.getUserInfo();
 
         Integer pageNo = req.getPageNo();
-        Integer pageCount = req.getPageCount();
+        Integer pageSize = req.getPageSize();
 
         UserShareDayExample example = new UserShareDayExample();
         example.createCriteria().andUserIdEqualTo(userInfo.getId()).andDateBetween(startTime, endTime).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
-        example.setOrderByClause("date desc limit " + (pageNo - 1) * pageCount + "," + pageCount);
+        example.setOrderByClause("date desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
         List<UserShareDay> page = UserDao.selectUserShareDay(example);
         long count = UserDao.countUserShareDay(example);
 
