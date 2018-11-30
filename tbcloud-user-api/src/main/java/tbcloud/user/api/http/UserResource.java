@@ -507,14 +507,14 @@ public class UserResource extends BaseResource {
         if (nodeRt == null) {
             nodeRt = new NodeRt();
             nodeRt.setNodeId(nodeId);
-            nodeRt.setStatus(NodeConst.STATUS_OFFLINE);
+            //nodeRt.setStatus(NodeConst.STATUS_OFFLINE);
             nodeRt.setUserId(userInfo.getId());
             NodeDao.insertNodeRt(nodeRt);
         } else {
             NodeRt rebindNode = new NodeRt();
             rebindNode.setNodeId(nodeId);
             rebindNode.setUserId(userInfo.getId());
-            rebindNode.setStatus(NodeConst.STATUS_OFFLINE);
+            //rebindNode.setStatus(NodeConst.STATUS_OFFLINE);
             NodeDao.updateNodeRt(rebindNode);
         }
 
@@ -633,7 +633,7 @@ public class UserResource extends BaseResource {
         // update node_rt
         NodeRt nodeRt = new NodeRt();
         nodeRt.setNodeId(nodeId);
-        nodeRt.setStatus(NodeConst.STATUS_UNKNOWN);
+        //nodeRt.setStatus(NodeConst.STATUS_UNKNOWN);
         nodeRt.setUserId(0L);
         NodeDao.updateNodeRt(nodeRt);
 

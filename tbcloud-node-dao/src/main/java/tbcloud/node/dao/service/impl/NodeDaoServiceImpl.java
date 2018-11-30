@@ -16,6 +16,7 @@ import tbcloud.node.dao.service.NodeDaoService;
 import tbcloud.node.model.*;
 import tbcloud.node.model.mapper.NodeInfoMapper;
 import tbcloud.node.model.mapper.NodeInfoRtMapper;
+import tbcloud.node.model.mapper.NodeInsMapper;
 import tbcloud.node.model.mapper.NodeRtMapper;
 
 import java.util.Collections;
@@ -230,6 +231,22 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     }
 
     @Override
+    public int updateNodeRtSelective(NodeRt nodeRt, NodeRtExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                nodeRt.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeRtMapper.class).updateByExampleSelective(nodeRt, example);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
     public long countNodeRt(NodeRtExample example) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
             try {
@@ -259,6 +276,74 @@ public class NodeDaoServiceImpl implements NodeDaoService {
                 session.rollback();
             }
         }
+    }
+
+    @Override
+    public int insertNodeIns(NodeIns nodeIns) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                nodeIns.setCreateTime(st);
+                nodeIns.setUpdateTime(st);
+
+                int r = session.getMapper(NodeInsMapper.class).insertSelective(nodeIns);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(nodeIns));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateNodeIns(NodeIns nodeIns) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                nodeIns.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeInsMapper.class).updateByPrimaryKeySelective(nodeIns);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            } finally {
+                //TODO rm cache redis
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public List<NodeIns> selectNodeIns(NodeInsExample example) {
+        List<NodeIns> nodeInsList = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                nodeInsList = session.getMapper(NodeInsMapper.class).selectByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return nodeInsList;
+    }
+
+    @Override
+    public int updateNodeInsSelective(NodeIns nodeIns, NodeInsExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                nodeIns.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeInsMapper.class).updateByExampleSelective(nodeIns, example);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
     }
 
     private String getFromRedis(String id, String key) {

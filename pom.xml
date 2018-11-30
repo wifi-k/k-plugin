@@ -13,6 +13,8 @@
         <module>tbcloud-user-api</module>
         <module>tbcloud-user-dao</module>
         <module>tbcloud-user-job</module>
+        <module>tbcloud-share-httpproxy</module>
+        <module>tbcloud-node-httpproxy</module>
     </modules>
 
     <properties>
@@ -98,6 +100,11 @@
                 <version>1.7.25</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>4.1.31.Final</version>
+            </dependency>
 
             <dependency>
                 <groupId>io.github.dzh</groupId>
@@ -149,6 +156,11 @@
                 <artifactId>tbcloud-node-model</artifactId>
                 <version>${tbcloud.version}</version>
             </dependency>
+            <dependency>
+                <groupId>cn.treebear</groupId>
+                <artifactId>tbcloud-node-protocol</artifactId>
+                <version>${tbcloud.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>cn.treebear</groupId>
@@ -162,6 +174,14 @@
                 <version>${tbcloud.version}</version>
                 <classifier>plugin</classifier>
             </dependency>
+
+            <dependency>
+                <groupId>cn.treebear</groupId>
+                <artifactId>tbcloud-share-httpproxy</artifactId>
+                <version>${tbcloud.version}</version>
+                <classifier>plugin</classifier>
+            </dependency>
+
             <dependency>
                 <groupId>cn.treebear</groupId>
                 <artifactId>tbcloud-node-dao</artifactId>
@@ -171,6 +191,12 @@
             <dependency>
                 <groupId>cn.treebear</groupId>
                 <artifactId>tbcloud-node-api</artifactId>
+                <version>${tbcloud.version}</version>
+                <classifier>plugin</classifier>
+            </dependency>
+            <dependency>
+                <groupId>cn.treebear</groupId>
+                <artifactId>tbcloud-node-httpproxy</artifactId>
                 <version>${tbcloud.version}</version>
                 <classifier>plugin</classifier>
             </dependency>

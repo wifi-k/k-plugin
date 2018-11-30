@@ -49,6 +49,8 @@ public class MobileVCodeJob extends UserJob {
         }
 
         if (vcodeSend != null) {
+            // TODO check mobile
+
             switch (vcodeSend.getType()) {
                 case ApiConst
                         .MOBILE_VCODE_USER_REG:

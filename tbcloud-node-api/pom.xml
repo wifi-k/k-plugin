@@ -24,5 +24,27 @@
         </plugins>
     </build>
 
+    <dependencies>
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-lib-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-node-protocol</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.dzh</groupId>
+            <artifactId>jframe-jedis</artifactId>
+            <classifier>plugin</classifier>
+        </dependency>
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-node-dao</artifactId>
+            <classifier>plugin</classifier>
+        </dependency>
+    </dependencies>
+
 
 </project>

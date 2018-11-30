@@ -34,8 +34,19 @@ public interface NodeDao {
 
     int updateNodeRt(NodeRt nodeRt);
 
+    int updateNodeRtSelective(NodeRt nodeRt, NodeRtExample example);
+
     long countNodeRt(NodeRtExample example);
 
     void batchInsertNodeRt(List<NodeRt> nodeRtList);
+
+
+    int insertNodeIns(NodeIns nodeIns);
+
+    int updateNodeIns(NodeIns nodeIns);
+
+    List<NodeIns> selectNodeIns(NodeInsExample example);
+
+    int updateNodeInsSelective(NodeIns nodeIns, NodeInsExample example);
 
 }
