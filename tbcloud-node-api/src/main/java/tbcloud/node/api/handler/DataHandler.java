@@ -67,12 +67,13 @@ public abstract class DataHandler<T extends DataReq> implements Runnable {
         T dataReq = decodeDataReq(context);
         LOG.info("run {} {}", context.request().id(), dataReq);
         if (isValidToken(context, dataReq)) {
-            DataRsp<?> rsp = handle(dataReq);
+            DataRsp<?> rsp = null;
             try {
+                rsp = handle(dataReq);
                 context.write(rsp);
             } catch (IOException e) {
                 catchException(e, dataReq);
-                LOG.error("write error! {}", rsp);
+                if (rsp != null) LOG.error("write error! {}", rsp);
             }
         } else {
             try { // invalid token, maybe expired

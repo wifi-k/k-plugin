@@ -36,7 +36,7 @@ public class TestNodeApiServer {
 
     PacketCodec codec = new PacketCodecV20181130();
 
-    InetSocketAddress serverAddr = new InetSocketAddress("127.0.0.1", 9019);
+    InetSocketAddress serverAddr = new InetSocketAddress("47.98.51.82", 9019);
 
     private DatagramChannel ch;
 
@@ -47,7 +47,7 @@ public class TestNodeApiServer {
 
     @Test
     public void authTest() throws IOException {
-        String nodeId = "dzh1123";
+        String nodeId = "#A00000000000001";
         String id = UUID.randomUUID().toString();
 
         ByteBufNodePacket packet = new ByteBufNodePacket();

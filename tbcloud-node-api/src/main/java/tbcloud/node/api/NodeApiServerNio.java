@@ -99,7 +99,7 @@ public class NodeApiServerNio implements Closeable {
                         try {
                             SocketAddress remote = ch.receive(recvBuf);
                             recvBuf.flip();
-                            LOG.info("recvBuf {} {} {}", recvBuf.position(), recvBuf.limit(), recvBuf.capacity());
+                            //LOG.info("recvBuf {} {} {}", recvBuf.position(), recvBuf.limit(), recvBuf.capacity());
                             // calc crc32
                             crc32.update(recvBuf.array(), 0, recvBuf.limit() - 8);
                             long hash = crc32.getValue();
@@ -111,8 +111,8 @@ public class NodeApiServerNio implements Closeable {
                                 DataRsp rsp = new DataRsp();
                                 rsp.setCode(ApiCode.HASH_CODE_DIFF);
 
-                                //context.write(rsp); TODO
-                                LOG.warn("{} hash not equals {} {}", req.id(), req.hashCode(), hash);
+                                context.write(rsp);
+                                LOG.warn("{} hash {} not equal  {}", req.id(), req.hashCode(), hash);
                                 continue;
                             }
                             // dispatch

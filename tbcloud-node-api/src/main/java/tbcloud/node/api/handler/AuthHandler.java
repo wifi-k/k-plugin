@@ -29,7 +29,7 @@ public class AuthHandler extends DataHandler<NodeAuth> {
 
         // node must be bound
         NodeInfo nodeInfo = NodeDao.selectNodeInfo(nodeId);
-        if (nodeInfo.getIsBind() == NodeConst.IS_UNBIND) {
+        if (nodeInfo == null || nodeInfo.getIsBind() == NodeConst.IS_UNBIND) {
             dataRsp.setCode(ApiCode.NODE_IS_UNBIND);
             return dataRsp;
         }

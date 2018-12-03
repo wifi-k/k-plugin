@@ -21,6 +21,7 @@ import java.util.zip.CRC32;
  * @author dzh
  * @date 2018-11-27 14:32
  */
+@Deprecated
 public class NodeApiServer implements Closeable {
 
     static Logger LOG = LoggerFactory.getLogger(NodeApiServer.class);
