@@ -35,7 +35,8 @@ public class AuthHandler extends DataHandler<NodeAuth> {
         }
 
         String token = IDUtil.genNodeToken(nodeId);
-        setToRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_TOKEN_ + token, nodeId, 2 * ApiConst.REDIS_EXPIRED_24H);
+        int tokenExpired = tokenExpired(); // hours
+        setToRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_TOKEN_ + token, nodeId, tokenExpired * ApiConst.REDIS_EXPIRED_1H);
 
         // update node_rt TODO async
         NodeRt rt = new NodeRt();
@@ -63,6 +64,7 @@ public class AuthHandler extends DataHandler<NodeAuth> {
         NodeAuthRsp data = new NodeAuthRsp();
         data.setToken(token);
         data.setInsHost(insHost());
+        data.setTokenExpired(tokenExpired - 1);// before 1 hour
         dataRsp.setData(data);
 
         return dataRsp;
@@ -70,12 +72,18 @@ public class AuthHandler extends DataHandler<NodeAuth> {
 
     @Override
     protected NodeAuth decodeDataReq(IoContext context) {
+        //LOG.info("data {}", new String(context.request().data().array(), PacketConst.CHARSET));
         return context.dataCodec().decode(context.request().data(), NodeAuth.class);
     }
 
     // 指令服务器地址
     public String insHost() {
         return plugin().getConfig(ConfField.NODE_API_INS_HOST, "127.0.0.1:9019");
+    }
+
+    public int tokenExpired() {
+        int tokenExpired = Integer.parseInt(plugin().getConfig(ConfField.NODE_API_TOKEN_EXPIRED, "24"));
+        return tokenExpired;
     }
 
 }

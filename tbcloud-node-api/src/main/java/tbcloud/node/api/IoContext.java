@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.node.protocol.ByteBufNodePacket;
 import tbcloud.node.protocol.DataType;
-import tbcloud.node.protocol.PacketConst;
 import tbcloud.node.protocol.codec.DataCodec;
 import tbcloud.node.protocol.data.DataRsp;
 
@@ -65,7 +64,7 @@ public class IoContext {
     }
 
     public DataCodec dataCodec() {
-        return dispatch.dataCodecFactory().codec(PacketConst.DataFormat.valueOf(req.dataFormat()));
+        return dispatch.dataCodecFactory().codec(req.dataType(), req.dataFormat());
     }
 
 }

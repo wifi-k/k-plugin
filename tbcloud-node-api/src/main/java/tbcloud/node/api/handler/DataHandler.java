@@ -20,7 +20,6 @@ import tbcloud.node.protocol.PacketConst;
 import tbcloud.node.protocol.data.DataReq;
 import tbcloud.node.protocol.data.DataRsp;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 
 /**
@@ -64,24 +63,27 @@ public abstract class DataHandler<T extends DataReq> implements Runnable {
 
     @Override
     public void run() {
+        //TODO thread exception handle
         T dataReq = decodeDataReq(context);
+
         LOG.info("run {} {}", context.request().id(), dataReq);
         if (isValidToken(context, dataReq)) {
             DataRsp<?> rsp = null;
             try {
                 rsp = handle(dataReq);
                 context.write(rsp);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 catchException(e, dataReq);
                 if (rsp != null) LOG.error("write error! {}", rsp);
             }
         } else {
             try { // invalid token, maybe expired
                 context.write(ApiCode.TOKEN_INVALID);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
             }
         }
+
     }
 
     protected abstract DataRsp<?> handle(T dataReq);
@@ -190,6 +192,5 @@ public abstract class DataHandler<T extends DataReq> implements Runnable {
             if (jedis != null) Jedis.recycleJedis(id, jedis);
         }
     }
-
 
 }

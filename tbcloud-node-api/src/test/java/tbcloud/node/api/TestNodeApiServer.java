@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.util.GsonUtil;
-import tbcloud.lib.api.util.IDUtil;
 import tbcloud.node.model.NodeConst;
 import tbcloud.node.protocol.ByteBufNodePacket;
 import tbcloud.node.protocol.DataType;
@@ -36,7 +35,9 @@ public class TestNodeApiServer {
 
     PacketCodec codec = new PacketCodecV20181130();
 
-    InetSocketAddress serverAddr = new InetSocketAddress("47.98.51.82", 9019);
+    //InetSocketAddress serverAddr = new InetSocketAddress("47.98.51.82", 9019);
+
+    InetSocketAddress serverAddr = new InetSocketAddress("127.0.0.1", 9019);
 
     private DatagramChannel ch;
 
@@ -54,7 +55,7 @@ public class TestNodeApiServer {
         packet.magic(PacketConst.M);
         packet.version(PacketConst.V_20181130);
         packet.id(id);
-        packet.token(IDUtil.genNodeToken(nodeId));
+        //packet.token(IDUtil.genNodeToken(nodeId));
 
         NodeAuth data = new NodeAuth();
         data.setNodeId(nodeId);
@@ -62,7 +63,7 @@ public class TestNodeApiServer {
 
         packet.dataFormat((byte) PacketConst.DataFormat.JSON.ordinal());
         packet.dataType(DataType.AUTH);
-        ByteBuffer dataBuf = dataCodecFactory.codec(PacketConst.DataFormat.JSON).encode(data);
+        ByteBuffer dataBuf = dataCodecFactory.codec(packet.dataType(), packet.dataFormat()).encode(data);
         packet.data(dataBuf);
 
         ByteBuffer bytes = codec.encode(packet);
@@ -80,7 +81,7 @@ public class TestNodeApiServer {
         buf.flip();
         packet = codec.decode(buf);
         LOG.info("crc32 {} {} ", packet.hash(), packet.data().limit());
-        DataRsp<NodeAuthRsp> dataRsp = dataCodecFactory.codec(PacketConst.DataFormat.JSON).<DataRsp<NodeAuthRsp>>decode(packet.data(), DataRsp.class);
+        DataRsp<NodeAuthRsp> dataRsp = dataCodecFactory.codec(packet.dataType(), packet.dataFormat()).<DataRsp<NodeAuthRsp>>decode(packet.data(), DataRsp.class);
         LOG.info("{} {} {} {}", packet.id(), packet.token(), packet.token(), GsonUtil.toJson(dataRsp));
     }
 
@@ -101,7 +102,7 @@ public class TestNodeApiServer {
 
         packet.dataFormat((byte) PacketConst.DataFormat.JSON.ordinal());
         packet.dataType(DataType.HEARTBEAT);
-        ByteBuffer dataBuf = dataCodecFactory.codec(PacketConst.DataFormat.JSON).encode(data);
+        ByteBuffer dataBuf = dataCodecFactory.codec(packet.dataType(), packet.dataFormat()).encode(data);
         packet.data(dataBuf);
 
         ByteBuffer bytes = codec.encode(packet);
@@ -119,7 +120,7 @@ public class TestNodeApiServer {
         buf.flip();
         packet = codec.decode(buf);
         LOG.info("crc32 {} {} ", packet.hash(), packet.data().limit());
-        DataRsp<HeartbeatRsp> dataRsp = dataCodecFactory.codec(PacketConst.DataFormat.JSON).<DataRsp<HeartbeatRsp>>decode(packet.data(), DataRsp.class);
+        DataRsp<HeartbeatRsp> dataRsp = dataCodecFactory.codec(packet.dataType(), packet.dataFormat()).<DataRsp<HeartbeatRsp>>decode(packet.data(), DataRsp.class);
         LOG.info("{} {} {} {}", packet.id(), packet.token(), packet.token(), GsonUtil.toJson(dataRsp));
     }
 
@@ -145,7 +146,7 @@ public class TestNodeApiServer {
 
         packet.dataFormat((byte) PacketConst.DataFormat.JSON.ordinal());
         packet.dataType(DataType.MONITOR);
-        ByteBuffer dataBuf = dataCodecFactory.codec(PacketConst.DataFormat.JSON).encode(data);
+        ByteBuffer dataBuf = dataCodecFactory.codec(packet.dataType(), packet.dataFormat()).encode(data);
         packet.data(dataBuf);
 
         ByteBuffer bytes = codec.encode(packet);
@@ -163,7 +164,7 @@ public class TestNodeApiServer {
         buf.flip();
         packet = codec.decode(buf);
         LOG.info("crc32 {} {} ", packet.hash(), packet.data().limit());
-        DataRsp<Void> dataRsp = dataCodecFactory.codec(PacketConst.DataFormat.JSON).<DataRsp<Void>>decode(packet.data(), DataRsp.class);
+        DataRsp<Void> dataRsp = dataCodecFactory.codec(packet.dataType(), packet.dataFormat()).<DataRsp<Void>>decode(packet.data(), DataRsp.class);
         LOG.info("{} {} {} {}", packet.id(), packet.token(), packet.token(), GsonUtil.toJson(dataRsp));
     }
 
@@ -186,7 +187,7 @@ public class TestNodeApiServer {
 
         packet.dataFormat((byte) PacketConst.DataFormat.JSON.ordinal());
         packet.dataType(DataType.INS_STATUS);
-        ByteBuffer dataBuf = dataCodecFactory.codec(PacketConst.DataFormat.JSON).encode(data);
+        ByteBuffer dataBuf = dataCodecFactory.codec(packet.dataType(), packet.dataFormat()).encode(data);
         packet.data(dataBuf);
 
         ByteBuffer bytes = codec.encode(packet);
@@ -204,7 +205,7 @@ public class TestNodeApiServer {
         buf.flip();
         packet = codec.decode(buf);
         LOG.info("crc32 {} {} ", packet.hash(), packet.data().limit());
-        DataRsp<Void> dataRsp = dataCodecFactory.codec(PacketConst.DataFormat.JSON).<DataRsp<Void>>decode(packet.data(), DataRsp.class);
+        DataRsp<Void> dataRsp = dataCodecFactory.codec(packet.dataType(), packet.dataFormat()).<DataRsp<Void>>decode(packet.data(), DataRsp.class);
         LOG.info("{} {} {} {}", packet.id(), packet.token(), packet.token(), GsonUtil.toJson(dataRsp));
     }
 

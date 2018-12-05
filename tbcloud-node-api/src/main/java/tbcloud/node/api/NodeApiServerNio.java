@@ -108,16 +108,17 @@ public class NodeApiServerNio implements Closeable {
 
                             IoContext context = dispatch.context(ch, req, remote);
                             if (hash != req.hash()) { // crc is diff
+                                LOG.warn("{} hash {} not equal  {}", req.id(), req.hashCode(), hash);
+
                                 DataRsp rsp = new DataRsp();
                                 rsp.setCode(ApiCode.HASH_CODE_DIFF);
 
                                 context.write(rsp);
-                                LOG.warn("{} hash {} not equal  {}", req.id(), req.hashCode(), hash);
                                 continue;
                             }
                             // dispatch
                             dispatch.dispatch(context);
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             LOG.error(e.getMessage(), e);
                         } finally {
                             crc32.reset();
