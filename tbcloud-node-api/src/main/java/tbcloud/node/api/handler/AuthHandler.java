@@ -38,6 +38,8 @@ public class AuthHandler extends DataHandler<NodeAuth> {
         int tokenExpired = tokenExpired(); // hours
         setToRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_TOKEN_ + token, nodeId, tokenExpired * ApiConst.REDIS_EXPIRED_1H);
 
+        // TODO rm old token
+
         // update node_rt TODO async
         NodeRt rt = new NodeRt();
         rt.setNodeId(nodeId);

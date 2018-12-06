@@ -69,46 +69,34 @@ public class BaseResource {
     }
 
     protected String getFromRedis(String id, String key) {
-        Jedis jedis = null;
-        try {
-            jedis = Jedis.getJedis(id);
+        try (Jedis jedis = Jedis.getJedis(id)) {
             if (jedis != null) {
                 return jedis.get(key);
             }
-        } finally {
-            if (jedis != null) Jedis.recycleJedis(id, jedis);
         }
         return null;
     }
 
     protected <T> T getFromRedis(String id, String key, Type type) {
-        Jedis jedis = null;
-        try {
-            jedis = Jedis.getJedis(id);
+        try (Jedis jedis = Jedis.getJedis(id)) {
             if (jedis != null) {
                 String json = jedis.get(key);
                 if (!StringUtil.isEmpty(json)) {
                     return GsonUtil.<T>fromJson(json, type);
                 }
             }
-        } finally {
-            if (jedis != null) Jedis.recycleJedis(id, jedis);
         }
         return null;
     }
 
     protected <T> T getFromRedis(String id, String key, Class<T> clazz) {
-        Jedis jedis = null;
-        try {
-            jedis = Jedis.getJedis(id);
+        try (Jedis jedis = Jedis.getJedis(id)) {
             if (jedis != null) {
                 String json = jedis.get(key);
                 if (!StringUtil.isEmpty(json)) {
                     return GsonUtil.<T>fromJson(json, clazz);
                 }
             }
-        } finally {
-            if (jedis != null) Jedis.recycleJedis(id, jedis);
         }
         return null;
     }
@@ -116,28 +104,20 @@ public class BaseResource {
     public void setToRedis(String id, String key, String value, Integer expiredSeconds) {
         if (value == null) return;
 
-        Jedis jedis = null;
-        try {
-            jedis = Jedis.getJedis(id);
+        try (Jedis jedis = Jedis.getJedis(id)) {
             if (jedis != null) {
                 jedis.setex(key, expiredSeconds, value);
             }
-        } finally {
-            if (jedis != null) Jedis.recycleJedis(id, jedis);
         }
     }
 
     public void deleteFromRedis(String id, String key) {
         if (StringUtil.isEmpty(key)) return;
 
-        Jedis jedis = null;
-        try {
-            jedis = Jedis.getJedis(id);
+        try (Jedis jedis = Jedis.getJedis(id)) {
             if (jedis != null) {
                 jedis.del(key);
             }
-        } finally {
-            if (jedis != null) Jedis.recycleJedis(id, jedis);
         }
     }
 

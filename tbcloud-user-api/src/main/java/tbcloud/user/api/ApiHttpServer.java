@@ -41,13 +41,13 @@ class ApiHttpServer extends Application {
         try {
             int port = Integer.parseInt(plugin.getConfig(ApiConst.HTTP_PORT, "80"));
             String host = plugin.getConfig(ApiConst.HTTP_HOST, "0.0.0.0");
-            int bossCount = Integer.parseInt(plugin.getConfig(ApiConst.HTTP_BOSS_THREADS, "-1"));
-            bossCount = bossCount < 0 ? Runtime.getRuntime().availableProcessors() * 2 : bossCount;
+            int ioCount = Integer.parseInt(plugin.getConfig(ApiConst.HTTP_IO_THREADS, "-1"));
+            ioCount = ioCount < 0 ? Runtime.getRuntime().availableProcessors() : ioCount;
             int workCount = Integer.parseInt(plugin.getConfig(ApiConst.HTTP_WORK_THREADS, "100"));
 
             LOG.info("Starting http server, listen on {}:{}", host, port);
             netty = new NettyJaxrsServer();
-            netty.setIoWorkerCount(bossCount);
+            netty.setIoWorkerCount(ioCount);
             netty.setExecutorThreadCount(workCount);
 
             ResteasyDeployment deployment = new ResteasyDeployment();

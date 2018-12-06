@@ -33,7 +33,7 @@ public class NodeApiPlugin extends PluginSender {
     }
 
     private void startNodeServer() throws IOException {
-        String ip = getConfig(ConfField.NDOE_API_IP, "0.0.0.0");
+        String ip = getConfig(ConfField.NDOE_API_HOST, "0.0.0.0");
         String port = getConfig(ConfField.NODE_API_PORT, "9019");
         InetSocketAddress addr = new InetSocketAddress(ip, Integer.parseInt(port));
         LOG.info("NodeApiServer listen on {}", addr);

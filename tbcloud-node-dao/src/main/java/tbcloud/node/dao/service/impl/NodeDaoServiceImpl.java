@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.util.GsonUtil;
+import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.dao.NodeDaoPlugin;
 import tbcloud.node.dao.service.NodeDaoService;
 import tbcloud.node.model.*;
@@ -19,6 +20,7 @@ import tbcloud.node.model.mapper.NodeInfoRtMapper;
 import tbcloud.node.model.mapper.NodeInsMapper;
 import tbcloud.node.model.mapper.NodeRtMapper;
 
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
 
@@ -346,40 +348,57 @@ public class NodeDaoServiceImpl implements NodeDaoService {
         return 0;
     }
 
-    private String getFromRedis(String id, String key) {
-        redis.clients.jedis.Jedis jedis = null;
-        try {
-            jedis = Jedis.getJedis(id);
+    protected String getFromRedis(String id, String key) {
+        try (Jedis jedis = Jedis.getJedis(id)) {
             if (jedis != null) {
                 return jedis.get(key);
             }
-        } finally {
-            if (jedis != null) Jedis.recycleJedis(id, jedis);
         }
-        return "";
+        return null;
     }
 
-    private void setToRedis(String id, String key, String value, int expiredSeconds) {
-        Jedis jedis = null;
-        try {
-            jedis = Jedis.getJedis(id);
+    protected <T> T getFromRedis(String id, String key, Type type) {
+        try (Jedis jedis = Jedis.getJedis(id)) {
+            if (jedis != null) {
+                String json = jedis.get(key);
+                if (!StringUtil.isEmpty(json)) {
+                    return GsonUtil.<T>fromJson(json, type);
+                }
+            }
+        }
+        return null;
+    }
+
+    protected <T> T getFromRedis(String id, String key, Class<T> clazz) {
+        try (Jedis jedis = Jedis.getJedis(id)) {
+            if (jedis != null) {
+                String json = jedis.get(key);
+                if (!StringUtil.isEmpty(json)) {
+                    return GsonUtil.<T>fromJson(json, clazz);
+                }
+            }
+        }
+        return null;
+    }
+
+    public void setToRedis(String id, String key, String value, Integer expiredSeconds) {
+        if (value == null) return;
+
+        try (Jedis jedis = Jedis.getJedis(id)) {
             if (jedis != null) {
                 jedis.setex(key, expiredSeconds, value);
             }
-        } finally {
-            if (jedis != null) Jedis.recycleJedis(id, jedis);
         }
     }
 
-    private void deleteFromRedis(String id, String key) {
-        redis.clients.jedis.Jedis jedis = null;
-        try {
-            jedis = Jedis.getJedis(id);
+    public void deleteFromRedis(String id, String key) {
+        if (StringUtil.isEmpty(key)) return;
+
+        try (Jedis jedis = Jedis.getJedis(id)) {
             if (jedis != null) {
                 jedis.del(key);
             }
-        } finally {
-            if (jedis != null) Jedis.recycleJedis(id, jedis);
         }
     }
+
 }

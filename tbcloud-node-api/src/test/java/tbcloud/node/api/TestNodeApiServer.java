@@ -35,9 +35,9 @@ public class TestNodeApiServer {
 
     PacketCodec codec = new PacketCodecV20181130();
 
-    //InetSocketAddress serverAddr = new InetSocketAddress("47.98.51.82", 9019);
+    InetSocketAddress serverAddr = new InetSocketAddress("47.98.51.82", 9019);
 
-    InetSocketAddress serverAddr = new InetSocketAddress("127.0.0.1", 9019);
+    //InetSocketAddress serverAddr = new InetSocketAddress("127.0.0.1", 9019);
 
     private DatagramChannel ch;
 
@@ -87,8 +87,8 @@ public class TestNodeApiServer {
 
     @Test
     public void heartbeatTest() throws IOException {
-        String nodeId = "dzh1123";
-        String token = "7feef1f36443fcb6f8c17abc";
+        String nodeId = "#A00000000000001";
+        String token = "6a9ff9ff7dd4ecb8cb498772";
         String id = UUID.randomUUID().toString();
 
         ByteBufNodePacket packet = new ByteBufNodePacket();
