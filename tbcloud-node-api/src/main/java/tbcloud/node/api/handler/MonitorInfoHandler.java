@@ -21,6 +21,7 @@ public class MonitorInfoHandler extends DataHandler<MonitorInfo> {
     protected DataRsp<Void> handle(MonitorInfo dataReq) {
         String nodeId = dataReq.getNodeId();
 
+        if (dataReq.getTakeTime() < 1) dataReq.setTakeTime(System.currentTimeMillis());
 
         // TODO async
         // insert es

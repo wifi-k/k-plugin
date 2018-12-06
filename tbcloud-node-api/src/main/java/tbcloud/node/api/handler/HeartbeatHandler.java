@@ -27,12 +27,13 @@ public class HeartbeatHandler extends DataHandler<Heartbeat> {
         String nodeId = dataReq.getNodeId();
         DataRsp<HeartbeatRsp> dataRsp = new DataRsp<>();
 
-        redis.clients.jedis.Jedis jedis = Jedis.getJedis(ApiConst.REDIS_ID_NODE);
-        String insJson = jedis.spop(ApiConst.REDIS_KEY_NODE_INS_ + nodeId);
-        if (!StringUtil.isEmpty(insJson)) {
-            HeartbeatRsp data = new HeartbeatRsp();
-            data.setIns(GsonUtil.fromJson(insJson, Ins.class));
-            dataRsp.setData(data);
+        try (redis.clients.jedis.Jedis jedis = Jedis.getJedis(ApiConst.REDIS_ID_NODE)) {
+            String insJson = jedis.spop(ApiConst.REDIS_KEY_NODE_INS_ + nodeId);
+            if (!StringUtil.isEmpty(insJson)) {
+                HeartbeatRsp data = new HeartbeatRsp();
+                data.setIns(GsonUtil.fromJson(insJson, Ins.class));
+                dataRsp.setData(data);
+            }
         }
 
         // update node_rt TODO fix
