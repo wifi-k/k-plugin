@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @Injector
 public abstract class UserJob extends AbstractJob {
 
-    static Logger LOG = LoggerFactory.getLogger(UserJob.class);
+    protected static Logger LOG = LoggerFactory.getLogger(UserJob.class);
 
     UserJobPlugin plugin;
 

@@ -34,10 +34,6 @@
             <groupId>cn.treebear</groupId>
             <artifactId>tbcloud-lib-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>cn.treebear</groupId>
-            <artifactId>tbcloud-user-model</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>io.github.dzh</groupId>

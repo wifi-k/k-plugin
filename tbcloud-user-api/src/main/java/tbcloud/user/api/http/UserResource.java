@@ -31,10 +31,11 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
+ * 用户平台
+ *
  * @author dzh
  * @date 2018-11-08 20:20
  */
-
 @Path("user")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -490,6 +491,13 @@ public class UserResource extends BaseResource {
             }
         } else {  //update
             //TODO check binded
+            Long ownUserId = nodeInfo.getUserId();
+            if (ownUserId != null && ownUserId != userInfo.getId()) {
+                r.setCode(ApiCode.USR_INVALID);
+                r.setMsg("节点已绑定");
+                return r;
+            }
+
             NodeInfo rebindNode = new NodeInfo();
             rebindNode.setNodeId(nodeId);
             rebindNode.setBindTime(System.currentTimeMillis());
@@ -614,7 +622,7 @@ public class UserResource extends BaseResource {
 
         if (nodeInfo.getIsBind() == NodeConst.IS_UNBIND) {
             r.setCode(ApiCode.DB_UPDATE_ERROR);
-            r.setMsg(nodeId + "已经绑定了!");
+            r.setMsg(nodeId + "已经解绑!");
             return r;
         }
 

@@ -6,14 +6,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 /**
- * 管理后台
+ * 共享计算
  *
  * @author dzh
  * @date 2018-11-08 20:21
  */
-@Path("admin")
+@Path("share")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class AdminResource extends BaseResource {
+public class ShareResource extends BaseResource {
 
 }

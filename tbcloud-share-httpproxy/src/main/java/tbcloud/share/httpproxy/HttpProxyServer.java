@@ -8,6 +8,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.ConfField;
@@ -31,7 +33,8 @@ public class HttpProxyServer implements Closeable {
         this.plugin = plugin;
     }
 
-    private EventLoopGroup parentGroup, childGroup;
+    private EventLoopGroup parentGroup, childGroup;//io thread
+    private EventExecutorGroup workGroup, proxyGroup;
 
     public void start() {
         try {
@@ -43,16 +46,19 @@ public class HttpProxyServer implements Closeable {
 
             parentGroup = new NioEventLoopGroup(1);
             childGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
+
+            // TODO custom
+            workGroup = new DefaultEventExecutorGroup(Runtime.getRuntime().availableProcessors() * 5);
+            proxyGroup = new DefaultEventExecutorGroup(Runtime.getRuntime().availableProcessors());
+
             ServerBootstrap b = new ServerBootstrap();
             b.group(parentGroup, childGroup).channel(NioServerSocketChannel.class)
-                    .handler(new LoggingHandler(LogLevel.WARN)).childHandler(new HttpServerInitializer());
+                    .handler(new LoggingHandler(LogLevel.WARN)).childHandler(new HttpServerInitializer(workGroup, proxyGroup));
             b.childOption(ChannelOption.SO_REUSEADDR, true).childOption(ChannelOption.SO_KEEPALIVE, true);
             //      .childOption(ChannelOption.SO_LINGER, 10).
             // .option(ChannelOption.ALLOCATOR,PooledByteBufAllocator.DEFAULT)
             ChannelFuture future = b.bind(addr).sync();
             LOG.info("Start http server successfully!");
-
-            future.channel().closeFuture().sync();
         } catch (Exception e) {
             LOG.error(e.getMessage());
             channelClosed();
@@ -67,5 +73,7 @@ public class HttpProxyServer implements Closeable {
     private void channelClosed() {
         if (parentGroup != null) parentGroup.shutdownGracefully(10, 30, TimeUnit.SECONDS);
         if (childGroup != null) childGroup.shutdownGracefully(10, 30, TimeUnit.SECONDS);
+        if (workGroup != null) workGroup.shutdownGracefully();
+        if (proxyGroup != null) proxyGroup.shutdownGracefully(10, 30, TimeUnit.SECONDS);
     }
 }

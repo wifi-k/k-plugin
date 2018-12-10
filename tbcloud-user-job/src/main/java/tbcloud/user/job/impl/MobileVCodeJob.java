@@ -7,8 +7,6 @@ import jframe.aliyun.service.SMSService;
 import jframe.core.msg.Msg;
 import jframe.core.plugin.annotation.InjectService;
 import jframe.core.plugin.annotation.Injector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.msg.MobileVCode;
 import tbcloud.lib.api.msg.MsgType;
@@ -23,8 +21,6 @@ import tbcloud.user.job.UserJob;
  */
 @Injector
 public class MobileVCodeJob extends UserJob {
-
-    static Logger LOG = LoggerFactory.getLogger(MobileVCodeJob.class);
 
     @InjectService(id = "jframe.service.aliyun.sms")
     static SMSService SmsService;
