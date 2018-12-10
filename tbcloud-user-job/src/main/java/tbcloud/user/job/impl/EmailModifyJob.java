@@ -87,12 +87,13 @@ public class EmailModifyJob extends UserJob {
 
             SingleSendMailRequest request = new SingleSendMailRequest();
             try {
-                request.setVersion("2017-06-22");
+                //request.setVersion("2017-06-22");
+                request.setVersion("2015-11-23");//hz
                 request.setAccountName(from);
                 request.setFromAlias("树熊云用户平台");
                 request.setAddressType(1);
                 request.setTagName("userEmailModify");
-                request.setReplyToAddress(true);
+                request.setReplyToAddress(false);
                 request.setToAddress(to);
                 //可以给多个收件人发送邮件，收件人之间用逗号分开，批量发信建议使用BatchSendMailRequest方式
                 //request.setToAddress("邮箱1,邮箱2");
