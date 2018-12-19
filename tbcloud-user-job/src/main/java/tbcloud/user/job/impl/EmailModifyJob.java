@@ -112,8 +112,8 @@ public class EmailModifyJob extends UserJob {
 
     private String emailContent(String name, String link) {
         Map<String, Object> root = new HashMap<>();
-        root.put("name", name);
-        root.put("link", link);
+        root.put("tpl.name", name);
+        root.put("tpl.link", link);
         try {
             Template temp = cfg.getTemplate("emailverify.ftlh");
             ByteArrayOutputStream baos = new ByteArrayOutputStream(256);
