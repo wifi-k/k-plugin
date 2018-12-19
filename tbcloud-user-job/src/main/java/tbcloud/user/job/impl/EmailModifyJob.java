@@ -116,7 +116,7 @@ public class EmailModifyJob extends UserJob {
         root.put("tpl.link", link);
         try {
             Template temp = cfg.getTemplate("emailverify.ftlh");
-            ByteArrayOutputStream baos = new ByteArrayOutputStream(256);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
             Writer out = new OutputStreamWriter(baos);
             temp.process(root, out);
             return new String(baos.toString(ApiConst.UTF8));
@@ -125,7 +125,7 @@ public class EmailModifyJob extends UserJob {
         }
 
 
-        return "尊敬的name， \n 电子邮箱确认请点击链接并输入登录密码确认\n <a href=\"" + link + "\"/>";
+        return "<h2>确认您的电子邮件地址</h2><p>尊敬的" + name + "，</p><p>电子邮箱确认请点击链接并输入登录密码确认</p> <p><a href=\"" + link + "\">点击此处激活邮箱</a></p><p>此致 树熊云</p>";
     }
 
     @Override
