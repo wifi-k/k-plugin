@@ -14,6 +14,10 @@
         <module>tbcloud-user-job</module>
         <module>tbcloud-share-httpproxy</module>
         <module>tbcloud-node-httpproxy</module>
+        <module>tbcloud-httpproxy-dao</module>
+        <module>tbcloud-timer</module>
+        <module>tbcloud-node-job</module>
+        <module>tbcloud-common-dao</module>
     </modules>
 
     <properties>
@@ -78,6 +82,16 @@
                 </configuration>
             </plugin>
         </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <dependencyManagement>
@@ -133,6 +147,12 @@
                 <version>${jframe.version}</version>
                 <classifier>plugin</classifier>
             </dependency>
+            <dependency>
+                <groupId>io.github.dzh</groupId>
+                <artifactId>jframe-zk</artifactId>
+                <version>${jframe.version}</version>
+                <classifier>plugin</classifier>
+            </dependency>
 
             <dependency>
                 <groupId>com.google.code.gson</groupId>
@@ -166,6 +186,21 @@
                 <artifactId>tbcloud-node-protocol</artifactId>
                 <version>${tbcloud.version}</version>
             </dependency>
+            <dependency>
+                <groupId>cn.treebear</groupId>
+                <artifactId>tbcloud-httpproxy-model</artifactId>
+                <version>${tbcloud.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.treebear</groupId>
+                <artifactId>tbcloud-common-model</artifactId>
+                <version>${tbcloud.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.treebear</groupId>
+                <artifactId>tbcloud-httpproxy-protocol</artifactId>
+                <version>${tbcloud.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>cn.treebear</groupId>
@@ -180,6 +215,12 @@
                 <classifier>plugin</classifier>
             </dependency>
 
+            <dependency>
+                <groupId>cn.treebear</groupId>
+                <artifactId>tbcloud-httpproxy-dao</artifactId>
+                <version>${tbcloud.version}</version>
+                <classifier>plugin</classifier>
+            </dependency>
             <dependency>
                 <groupId>cn.treebear</groupId>
                 <artifactId>tbcloud-share-httpproxy</artifactId>
@@ -205,7 +246,26 @@
                 <version>${tbcloud.version}</version>
                 <classifier>plugin</classifier>
             </dependency>
+            <dependency>
+                <groupId>cn.treebear</groupId>
+                <artifactId>tbcloud-node-job</artifactId>
+                <version>${tbcloud.version}</version>
+                <classifier>plugin</classifier>
+            </dependency>
 
+            <dependency>
+                <groupId>cn.treebear</groupId>
+                <artifactId>tbcloud-timer</artifactId>
+                <version>${tbcloud.version}</version>
+                <classifier>plugin</classifier>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.treebear</groupId>
+                <artifactId>tbcloud-common-dao</artifactId>
+                <version>${tbcloud.version}</version>
+                <classifier>plugin</classifier>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>

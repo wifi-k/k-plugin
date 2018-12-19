@@ -11,5 +11,49 @@
 
     <artifactId>tbcloud-node-httpproxy</artifactId>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <classifier>plugin</classifier>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
+    <dependencies>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-lib-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-httpproxy-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-node-model</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-httpproxy-dao</artifactId>
+            <classifier>plugin</classifier>
+        </dependency>
+        <dependency>
+            <groupId>io.github.dzh</groupId>
+            <artifactId>jframe-jedis</artifactId>
+            <classifier>plugin</classifier>
+        </dependency>
+
+    </dependencies>
 </project>

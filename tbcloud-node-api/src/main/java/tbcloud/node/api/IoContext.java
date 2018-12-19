@@ -8,6 +8,7 @@ import tbcloud.node.protocol.codec.DataCodec;
 import tbcloud.node.protocol.data.DataRsp;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.DatagramChannel;
 
@@ -22,13 +23,13 @@ public class IoContext {
     private IoDispatch dispatch;
     private DatagramChannel ch;
     private ByteBufNodePacket req;
-    private SocketAddress remote;
+    private InetSocketAddress remote;
 
     public IoContext(IoDispatch dispatch, DatagramChannel chanenl, ByteBufNodePacket req, SocketAddress remote) {
         this.dispatch = dispatch;
         this.ch = chanenl;
         this.req = req;
-        this.remote = remote;
+        this.remote = (InetSocketAddress) remote;
     }
 
     public DatagramChannel channel() {
@@ -39,7 +40,7 @@ public class IoContext {
         return req;
     }
 
-    public SocketAddress remote() {
+    public InetSocketAddress remote() {
         return remote;
     }
 

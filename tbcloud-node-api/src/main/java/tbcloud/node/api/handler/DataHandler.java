@@ -7,6 +7,7 @@ import jframe.jedis.service.JedisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
+import tbcloud.common.dao.service.CommonDaoService;
 import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.util.GsonUtil;
@@ -39,6 +40,9 @@ public abstract class DataHandler<T extends DataReq> implements Runnable {
 
     @InjectService(id = "tbcloud.service.node.dao")
     static NodeDaoService NodeDao;
+
+    @InjectService(id = "tbcloud.service.common.dao")
+    static CommonDaoService CommonDao;
 
     private IoContext context;
 

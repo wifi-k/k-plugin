@@ -9,8 +9,8 @@ import tbcloud.node.model.NodeRt;
 import tbcloud.node.model.NodeRtExample;
 import tbcloud.node.protocol.data.DataRsp;
 import tbcloud.node.protocol.data.Heartbeat;
+import tbcloud.node.protocol.data.ins.Ins;
 import tbcloud.node.protocol.data.rsp.HeartbeatRsp;
-import tbcloud.node.protocol.data.rsp.Ins;
 
 /**
  * @author dzh
@@ -38,7 +38,7 @@ public class HeartbeatHandler extends DataHandler<Heartbeat> {
 
         // update node_rt TODO fix
         NodeRt nodeRt = new NodeRt();
-        nodeRt.setOnlineTime(System.currentTimeMillis());
+        nodeRt.setOnlineTime(System.currentTimeMillis());  //TODO offline
         nodeRt.setStatus(NodeConst.STATUS_NORMAIL);
 
         NodeRtExample example = new NodeRtExample();

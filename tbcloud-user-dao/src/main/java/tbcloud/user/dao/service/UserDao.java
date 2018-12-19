@@ -3,6 +3,7 @@ package tbcloud.user.dao.service;
 import tbcloud.user.model.UserInfo;
 import tbcloud.user.model.UserInfoExample;
 import tbcloud.user.model.UserOnline;
+import tbcloud.user.model.UserOnlineExample;
 
 import java.util.List;
 
@@ -26,6 +27,10 @@ public interface UserDao {
     int insertUserOnline(UserOnline userOnline);
 
     int updateUserOnline(UserOnline userOnline);
+
+    List<UserOnline> selectUserOnline(UserOnlineExample example);
+
+    int updateUserOnlineSelective(UserOnline userOnline, UserOnlineExample example);
 
 
 }

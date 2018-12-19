@@ -1,5 +1,6 @@
 package tbcloud.node.api.handler;
 
+import tbcloud.common.model.IpInfo;
 import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.ConfField;
@@ -59,8 +60,20 @@ public class AuthHandler extends DataHandler<NodeAuth> {
         info.setDisk(dataReq.getDisk());
         info.setUpstream(dataReq.getUpstream());
         info.setDownstream(dataReq.getDownstream());
+        String ip = context().remote().getAddress().getHostAddress();
+        if (!ip.equals(nodeInfo.getIp()))
+            nodeInfo.setIp(ip);
         NodeDao.updateNodeInfo(info);
 
+        // insert ip_info TODO aysnc
+        if (!ip.equals(nodeInfo.getIp())) {
+            IpInfo ipInfo = CommonDao.selectIpInfo(ip);
+            if (ipInfo == null) {
+                ipInfo = new IpInfo();
+                ipInfo.setIp(ip);
+                CommonDao.insertIpInfo(ipInfo);
+            }
+        }
 
         dataRsp.setCode(ApiCode.SUCC);
         NodeAuthRsp data = new NodeAuthRsp();

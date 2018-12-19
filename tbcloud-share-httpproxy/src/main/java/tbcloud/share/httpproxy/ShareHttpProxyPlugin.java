@@ -7,7 +7,8 @@ import jframe.core.plugin.annotation.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.util.Calendar;
 
 /**
  * @author dzh
@@ -20,20 +21,15 @@ public class ShareHttpProxyPlugin extends PluginSenderRecver {
 
     private HttpProxyServer httpProxyServer;
 
+    private int serverId; //TODO global unique id redis or zk
+
     public void start() throws PluginException {
         super.start();
 
-        try {
-            startHttpProxyServer();
-        } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
-        }
-    }
+        serverId = Math.abs(ManagementFactory.getRuntimeMXBean().getName().hashCode() + Calendar.getInstance().hashCode());
 
-    private void startHttpProxyServer() throws IOException {
         httpProxyServer = new HttpProxyServer(this);
         httpProxyServer.start();
-
     }
 
     public void stop() throws PluginException {
@@ -42,10 +38,14 @@ public class ShareHttpProxyPlugin extends PluginSenderRecver {
         if (httpProxyServer != null) {
             try {
                 httpProxyServer.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
             }
         }
+    }
+
+    public int serverId() {
+        return serverId;
     }
 
     @Override

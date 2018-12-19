@@ -6,6 +6,7 @@ import jframe.core.plugin.PluginSenderRecver;
 import jframe.core.plugin.annotation.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tbcloud.lib.api.msg.MsgType;
 import tbcloud.user.job.impl.EmailModifyJob;
 import tbcloud.user.job.impl.MobileVCodeJob;
 import tbcloud.user.job.impl.UserLoginJob;
@@ -17,7 +18,8 @@ import java.util.Map;
  * @author dzh
  * @date 2018-11-19 16:32
  */
-@Message(isSender = true, isRecver = true, msgTypes = {})
+@Message(isSender = true, isRecver = true, msgTypes = {MsgType.USER_LOGIN, MsgType.EMAIL_MODIFY, MsgType.MOBILE_VCODE,
+        MsgType.NODE_JOIN_SHARE, MsgType.NODE_QUIT_SHARE})
 public class UserJobPlugin extends PluginSenderRecver {
 
     static Logger LOG = LoggerFactory.getLogger(UserJobPlugin.class);
@@ -75,12 +77,12 @@ public class UserJobPlugin extends PluginSenderRecver {
     }
 
     private void stopJobs() {
-        for (UserJob j : jobs.values()) {
+        jobs.forEach((type, job) -> {
             try {
-                j.close();
+                job.close();
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
             }
-        }
+        });
     }
 }

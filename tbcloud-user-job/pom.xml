@@ -27,15 +27,15 @@
     <dependencies>
         <dependency>
             <groupId>cn.treebear</groupId>
-            <artifactId>tbcloud-user-model</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>cn.treebear</groupId>
             <artifactId>tbcloud-lib-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-node-protocol</artifactId>
         </dependency>
 
         <dependency>
@@ -48,11 +48,18 @@
             <artifactId>jframe-aliyun</artifactId>
             <classifier>plugin</classifier>
         </dependency>
+
         <dependency>
             <groupId>cn.treebear</groupId>
             <artifactId>tbcloud-user-dao</artifactId>
             <classifier>plugin</classifier>
         </dependency>
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-node-dao</artifactId>
+            <classifier>plugin</classifier>
+        </dependency>
+
 
     </dependencies>
 

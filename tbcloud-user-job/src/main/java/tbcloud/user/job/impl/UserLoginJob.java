@@ -45,7 +45,7 @@ public class UserLoginJob extends UserJob {
         UserOnline userOnline = new UserOnline();
         userOnline.setUserId(userLogin.getUserId());
         userOnline.setStatus(status);
-        if (status == ApiConst.USER_ONLINE) {
+        if (status == ApiConst.IS_ONLINE) {
             userOnline.setOnlineTime(userLogin.getDate());
             userOnline.setToken(userLogin.getToken());
         } else {

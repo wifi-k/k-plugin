@@ -233,6 +233,35 @@ public class UserDaoServiceImpl implements UserDaoService {
     }
 
     @Override
+    public List<UserOnline> selectUserOnline(UserOnlineExample example) {
+        List<UserOnline> userOnlineList = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                userOnlineList = session.getMapper(UserOnlineMapper.class).selectByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return userOnlineList;
+    }
+
+    @Override
+    public int updateUserOnlineSelective(UserOnline userOnline, UserOnlineExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                userOnline.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(UserOnlineMapper.class).updateByExampleSelective(userOnline, example);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
     public List<UserShareRecord> selectUserShareRecord(UserShareRecordExample example) {
         List<UserShareRecord> shareRecordList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {

@@ -1,18 +1,24 @@
 package tbcloud.share.httpproxy;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpContentCompressor;
+import io.netty.handler.codec.http.HttpContentDecompressor;
+import io.netty.handler.codec.http.HttpRequestDecoder;
+import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.ConfField;
+import tbcloud.share.httpproxy.handler.ApikeyHandler;
+import tbcloud.share.httpproxy.handler.HttpProxyHandler;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -45,11 +51,11 @@ public class HttpProxyServer implements Closeable {
             LOG.info("Starting httpproxy server, listen on {}", addr);
 
             parentGroup = new NioEventLoopGroup(1);
-            childGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
+            childGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() + 1);
 
             // TODO custom
-            workGroup = new DefaultEventExecutorGroup(Runtime.getRuntime().availableProcessors() * 5);
-            proxyGroup = new DefaultEventExecutorGroup(Runtime.getRuntime().availableProcessors());
+            workGroup = new DefaultEventExecutorGroup(Runtime.getRuntime().availableProcessors() * 10);
+            proxyGroup = new DefaultEventExecutorGroup(Runtime.getRuntime().availableProcessors() + 1);
 
             ServerBootstrap b = new ServerBootstrap();
             b.group(parentGroup, childGroup).channel(NioServerSocketChannel.class)
@@ -58,7 +64,7 @@ public class HttpProxyServer implements Closeable {
             //      .childOption(ChannelOption.SO_LINGER, 10).
             // .option(ChannelOption.ALLOCATOR,PooledByteBufAllocator.DEFAULT)
             ChannelFuture future = b.bind(addr).sync();
-            LOG.info("Start http server successfully!");
+            LOG.info("Start httpproxy server successfully!");
         } catch (Exception e) {
             LOG.error(e.getMessage());
             channelClosed();
@@ -77,3 +83,30 @@ public class HttpProxyServer implements Closeable {
         if (proxyGroup != null) proxyGroup.shutdownGracefully(10, 30, TimeUnit.SECONDS);
     }
 }
+
+class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
+
+    private EventExecutorGroup workGroup;
+    private EventExecutorGroup proxyGroup;
+
+    public HttpServerInitializer(EventExecutorGroup workGroup, EventExecutorGroup proxyGroup) {
+        this.workGroup = workGroup;
+        this.proxyGroup = proxyGroup;
+    }
+
+    @Override
+    protected void initChannel(SocketChannel ch) throws Exception {
+        ChannelPipeline p = ch.pipeline();
+
+        //TODO
+        p.addLast(new ReadTimeoutHandler(30));
+        p.addLast(new HttpResponseEncoder());
+        p.addLast(new HttpContentCompressor());
+        p.addLast(new HttpRequestDecoder(4096, 8192, 8192, true));
+        p.addLast(new HttpContentDecompressor());
+        p.addLast(workGroup, new ApikeyHandler());
+        p.addLast(proxyGroup, new HttpProxyHandler());
+    }
+}
+
+

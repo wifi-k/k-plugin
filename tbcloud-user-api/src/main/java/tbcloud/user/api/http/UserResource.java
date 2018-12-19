@@ -14,6 +14,7 @@ import tbcloud.lib.api.msg.UserLogin;
 import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.model.*;
+import tbcloud.node.model.ext.NodeInfoRt;
 import tbcloud.user.api.http.req.*;
 import tbcloud.user.api.http.rsp.ImgCodeRsp;
 import tbcloud.user.api.http.rsp.PageRsp;
@@ -196,7 +197,7 @@ public class UserResource extends BaseResource {
         UserLogin msg = new UserLogin();
         msg.setUserId(userInfo.getId());
         msg.setDate(System.currentTimeMillis());
-        msg.setStatus(ApiConst.USER_ONLINE);
+        msg.setStatus(ApiConst.IS_ONLINE);
         msg.setToken(token);
         Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.USER_LOGIN).setValue(msg));
 
@@ -742,9 +743,10 @@ public class UserResource extends BaseResource {
 
         NodeInfo shareNode = new NodeInfo();
         shareNode.setNodeId(nodeId);
+        shareNode.setUserId(userInfo.getId());
         shareNode.setIsShare(NodeConst.IS_SHARE);
         shareNode.setShareTime(System.currentTimeMillis());
-        NodeDao.updateNodeInfo(shareNode);
+        Plugin.send(new PluginMsg<NodeInfo>().setType(MsgType.NODE_JOIN_SHARE).setValue(shareNode));
 
         return r;
     }
@@ -789,10 +791,11 @@ public class UserResource extends BaseResource {
         }
 
         NodeInfo shareNode = new NodeInfo();
+        shareNode.setUserId(userInfo.getId());
         shareNode.setNodeId(nodeId);
         shareNode.setIsShare(NodeConst.IS_UNSHARE);
         shareNode.setUnshareTime(System.currentTimeMillis());
-        NodeDao.updateNodeInfo(shareNode);
+        Plugin.send(new PluginMsg<NodeInfo>().setType(MsgType.NODE_QUIT_SHARE).setValue(shareNode));
         return r;
     }
 
@@ -818,7 +821,7 @@ public class UserResource extends BaseResource {
         UserLogin msg = new UserLogin();
         msg.setUserId(userInfo.getId());
         msg.setDate(System.currentTimeMillis());
-        msg.setStatus(ApiConst.USER_OFFLINE);
+        msg.setStatus(ApiConst.IS_OFFLINE);
         Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.USER_LOGIN).setValue(msg));
 
         return r;

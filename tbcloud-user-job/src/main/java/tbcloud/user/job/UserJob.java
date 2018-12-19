@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.util.GsonUtil;
+import tbcloud.node.dao.service.NodeDaoService;
 import tbcloud.user.dao.service.UserDaoService;
 
 import java.util.Optional;
@@ -39,6 +40,9 @@ public abstract class UserJob extends AbstractJob {
     @InjectService(id = "tbcloud.service.user.dao")
     protected static UserDaoService UserDao;
 
+    @InjectService(id = "tbcloud.service.node.dao")
+    protected static NodeDaoService NodeDao;
+
 
     public UserJob() {
 
@@ -60,13 +64,13 @@ public abstract class UserJob extends AbstractJob {
         // TODO rejected handle
         // TODO threadpool is too simple
         threads = new ThreadPoolExecutor(1, threadSize(), 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(1000));
-        LOG.info("start job msgType-{}", msgType());
+        LOG.info("start impl msgType-{}", msgType());
     }
 
     protected int threadSize() {
         int defThreads = Runtime.getRuntime().availableProcessors();
         try {
-            String jobThreadSize = Optional.ofNullable(plugin().getConfig(id() + ".job.threadpool.size")).orElse(
+            String jobThreadSize = Optional.ofNullable(plugin().getConfig(id() + ".impl.threadpool.size")).orElse(
                     plugin().getConfig(ApiConst.JOB_THREADPOOL_SIZE, String.valueOf(defThreads))
             );
             int th = Integer.parseInt(jobThreadSize);

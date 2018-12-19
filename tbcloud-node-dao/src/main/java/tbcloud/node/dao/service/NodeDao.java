@@ -1,6 +1,8 @@
 package tbcloud.node.dao.service;
 
 import tbcloud.node.model.*;
+import tbcloud.node.model.ext.NodeInfoRt;
+import tbcloud.node.model.ext.NodeInfoRtExample;
 
 import java.util.List;
 
@@ -9,6 +11,14 @@ import java.util.List;
  * @date 2018-11-12 17:16
  */
 public interface NodeDao {
+
+    NodeApp selectNodeApp(long id);
+
+    int insertNodeApp(NodeApp nodeApp);
+
+    int updateNodeApp(NodeApp nodeApp);
+
+    int updateNodeAppSelective(NodeApp nodeApp, NodeAppExample example);
 
     int insertNodeInfo(NodeInfo nodeInfo);
 
