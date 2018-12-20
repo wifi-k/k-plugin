@@ -10,9 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.common.dao.CommonDaoPlugin;
 import tbcloud.common.dao.service.CommonDaoService;
-import tbcloud.common.model.IpInfo;
-import tbcloud.common.model.IpInfoExample;
+import tbcloud.common.model.*;
+import tbcloud.common.model.mapper.AreaMapper;
+import tbcloud.common.model.mapper.CityMapper;
 import tbcloud.common.model.mapper.IpInfoMapper;
+import tbcloud.common.model.mapper.ProvinceMapper;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.util.GsonUtil;
 
@@ -100,5 +102,114 @@ public class CommonDaoServiceImpl implements CommonDaoService {
             }
         }
         return 0;
+    }
+
+    @Override
+    public List<Province> selectProvince(ProvinceExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                return session.getMapper(ProvinceMapper.class).selectByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<City> selectCity(CityExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                return session.getMapper(CityMapper.class).selectByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<Area> selectArea(AreaExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                return session.getMapper(AreaMapper.class).selectByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public long countProvince(ProvinceExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                return session.getMapper(ProvinceMapper.class).countByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public long countCity(CityExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                return session.getMapper(CityMapper.class).countByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public long countArea(AreaExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                return session.getMapper(AreaMapper.class).countByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public Province selectProvince(String provinceId) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                return session.getMapper(ProvinceMapper.class).selectByPrimaryKey(provinceId);
+                // setProvinceToRedis(province);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public City selectCity(String cityId) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                return session.getMapper(CityMapper.class).selectByPrimaryKey(cityId);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Area selectArea(String areaId) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                return session.getMapper(AreaMapper.class).selectByPrimaryKey(areaId);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return null;
     }
 }
