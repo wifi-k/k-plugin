@@ -437,7 +437,8 @@ public class UserResource extends BaseResource {
         }
 
         // TODO 最多允许输入3次
-        if (!passwd.equalsIgnoreCase(userInfo.getPasswd())) {
+        passwd = StringUtil.MD5Encode(passwd + ApiConst.USER_PASSWD_SALT_1);
+        if (!passwd.equals(userInfo.getPasswd())) {
             r.setCode(ApiCode.USR_INVALID);
             r.setMsg("请输入正确的用户密码");
             return r;
