@@ -1,4 +1,4 @@
-package tbcloud.timer.impl;
+package tbcloud.timer.mutex;
 
 import tbcloud.common.model.IpInfo;
 import tbcloud.common.model.IpInfoExample;

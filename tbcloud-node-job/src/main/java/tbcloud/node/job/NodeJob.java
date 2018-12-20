@@ -60,13 +60,13 @@ public abstract class NodeJob extends AbstractJob {
         // TODO rejected handle
         // TODO threadpool is too simple
         threads = new ThreadPoolExecutor(1, threadSize(), 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(1000));
-        LOG.info("start impl msgType-{}", msgType());
+        LOG.info("start mutex msgType-{}", msgType());
     }
 
     protected int threadSize() {
         int defThreads = Runtime.getRuntime().availableProcessors();
         try {
-            String jobThreadSize = Optional.ofNullable(plugin().getConfig(id() + ".impl.threadpool.size")).orElse(
+            String jobThreadSize = Optional.ofNullable(plugin().getConfig(id() + ".mutex.threadpool.size")).orElse(
                     plugin().getConfig(ApiConst.JOB_THREADPOOL_SIZE, String.valueOf(defThreads))
             );
             int th = Integer.parseInt(jobThreadSize);

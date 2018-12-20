@@ -1,4 +1,4 @@
-package tbcloud.timer.impl;
+package tbcloud.timer.mutex;
 
 import jframe.core.plugin.annotation.InjectPlugin;
 import jframe.core.plugin.annotation.InjectService;
@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import tbcloud.common.dao.service.CommonDaoService;
+import tbcloud.httpproxy.dao.service.HttpProxyDaoService;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.StringUtil;
@@ -43,7 +44,7 @@ public abstract class MutexTimer implements AutoCloseable {
     static TimerPlugin plugin;
 
     @InjectService(id = "jframe.service.jedis")
-    protected static JedisService Jedis;
+    static JedisService Jedis;
 
     @InjectService(id = "jframe.service.zk.curator")
     static CuratorService Curator;
@@ -56,6 +57,9 @@ public abstract class MutexTimer implements AutoCloseable {
 
     @InjectService(id = "tbcloud.service.common.dao")
     static CommonDaoService CommonDao;
+
+    @InjectService(id = "tbcloud.service.httpproxy.dao")
+    static HttpProxyDaoService HttpProxyDao;
 
     public void start() {
         closed = false;

@@ -59,6 +59,11 @@
             <artifactId>tbcloud-common-dao</artifactId>
             <classifier>plugin</classifier>
         </dependency>
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-httpproxy-dao</artifactId>
+            <classifier>plugin</classifier>
+        </dependency>
 
     </dependencies>
 

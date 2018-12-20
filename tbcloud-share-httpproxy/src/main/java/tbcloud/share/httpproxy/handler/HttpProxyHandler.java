@@ -93,7 +93,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
             if (online.getStatus() == ApiConst.IS_ONLINE) return online;
         }
         // 2.`hold`策略时，优先路由到上一次的路由器
-        if (ApiConst.HTTPPROXY_POLICY_HOLD.equals(policy) && !StringUtil.isEmpty(this.nodeId)) {
+        if (ApiConst.HTTPPROXY_POLICY_HOLD.equals(policy) && !StringUtil.isEmpty(this.nodeId)) { // TODO redis
             online = HttpProxyDao.selectHttpProxyOnline(this.nodeId);
             if (online.getStatus() == ApiConst.IS_ONLINE) return online;
         }
