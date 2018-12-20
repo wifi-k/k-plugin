@@ -22,6 +22,7 @@ import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.Result;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.StringUtil;
+import tbcloud.node.select.service.NodeSelectService;
 import tbcloud.share.httpproxy.ShareHttpProxyPlugin;
 import tbcloud.user.dao.service.UserDaoService;
 
@@ -48,6 +49,9 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
 
     @InjectService(id = "tbcloud.service.httpproxy.dao")
     static HttpProxyDaoService HttpProxyDao;
+
+    @InjectService(id = "tbcloud.service.node.select")
+    static NodeSelectService NodeSelector;
 
     public static final void writeError(ChannelHandlerContext ctx, boolean keepAlive, String cookieString, Result<?> r) {
         String json = GsonUtil.toJson(r);

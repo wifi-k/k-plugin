@@ -1,6 +1,7 @@
 package tbcloud.httpproxy.dao.service;
 
 import tbcloud.httpproxy.model.HttpProxyOnline;
+import tbcloud.httpproxy.model.HttpProxyOnlineExample;
 import tbcloud.httpproxy.model.HttpProxyRecord;
 import tbcloud.httpproxy.model.HttpProxyRecordExample;
 
@@ -26,6 +27,8 @@ public interface HttpProxyDao {
     HttpProxyOnline selectHttpProxyOnline(String nodeId);
 
     int updateHttpProxyOnline(HttpProxyOnline httpProxyOnline);
+
+    List<HttpProxyOnline> selectHttpProxyOnline(HttpProxyOnlineExample example);
 
 
 }

@@ -64,13 +64,13 @@ public abstract class UserJob extends AbstractJob {
         // TODO rejected handle
         // TODO threadpool is too simple
         threads = new ThreadPoolExecutor(1, threadSize(), 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(1000));
-        LOG.info("start mutex msgType-{}", msgType());
+        LOG.info("start job msgType-{}", msgType());
     }
 
     protected int threadSize() {
         int defThreads = Runtime.getRuntime().availableProcessors();
         try {
-            String jobThreadSize = Optional.ofNullable(plugin().getConfig(id() + ".mutex.threadpool.size")).orElse(
+            String jobThreadSize = Optional.ofNullable(plugin().getConfig(id() + ".job.threadpool.size")).orElse(
                     plugin().getConfig(ApiConst.JOB_THREADPOOL_SIZE, String.valueOf(defThreads))
             );
             int th = Integer.parseInt(jobThreadSize);
@@ -113,6 +113,7 @@ public abstract class UserJob extends AbstractJob {
         } catch (InterruptedException e) {
             LOG.warn(e.getMessage(), e);
         }
+        LOG.info("close job msgType-{}", msgType());
     }
 
     protected void catchException(Exception e, Msg<?> msg) {

@@ -18,6 +18,7 @@
         <module>tbcloud-timer</module>
         <module>tbcloud-node-job</module>
         <module>tbcloud-common-dao</module>
+        <module>tbcloud-node-select</module>
     </modules>
 
     <properties>
@@ -249,6 +250,12 @@
             <dependency>
                 <groupId>cn.treebear</groupId>
                 <artifactId>tbcloud-node-job</artifactId>
+                <version>${tbcloud.version}</version>
+                <classifier>plugin</classifier>
+            </dependency>
+            <dependency>
+                <groupId>cn.treebear</groupId>
+                <artifactId>tbcloud-node-select</artifactId>
                 <version>${tbcloud.version}</version>
                 <classifier>plugin</classifier>
             </dependency>

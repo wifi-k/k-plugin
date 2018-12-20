@@ -5,6 +5,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.ReadTimeoutException;
+import jframe.core.msg.PluginMsg;
 import jframe.core.plugin.annotation.InjectPlugin;
 import jframe.core.plugin.annotation.InjectService;
 import jframe.core.plugin.annotation.Injector;
@@ -20,6 +21,7 @@ import tbcloud.httpproxy.protocol.codec.HttpProxyDataCodecFactory;
 import tbcloud.httpproxy.protocol.data.*;
 import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
+import tbcloud.lib.api.msg.MsgType;
 import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.httpproxy.NodeHttpProxyPlugin;
@@ -121,12 +123,14 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
         return ack;
     }
 
-    private void updateOffline(String nodeId) { // TODO async
+    private void updateOffline(String nodeId) {
         HttpProxyOnline offline = new HttpProxyOnline();
         offline.setNodeId(nodeId);
         offline.setOfflineTime(System.currentTimeMillis());
         offline.setStatus(ApiConst.IS_OFFLINE);
-        HttpProxyDao.updateHttpProxyOnline(offline);
+
+        Plugin.send(new PluginMsg<HttpProxyOnline>().setType(MsgType.NODE_QUIT_HTTPPROXY).setValue(offline));
+        // HttpProxyDao.updateHttpProxyOnline(offline);
     }
 
     private DataAck doProxyResponse(ByteBufHttpProxy msg) {
@@ -182,7 +186,7 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
             return ack;
         }
 
-        // TODO async
+        // update online
         HttpProxyOnline online = new HttpProxyOnline();
         online.setNodeId(nodeId);
         online.setOnlineTime(System.currentTimeMillis());
@@ -194,12 +198,14 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
         online.setServerPort(Plugin.getHttpServer().getPort());
 
         // httpproxy_online
-        HttpProxyOnline oldOnline = HttpProxyDao.selectHttpProxyOnline(nodeId);
-        if (oldOnline == null) {
-            HttpProxyDao.insertHttpProxyOnline(online);
-        } else {
-            HttpProxyDao.updateHttpProxyOnline(online);
-        }
+//        HttpProxyOnline oldOnline = HttpProxyDao.selectHttpProxyOnline(nodeId);
+//        if (oldOnline == null) {
+//            HttpProxyDao.insertHttpProxyOnline(online);
+//        } else {
+//            HttpProxyDao.updateHttpProxyOnline(online);
+//        }
+        // async
+        Plugin.send(new PluginMsg<HttpProxyOnline>().setType(MsgType.NODE_JOIN_HTTPPROXY).setValue(online));
 
         DataAck ack = new DataAck();
         ack.setCode(ApiCode.SUCC);

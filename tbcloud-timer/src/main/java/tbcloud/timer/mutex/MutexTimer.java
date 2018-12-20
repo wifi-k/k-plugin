@@ -200,6 +200,17 @@ public abstract class MutexTimer implements AutoCloseable {
         }
     }
 
+    public void saddToRedis(String id, String key, String... value) {
+        if (value == null) return;
+
+        try (Jedis jedis = Jedis.getJedis(id)) {
+            if (jedis != null) {
+                jedis.sadd(key, value);
+            }
+        }
+        return;
+    }
+
     public void deleteFromRedis(String id, String key) {
         if (StringUtil.isEmpty(key)) return;
 

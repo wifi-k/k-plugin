@@ -4,10 +4,7 @@ import jframe.core.plugin.DefPlugin;
 import jframe.core.plugin.PluginException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tbcloud.timer.mutex.IpInfoFind;
-import tbcloud.timer.mutex.MutexTimer;
-import tbcloud.timer.mutex.NodeInsFailed;
-import tbcloud.timer.mutex.NodeInsRetry;
+import tbcloud.timer.mutex.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -35,6 +32,7 @@ public class TimerPlugin extends DefPlugin {
         startTimer(NodeInsRetry.class);
         //startTimer(NodeOffline.class);
         //startTimer(UserOffline.class);
+        startTimer(HttpProxyOnlineAdd.class);
     }
 
     private void startTimer(Class<? extends MutexTimer> clazz) {

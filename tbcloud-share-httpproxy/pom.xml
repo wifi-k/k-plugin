@@ -40,6 +40,7 @@
             <artifactId>jframe-jedis</artifactId>
             <classifier>plugin</classifier>
         </dependency>
+
         <dependency>
             <groupId>cn.treebear</groupId>
             <artifactId>tbcloud-user-dao</artifactId>
@@ -50,6 +51,13 @@
             <artifactId>tbcloud-httpproxy-dao</artifactId>
             <classifier>plugin</classifier>
         </dependency>
+
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-node-select</artifactId>
+            <classifier>plugin</classifier>
+        </dependency>
+
     </dependencies>
 
 

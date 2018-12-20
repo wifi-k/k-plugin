@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import tbcloud.httpproxy.dao.HttpProxyDaoPlugin;
 import tbcloud.httpproxy.dao.service.HttpProxyDaoService;
 import tbcloud.httpproxy.model.HttpProxyOnline;
+import tbcloud.httpproxy.model.HttpProxyOnlineExample;
 import tbcloud.httpproxy.model.HttpProxyRecord;
 import tbcloud.httpproxy.model.HttpProxyRecordExample;
 import tbcloud.httpproxy.model.mapper.HttpProxyOnlineMapper;
@@ -154,5 +155,18 @@ public class HttpProxyDaoServiceImpl implements HttpProxyDaoService {
             }
         }
         return 0;
+    }
+
+    @Override
+    public List<HttpProxyOnline> selectHttpProxyOnline(HttpProxyOnlineExample example) {
+        List<HttpProxyOnline> httpProxyOnlineList = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                httpProxyOnlineList = session.getMapper(HttpProxyOnlineMapper.class).selectByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return httpProxyOnlineList;
     }
 }

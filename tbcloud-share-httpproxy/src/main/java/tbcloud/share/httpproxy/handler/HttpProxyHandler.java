@@ -9,8 +9,12 @@ import tbcloud.httpproxy.model.HttpProxyOnline;
 import tbcloud.httpproxy.model.HttpProxyRecord;
 import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
+import tbcloud.lib.api.AppEnum;
 import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
+
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author dzh
@@ -97,9 +101,13 @@ public class HttpProxyHandler extends AbstractInboundHandler {
             online = HttpProxyDao.selectHttpProxyOnline(this.nodeId);
             if (online.getStatus() == ApiConst.IS_ONLINE) return online;
         }
-        // TODO select a random nodeId
-
-
+        // TODO 支持复杂的查询条件
+        // 简单实现，随机选择一个可用节点
+        List<String> nodeList = NodeSelector.randomOnline(AppEnum.HTTP_PROXY.getId(), 3);
+        if (nodeList.size() > 0) {
+            int i = ThreadLocalRandom.current().nextInt(nodeList.size());
+            online = HttpProxyDao.selectHttpProxyOnline(nodeList.get(i));
+        }
         return online;
     }
 
