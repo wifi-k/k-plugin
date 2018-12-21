@@ -50,7 +50,7 @@ public class NodeHttpServer implements Closeable {
     public void start() {
         try {
             String ip = plugin.getConfig(ConfField.NODE_HTTPPROXY_HTTP_HOST, "0.0.0.0");
-            String port = plugin.getConfig(ConfField.NODE_HTTPPROXY_HTTP_HOST, "8109");
+            String port = plugin.getConfig(ConfField.NODE_HTTPPROXY_HTTP_PORT, "8109");
             this.httpIp = InetAddress.getLocalHost().getHostAddress();
             this.httpPort = Integer.parseInt(port);
             InetSocketAddress addr = new InetSocketAddress(ip, this.httpPort);

@@ -3,6 +3,7 @@ package tbcloud.user.job.impl;
 import jframe.core.msg.Msg;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.AppEnum;
+import tbcloud.lib.api.ConfField;
 import tbcloud.lib.api.msg.MsgType;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.IDUtil;
@@ -52,7 +53,7 @@ public class NodeJoinShareJob extends UserJob {
         NodeDao.insertNodeApp(nodeApp);
 
         // insert node_ins
-        String insHost = plugin().getConfig(ApiConst.NODE_API_INS_HOST);
+        String insHost = plugin().getConfig(ConfField.NODE_HTTPPROXY_DOMAIN);
         HttpProxy insHttpProxy = new HttpProxy();
         insHttpProxy.setOp(HttpProxy.OP_ENABLE);
         insHttpProxy.setHost(insHost);
