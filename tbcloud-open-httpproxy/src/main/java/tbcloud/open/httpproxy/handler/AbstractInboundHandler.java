@@ -23,7 +23,7 @@ import tbcloud.lib.api.Result;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.select.service.NodeSelectService;
-import tbcloud.open.httpproxy.ShareHttpProxyPlugin;
+import tbcloud.open.httpproxy.OpenHttpProxyPlugin;
 import tbcloud.user.dao.service.UserDaoService;
 
 import java.lang.reflect.Type;
@@ -39,7 +39,7 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
     static Logger LOG = LoggerFactory.getLogger(AbstractInboundHandler.class);
 
     @InjectPlugin
-    protected static ShareHttpProxyPlugin Plugin;
+    protected static OpenHttpProxyPlugin Plugin;
 
     @InjectService(id = "jframe.service.jedis")
     static JedisService Jedis;

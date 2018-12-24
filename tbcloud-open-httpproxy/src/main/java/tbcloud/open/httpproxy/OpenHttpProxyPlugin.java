@@ -15,9 +15,9 @@ import java.util.Calendar;
  * @date 2018-11-26 01:13
  */
 @Plugin(startOrder = -1)
-public class ShareHttpProxyPlugin extends PluginSenderRecver {
+public class OpenHttpProxyPlugin extends PluginSenderRecver {
 
-    static Logger LOG = LoggerFactory.getLogger(ShareHttpProxyPlugin.class);
+    static Logger LOG = LoggerFactory.getLogger(OpenHttpProxyPlugin.class);
 
     private HttpProxyServer httpProxyServer;
 

@@ -33,9 +33,9 @@ public class HttpProxyServer implements Closeable {
 
     static Logger LOG = LoggerFactory.getLogger(HttpProxyServer.class);
 
-    private ShareHttpProxyPlugin plugin;
+    private OpenHttpProxyPlugin plugin;
 
-    HttpProxyServer(ShareHttpProxyPlugin plugin) {
+    HttpProxyServer(OpenHttpProxyPlugin plugin) {
         this.plugin = plugin;
     }
 
