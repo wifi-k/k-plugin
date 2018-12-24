@@ -38,6 +38,8 @@ public class NodeJoinShareJob extends UserJob {
             nodeInfo = GsonUtil.fromJson((String) val, NodeInfo.class);
         } else if (val instanceof NodeInfo) {
             nodeInfo = (NodeInfo) val;
+        } else {
+            return;
         }
 
         String nodeId = nodeInfo.getNodeId();

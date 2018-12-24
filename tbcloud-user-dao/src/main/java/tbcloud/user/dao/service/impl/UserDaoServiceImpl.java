@@ -387,4 +387,85 @@ public class UserDaoServiceImpl implements UserDaoService {
         }
         return -1L;
     }
+
+    @Override
+    public OpenOnline selectOpenOnline(long userId) {
+        OpenOnline online = null;
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                online = session.getMapper(OpenOnlineMapper.class).selectByPrimaryKey(userId);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return online;
+    }
+
+    @Override
+    public int insertOpenOnline(OpenOnline online) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                online.setCreateTime(st);
+                online.setUpdateTime(st);
+
+                int r = session.getMapper(OpenOnlineMapper.class).insertSelective(online);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(online));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateOpenOnline(OpenOnline online) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                online.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(OpenOnlineMapper.class).updateByPrimaryKeySelective(online);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            } finally {
+                //TODO rm cache redis
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public List<OpenOnline> selectOpenOnline(OpenOnlineExample example) {
+        List<OpenOnline> onlineList = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                onlineList = session.getMapper(OpenOnlineMapper.class).selectByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return onlineList;
+    }
+
+    @Override
+    public int updateOpenOnlineSelective(OpenOnline online, OpenOnlineExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                online.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(OpenOnlineMapper.class).updateByExampleSelective(online, example);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
 }

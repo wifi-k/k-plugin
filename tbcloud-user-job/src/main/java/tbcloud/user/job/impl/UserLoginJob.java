@@ -6,6 +6,7 @@ import tbcloud.lib.api.msg.MsgType;
 import tbcloud.lib.api.msg.UserLogin;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.user.job.UserJob;
+import tbcloud.user.model.OpenOnline;
 import tbcloud.user.model.UserOnline;
 
 /**
@@ -30,28 +31,60 @@ public class UserLoginJob extends UserJob {
             userLogin = GsonUtil.fromJson((String) val, UserLogin.class);
         } else if (val instanceof UserLogin) {
             userLogin = (UserLogin) val;
+        } else {
+            return;
         }
 
-        UserOnline userOnline = toUserOnline(userLogin);
-        if (UserDao.updateUserOnline(userOnline) == 0) {
-            // maybe not existed
-            UserDao.insertUserOnline(userOnline);
+        int platform = userLogin.getPlatform();
+        switch (platform) {
+            case ApiConst.PLATFORM_USER: {
+                UserOnline userOnline = toUserOnline(userLogin);
+                if (UserDao.updateUserOnline(userOnline) == 0) {
+                    // maybe not existed
+                    UserDao.insertUserOnline(userOnline);
+                }
+                break;
+            }
+            case ApiConst.PLATFORM_OPEN: {
+                OpenOnline online = toOpenOnline(userLogin);
+                if (UserDao.updateOpenOnline(online) == 0) {
+                    // maybe not existed
+                    UserDao.insertOpenOnline(online);
+                }
+                break;
+            }
         }
+
+    }
+
+    private OpenOnline toOpenOnline(UserLogin userLogin) {
+        int status = userLogin.getStatus();
+
+        OpenOnline online = new OpenOnline();
+        online.setUserId(userLogin.getUserId());
+        online.setStatus(status);
+        if (status == ApiConst.IS_ONLINE) {
+            online.setOnlineTime(userLogin.getDate());
+            online.setToken(userLogin.getToken());
+        } else {
+            online.setOfflineTime(userLogin.getDate());
+        }
+        return online;
     }
 
     private UserOnline toUserOnline(UserLogin userLogin) {
         int status = userLogin.getStatus();
 
-        UserOnline userOnline = new UserOnline();
-        userOnline.setUserId(userLogin.getUserId());
-        userOnline.setStatus(status);
+        UserOnline online = new UserOnline();
+        online.setUserId(userLogin.getUserId());
+        online.setStatus(status);
         if (status == ApiConst.IS_ONLINE) {
-            userOnline.setOnlineTime(userLogin.getDate());
-            userOnline.setToken(userLogin.getToken());
+            online.setOnlineTime(userLogin.getDate());
+            online.setToken(userLogin.getToken());
         } else {
-            userOnline.setOfflineTime(userLogin.getDate());
+            online.setOfflineTime(userLogin.getDate());
         }
-        return userOnline;
+        return online;
     }
 
     @Override

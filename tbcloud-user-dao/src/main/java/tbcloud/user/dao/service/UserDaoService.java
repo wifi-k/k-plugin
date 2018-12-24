@@ -7,7 +7,7 @@ import jframe.core.plugin.annotation.Service;
  * @date 2018-11-09 11:55
  */
 @Service(clazz = "tbcloud.user.dao.service.impl.UserDaoServiceImpl", id = "tbcloud.service.user.dao")
-public interface UserDaoService extends UserDao, ImgCodeDao, UserShareDao {
+public interface UserDaoService extends UserDao, ImgCodeDao, UserShareDao, DeveloperDao {
 
 
 }

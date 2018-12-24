@@ -6,6 +6,7 @@ import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.ApiConst;
+import tbcloud.user.api.http.OpenUserResource;
 import tbcloud.user.api.http.TestResource;
 import tbcloud.user.api.http.UserResource;
 
@@ -32,7 +33,10 @@ class ApiHttpServer extends Application {
     public Set<Class<?>> getClasses() {
         HashSet<Class<?>> classes = new HashSet<Class<?>>();
         classes.add(TestResource.class);
+        // user
         classes.add(UserResource.class);
+        // open
+        classes.add(OpenUserResource.class);
 
         return classes;
     }

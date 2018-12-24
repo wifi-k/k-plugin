@@ -73,6 +73,8 @@ public class EmailModifyJob extends UserJob {
             emailModify = GsonUtil.fromJson((String) val, EmailModify.class);
         } else if (val instanceof EmailModify) {
             emailModify = (EmailModify) val;
+        } else {
+            return;
         }
 
         if (emailModify != null) { // send email

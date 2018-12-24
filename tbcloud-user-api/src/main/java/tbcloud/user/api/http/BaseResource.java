@@ -7,17 +7,14 @@ import jframe.jedis.service.JedisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
-import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.dao.service.NodeDaoService;
 import tbcloud.user.api.UserApiPlugin;
-import tbcloud.user.api.http.req.ReqContext;
 import tbcloud.user.dao.service.UserDaoService;
 import tbcloud.user.model.UserImgCode;
-import tbcloud.user.model.UserInfo;
 
 import java.lang.reflect.Type;
 
@@ -41,31 +38,10 @@ public class BaseResource {
     @InjectService(id = "tbcloud.service.node.dao")
     static NodeDaoService NodeDao;
 
-    public final int validateToken(ReqContext reqContext) {
-        String token = reqContext.getToken();
-
-        long usrId = IDUtil.decodeUserIDFromToken(token);
-        if (usrId <= 0) return ApiCode.TOKEN_INVALID;
-
-        UserInfo userInfo = UserDao.selectUserInfo(usrId);
-        if (userInfo == null) return ApiCode.TOKEN_INVALID;
-        reqContext.setUserInfo(userInfo); // update context
-
-        String usrToken = null;
-        Jedis jedis = null;
-        try {
-            jedis = Jedis.getJedis(ApiConst.REDIS_ID_USER);
-            if (jedis == null) return ApiCode.REDIS_GET_NULL;
-
-            usrToken = jedis.get(ApiConst.REDIS_KEY_USER_TOKEN_ + usrId);
-        } finally {
-            if (jedis != null) Jedis.recycleJedis(ApiConst.REDIS_ID_USER, jedis);
-        }
-
-        if (usrToken == null) return ApiCode.TOKEN_EXPIRED;
-        if (!usrToken.equals(token)) return ApiCode.TOKEN_INVALID;
-
-        return ApiCode.SUCC;
+    public static boolean isInvalidMobile(String mobile) {
+        if (StringUtil.isEmpty(mobile) || mobile.length() != 11)
+            return true;
+        return false;
     }
 
     protected String getFromRedis(String id, String key) {

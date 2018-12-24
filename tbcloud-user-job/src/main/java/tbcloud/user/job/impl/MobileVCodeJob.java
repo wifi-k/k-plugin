@@ -42,6 +42,8 @@ public class MobileVCodeJob extends UserJob {
             vcodeSend = GsonUtil.fromJson((String) val, MobileVCode.class);
         } else if (val instanceof MobileVCode) {
             vcodeSend = (MobileVCode) val;
+        } else {
+            return;
         }
 
         if (vcodeSend != null) {
