@@ -1,4 +1,4 @@
-package tbcloud.share.httpproxy;
+package tbcloud.open.httpproxy;
 
 import jframe.core.msg.Msg;
 import jframe.core.plugin.PluginException;

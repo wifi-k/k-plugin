@@ -1,4 +1,4 @@
-package tbcloud.share.httpproxy;
+package tbcloud.open.httpproxy;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -17,8 +17,8 @@ import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.ConfField;
-import tbcloud.share.httpproxy.handler.ApikeyHandler;
-import tbcloud.share.httpproxy.handler.HttpProxyHandler;
+import tbcloud.open.httpproxy.handler.ApikeyHandler;
+import tbcloud.open.httpproxy.handler.HttpProxyHandler;
 
 import java.io.Closeable;
 import java.io.IOException;

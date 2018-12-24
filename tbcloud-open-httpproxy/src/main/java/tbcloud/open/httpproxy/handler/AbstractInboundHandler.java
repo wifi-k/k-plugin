@@ -1,4 +1,4 @@
-package tbcloud.share.httpproxy.handler;
+package tbcloud.open.httpproxy.handler;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -23,7 +23,7 @@ import tbcloud.lib.api.Result;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.select.service.NodeSelectService;
-import tbcloud.share.httpproxy.ShareHttpProxyPlugin;
+import tbcloud.open.httpproxy.ShareHttpProxyPlugin;
 import tbcloud.user.dao.service.UserDaoService;
 
 import java.lang.reflect.Type;

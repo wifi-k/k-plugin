@@ -1,4 +1,4 @@
-package tbcloud.share.httpproxy.handler;
+package tbcloud.open.httpproxy.handler;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;

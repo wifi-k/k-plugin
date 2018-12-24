@@ -12,7 +12,7 @@
         <module>tbcloud-user-api</module>
         <module>tbcloud-user-dao</module>
         <module>tbcloud-user-job</module>
-        <module>tbcloud-share-httpproxy</module>
+        <module>tbcloud-open-httpproxy</module>
         <module>tbcloud-node-httpproxy</module>
         <module>tbcloud-httpproxy-dao</module>
         <module>tbcloud-timer</module>
@@ -233,7 +233,7 @@
             </dependency>
             <dependency>
                 <groupId>cn.treebear</groupId>
-                <artifactId>tbcloud-share-httpproxy</artifactId>
+                <artifactId>tbcloud-open-httpproxy</artifactId>
                 <version>${tbcloud.version}</version>
                 <classifier>plugin</classifier>
             </dependency>

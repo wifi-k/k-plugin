@@ -149,6 +149,7 @@ public class UserResource extends BaseResource {
         userInfo.setName(req.getName());
         //TODO userInfo.setInviteCode("");
         userInfo.setPasswd(StringUtil.MD5Encode(req.getPasswd() + ApiConst.USER_PASSWD_SALT_1));
+        //userInfo.setApikey(IDUtil.genApikeyV1(userInfo.getId()));
 
         if (UserDao.insertUserInfo(userInfo) != 1) {
             r.setCode(ApiCode.DB_INSERT_ERROR);
@@ -157,11 +158,6 @@ public class UserResource extends BaseResource {
         } else {
             LOG.info("create new userId:" + userInfo.getId());
         }
-
-        // TODO async to update apikey
-        String apikey = IDUtil.genApikeyV1(userInfo.getId());
-
-
         return r;
     }
 
