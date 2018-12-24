@@ -77,7 +77,7 @@ public class UserResource extends BaseResource {
         }
 
         String mobile = req.getMobile();
-        if (StringUtil.isEmpty(mobile) || mobile.length() == 11) {//TODO 国际化
+        if (StringUtil.isEmpty(mobile) || mobile.length() != 11) {//TODO 国际化
             r.setCode(ApiCode.INVALID_PARAM);
             r.setMsg("invalid mobile " + mobile);
             return r;
