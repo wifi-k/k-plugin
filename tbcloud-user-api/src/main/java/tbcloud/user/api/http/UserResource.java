@@ -26,10 +26,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * 用户平台
@@ -496,7 +493,7 @@ public class UserResource extends BaseResource {
             Long ownUserId = nodeInfo.getUserId();
             if (ownUserId != null && ownUserId != userInfo.getId()) {
                 r.setCode(ApiCode.USR_INVALID);
-                r.setMsg("节点已绑定");
+                r.setMsg(nodeId + " be bound!");
                 return r;
             }
 
@@ -560,15 +557,25 @@ public class UserResource extends BaseResource {
             return r;
         }
 
-        switch (fileType) { //TODO aysnc to insert
+        switch (fileType) { //TODO aysnc to insert or limit req
             case "1": { //换行符
-                String[] nodeIdList = file.split("\n", 1000);
-                List<NodeInfo> nodeInfoList = new ArrayList<>(nodeIdList.length);
-                List<NodeRt> nodeRtList = new ArrayList<>(nodeIdList.length);
+                String[] nodeIdList = file.split("[\r\n]+");
+                if (nodeIdList.length < 1 || nodeIdList.length > 1000) { //TODO config
+                    r.setCode(ApiCode.INVALID_PARAM);
+                    r.setMsg("nodes must be less than 1000");
+                    return r;
+                }
+
+                // 去重
+                Set<NodeInfo> nodeInfoList = new HashSet<>(nodeIdList.length);
+                Set<NodeRt> nodeRtList = new HashSet<>(nodeIdList.length);
 
                 long bindTime = System.currentTimeMillis();
                 for (int i = 0; i < nodeIdList.length; ++i) {
                     String nodeId = nodeIdList[i].trim();
+                    if (StringUtil.isEmpty(nodeId)) continue; //skip empty nodeId
+
+                    if (NodeDao.selectNodeInfo(nodeId) != null) continue;  // 去重
 
                     NodeInfo nodeInfo = new NodeInfo();
                     nodeInfo.setNodeId(nodeId);
@@ -585,8 +592,20 @@ public class UserResource extends BaseResource {
                     nodeRt.setUserId(userInfo.getId());
                     nodeRtList.add(nodeRt);
                 }
-                NodeDao.batchInsertNodeInfo(nodeInfoList);
-                NodeDao.batchInsertNodeRt(nodeRtList);
+
+                if (nodeInfoList.isEmpty()) {
+                    r.setCode(ApiCode.INVALID_PARAM);
+                    r.setMsg("nodes is empty");
+                    return r;
+                }
+
+                if (NodeDao.batchInsertNodeInfo(nodeInfoList)) {
+                    NodeDao.batchInsertNodeRt(nodeRtList);
+                } else {
+                    r.setCode(ApiCode.DB_INSERT_ERROR);
+                    r.setMsg("batch insert error! check nodes' numbers");
+                    return r;
+                }
                 break;
             }
         }

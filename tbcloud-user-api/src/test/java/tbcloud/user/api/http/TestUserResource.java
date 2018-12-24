@@ -7,6 +7,7 @@ import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.util.StringUtil;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -19,9 +20,9 @@ public class TestUserResource {
 
     @Test
     public void bindBatchNodeTest() {
-        String file = "a\r\nb\n";
-        String[] list = file.split("\r");
-        System.out.println(file);
+        String file = "a\rb\n\rc";
+        String[] list = file.split("[\r\n]+");
+        System.out.println(Arrays.asList(list));
         System.out.println(list.length);
     }
 

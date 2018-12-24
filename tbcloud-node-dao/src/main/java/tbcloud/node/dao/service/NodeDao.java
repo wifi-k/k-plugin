@@ -5,6 +5,7 @@ import tbcloud.node.model.ext.NodeInfoRt;
 import tbcloud.node.model.ext.NodeInfoRtExample;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author dzh
@@ -22,7 +23,7 @@ public interface NodeDao {
 
     int insertNodeInfo(NodeInfo nodeInfo);
 
-    void batchInsertNodeInfo(List<NodeInfo> nodeInfoList);
+    boolean batchInsertNodeInfo(Set<NodeInfo> nodeInfoList);
 
     List<NodeInfo> selectNodeInfo(NodeInfoExample example);
 
@@ -48,7 +49,7 @@ public interface NodeDao {
 
     long countNodeRt(NodeRtExample example);
 
-    void batchInsertNodeRt(List<NodeRt> nodeRtList);
+    boolean batchInsertNodeRt(Set<NodeRt> nodeRtList);
 
 
     int insertNodeIns(NodeIns nodeIns);

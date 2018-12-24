@@ -26,6 +26,7 @@ import tbcloud.node.model.mapper.ext.NodeInfoRtMapper;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author dzh
@@ -136,7 +137,7 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     }
 
     @Override
-    public void batchInsertNodeInfo(List<NodeInfo> nodeInfoList) {
+    public boolean batchInsertNodeInfo(Set<NodeInfo> nodeInfoList) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
             try {
                 for (NodeInfo nodeInfo : nodeInfoList) {
@@ -147,13 +148,15 @@ public class NodeDaoServiceImpl implements NodeDaoService {
                     session.getMapper(NodeInfoMapper.class).insertSelective(nodeInfo);
                 }
 
-                LOG.info("batch insert {}", GsonUtil.toJson(nodeInfoList));
+                LOG.info("batch insert {} {}", nodeInfoList.size(), GsonUtil.toJson(nodeInfoList));
                 session.commit();
+                return true;
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
                 session.rollback();
             }
         }
+        return false;
     }
 
     @Override
@@ -333,7 +336,7 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     }
 
     @Override
-    public void batchInsertNodeRt(List<NodeRt> nodeRtList) {
+    public boolean batchInsertNodeRt(Set<NodeRt> nodeRtList) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
             try {
                 for (NodeRt node : nodeRtList) {
@@ -344,12 +347,14 @@ public class NodeDaoServiceImpl implements NodeDaoService {
                     session.getMapper(NodeRtMapper.class).insertSelective(node);
                 }
                 session.commit();
-                LOG.info("batch insert {}", GsonUtil.toJson(nodeRtList));
+                LOG.info("batch insert {} {}", nodeRtList.size(), GsonUtil.toJson(nodeRtList));
+                return true;
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
                 session.rollback();
             }
         }
+        return false;
     }
 
     @Override
