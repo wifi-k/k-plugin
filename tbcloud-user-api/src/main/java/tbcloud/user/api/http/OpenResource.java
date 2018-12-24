@@ -6,14 +6,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 /**
- * 共享计算
+ * 开放平台接口
  *
  * @author dzh
  * @date 2018-11-08 20:21
  */
-@Path("share")
+@Path("open")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class ShareResource extends BaseResource {
+public class OpenResource extends BaseResource {
 
 }

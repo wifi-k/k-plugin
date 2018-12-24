@@ -72,20 +72,29 @@ public class UserResource extends BaseResource {
         // validate imgCode
         if (!isValidImgCode(req.getImgCodeId(), req.getImgCode())) {
             r.setCode(ApiCode.INVALID_PARAM);
-            r.setMsg("invalid param imgCode:" + req.getImgCode());
+            r.setMsg("invalid param imgCode " + req.getImgCode());
             return r;
         }
 
-        // TODO 重复发送
+        String mobile = req.getMobile();
+        if (StringUtil.isEmpty(mobile) || mobile.length() == 11) {//TODO 国际化
+            r.setCode(ApiCode.INVALID_PARAM);
+            r.setMsg("invalid mobile " + mobile);
+            return r;
+        }
 
-        String vcode = IDUtil.genMobileVcode(4);
+        String vcode = getFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_VCODE_ + mobile);
+        if (!StringUtil.isEmpty(vcode)) {
+            r.setCode(ApiCode.OP_MORE_THAN_LIMIT);
+            r.setMsg("request more than limit");
+            return r;
+        }
+
+        vcode = IDUtil.genMobileVcode(4);
         if (Plugin.isDebug() && !Plugin.envName().equals(ApiConst.ENV_ONLINE)) {
             r.setData(vcode);
             r.setMsg("测试时返回");
         }
-
-        String mobile = req.getMobile();
-        // TODO check mobile 11 digital
 
         if (!ApiConst.ENV_DEV.equals(Plugin.envName())) { // not send if dev
             MobileVCode msg = new MobileVCode();
