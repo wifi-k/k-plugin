@@ -58,7 +58,7 @@ public class UserResource extends BaseResource {
 
         ImgCodeRsp data = new ImgCodeRsp();
         data.setImgCodeId(imgCodeId);
-        data.setImgCodeUrl(String.join("/", Plugin.getConfig(ApiConst.QINIU_DOMAIN), imgCode.getImgPath()));
+        data.setImgCodeUrl(Qiniu.publicDownloadUrl(ApiConst.QINIU_ID_IMGCODE, imgCode.getImgPath()));
         r.setData(data);
         return r;
     }
@@ -946,17 +946,8 @@ public class UserResource extends BaseResource {
         if (userInfo == null) return ApiCode.TOKEN_INVALID;
         reqContext.setUserInfo(userInfo); // update context
 
+        if (Plugin.envName().equals(ApiConst.ENV_DEV)) return ApiCode.SUCC;  // 方便测试
         String usrToken = getFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_TOKEN_ + usrId);
-//        Jedis jedis = null;
-//        try {
-//            jedis = Jedis.getJedis(ApiConst.REDIS_ID_USER);
-//            if (jedis == null) return ApiCode.REDIS_GET_NULL;
-//
-//            usrToken = jedis.get(ApiConst.REDIS_KEY_USER_TOKEN_ + usrId);
-//        } finally {
-//            if (jedis != null) Jedis.recycleJedis(ApiConst.REDIS_ID_USER, jedis);
-//        }
-
         if (usrToken == null) return ApiCode.TOKEN_EXPIRED;
         if (!usrToken.equals(token)) return ApiCode.TOKEN_INVALID;
 

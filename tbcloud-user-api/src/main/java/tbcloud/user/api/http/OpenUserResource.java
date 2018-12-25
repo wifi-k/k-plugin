@@ -16,6 +16,7 @@ import tbcloud.lib.api.util.StringUtil;
 import tbcloud.user.api.http.req.*;
 import tbcloud.user.api.http.rsp.ImgCodeRsp;
 import tbcloud.user.api.http.rsp.SignInRsp;
+import tbcloud.user.model.UserDeveloper;
 import tbcloud.user.model.UserImgCode;
 import tbcloud.user.model.UserInfo;
 import tbcloud.user.model.UserInfoExample;
@@ -58,7 +59,7 @@ public class OpenUserResource extends BaseResource {
 
         ImgCodeRsp data = new ImgCodeRsp();
         data.setImgCodeId(imgCodeId);
-        data.setImgCodeUrl(String.join("/", Plugin.getConfig(ApiConst.QINIU_DOMAIN), imgCode.getImgPath()));
+        data.setImgCodeUrl(Qiniu.publicDownloadUrl(ApiConst.QINIU_ID_IMGCODE, imgCode.getImgPath()));
         r.setData(data);
         return r;
     }
@@ -494,6 +495,119 @@ public class OpenUserResource extends BaseResource {
         return r;
     }
 
+    @POST
+    @Path("personal/auth")
+    public Result<Void> authPersonal(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, PersonalAuthReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<Void> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        if (req.isMissing()) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        UserDeveloper developer = UserDao.selectUserDeveloper(userInfo.getId());
+        if (developer == null) {
+            developer = req.toDeveloper(userInfo.getId());
+            developer.setStatus(ApiConst.AUTH_STATUS_WAIT);
+            UserDao.insertUserDeveloper(developer);
+        } else {
+            if (developer.getStatus().intValue() == ApiConst.AUTH_STATUS_PASS) {
+                r.setCode(ApiCode.AUTH_PASSED);
+                r.setMsg("auth passwd");
+                return r;
+            }
+            developer = req.toDeveloper(userInfo.getId());
+            developer.setStatus(ApiConst.AUTH_STATUS_WAIT);
+            UserDao.updateUserDeveloper(developer);
+        }
+
+        return r;
+    }
+
+    @POST
+    @Path("personal/get")
+    public Result<UserDeveloper> getPersonal(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<UserDeveloper> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        UserDeveloper developer = UserDao.selectUserDeveloper(userInfo.getId());
+        if (developer != null) { // transfer to absolute path
+            developer.setImgIdUser(Qiniu.privateDownloadUrl(ApiConst.QINIU_ID_DEVELOPER, developer.getImgIdUser(), -1));
+            developer.setImgIdBack(Qiniu.privateDownloadUrl(ApiConst.QINIU_ID_DEVELOPER, developer.getImgIdBack(), -1));
+        }
+        r.setData(developer);
+
+        return r;
+    }
+
+    @POST
+    @Path("apikey/reset")
+    public Result<String> resetApikey(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<String> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        UserDeveloper developer = UserDao.selectUserDeveloper(userInfo.getId());
+        if (developer.getStatus().intValue() != ApiConst.AUTH_STATUS_PASS) {
+            r.setCode(ApiCode.INVALID_PERM);
+            r.setMsg("invalid developer");
+            return r;
+        }
+
+        UserInfo newApikey = new UserInfo();
+        newApikey.setId(userInfo.getId());
+        newApikey.setApikey(IDUtil.genApikeyV1(userInfo.getId()));
+        UserDao.updateUserInfo(newApikey);
+
+        r.setData(newApikey.getApikey());
+        return r;
+    }
+
+    @POST
+    @Path("qiniu/token/get")
+    public Result<String> getQiniuToken(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<String> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        // TODO limit req
+
+        r.setData(Qiniu.uploadToken(ApiConst.QINIU_ID_DEVELOPER, null));
+        return r;
+    }
+
+
     public final int validateToken(ReqContext reqContext) {
         String token = reqContext.getToken();
 
@@ -504,17 +618,8 @@ public class OpenUserResource extends BaseResource {
         if (userInfo == null) return ApiCode.TOKEN_INVALID;
         reqContext.setUserInfo(userInfo); // update context
 
+        if (Plugin.envName().equals(ApiConst.ENV_DEV)) return ApiCode.SUCC;  // 方便测试
         String usrToken = getFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_OPEN_TOKEN_ + usrId);
-//        Jedis jedis = null;
-//        try {
-//            jedis = Jedis.getJedis(ApiConst.REDIS_ID_USER);
-//            if (jedis == null) return ApiCode.REDIS_GET_NULL;
-//
-//            usrToken = jedis.get(ApiConst.REDIS_KEY_USER_TOKEN_ + usrId);
-//        } finally {
-//            if (jedis != null) Jedis.recycleJedis(ApiConst.REDIS_ID_USER, jedis);
-//        }
-
         if (usrToken == null) return ApiCode.TOKEN_EXPIRED;
         if (!usrToken.equals(token)) return ApiCode.TOKEN_INVALID;
 

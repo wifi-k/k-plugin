@@ -4,6 +4,7 @@ import jframe.core.plugin.annotation.InjectPlugin;
 import jframe.core.plugin.annotation.InjectService;
 import jframe.core.plugin.annotation.Injector;
 import jframe.jedis.service.JedisService;
+import jframe.qiniu.service.QiniuService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
@@ -32,11 +33,16 @@ public class BaseResource {
     @InjectService(id = "jframe.service.jedis")
     static JedisService Jedis;
 
+
+    @InjectService(id = "jframe.service.qiniu")
+    static QiniuService Qiniu;
+
     @InjectService(id = "tbcloud.service.user.dao")
     static UserDaoService UserDao;
 
     @InjectService(id = "tbcloud.service.node.dao")
     static NodeDaoService NodeDao;
+
 
     public static boolean isInvalidMobile(String mobile) {
         if (StringUtil.isEmpty(mobile) || mobile.length() != 11)

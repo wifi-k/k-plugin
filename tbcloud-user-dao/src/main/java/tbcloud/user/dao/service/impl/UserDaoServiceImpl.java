@@ -468,4 +468,85 @@ public class UserDaoServiceImpl implements UserDaoService {
         }
         return 0;
     }
+
+    @Override
+    public UserDeveloper selectUserDeveloper(long userId) {
+        UserDeveloper developer = null;
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                developer = session.getMapper(UserDeveloperMapper.class).selectByPrimaryKey(userId);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return developer;
+    }
+
+    @Override
+    public int insertUserDeveloper(UserDeveloper developer) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                developer.setCreateTime(st);
+                developer.setUpdateTime(st);
+
+                int r = session.getMapper(UserDeveloperMapper.class).insertSelective(developer);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(developer));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateUserDeveloper(UserDeveloper developer) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                developer.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(UserDeveloperMapper.class).updateByPrimaryKeySelective(developer);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            } finally {
+                //TODO rm cache redis
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public List<UserDeveloper> selectUserDeveloper(UserDeveloperExample example) {
+        List<UserDeveloper> developers = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                developers = session.getMapper(UserDeveloperMapper.class).selectByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return developers;
+    }
+
+    @Override
+    public int updateUserDeveloperSelective(UserDeveloper developer, UserDeveloperExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                developer.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(UserDeveloperMapper.class).updateByExampleSelective(developer, example);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
 }
