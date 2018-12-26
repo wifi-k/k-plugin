@@ -605,7 +605,7 @@ public class UserResource extends BaseResource {
 
                 if (nodeInfoList.isEmpty()) {
                     r.setCode(ApiCode.INVALID_PARAM);
-                    r.setMsg("nodes is empty");
+                    r.setMsg("won't add any new node");
                     return r;
                 }
 

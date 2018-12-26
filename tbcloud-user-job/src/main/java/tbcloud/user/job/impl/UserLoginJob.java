@@ -38,10 +38,14 @@ public class UserLoginJob extends UserJob {
         int platform = userLogin.getPlatform();
         switch (platform) {
             case ApiConst.PLATFORM_USER: {
-                UserOnline userOnline = toUserOnline(userLogin);
-                if (UserDao.updateUserOnline(userOnline) == 0) {
+                UserOnline online = toUserOnline(userLogin);
+                if (UserDao.updateUserOnline(online) == 0) {
                     // maybe not existed
-                    UserDao.insertUserOnline(userOnline);
+                    UserDao.insertUserOnline(online);
+                }
+
+                if (online.getStatus().intValue() == ApiConst.IS_OFFLINE) {
+                    // TODO delete token in redis
                 }
                 break;
             }
@@ -50,6 +54,10 @@ public class UserLoginJob extends UserJob {
                 if (UserDao.updateOpenOnline(online) == 0) {
                     // maybe not existed
                     UserDao.insertOpenOnline(online);
+                }
+
+                if (online.getStatus().intValue() == ApiConst.IS_OFFLINE) {
+                    // TODO delete token in redis
                 }
                 break;
             }

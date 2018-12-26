@@ -7,9 +7,7 @@ import jframe.core.plugin.annotation.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.msg.MsgType;
-import tbcloud.user.job.impl.EmailModifyJob;
-import tbcloud.user.job.impl.MobileVCodeJob;
-import tbcloud.user.job.impl.UserLoginJob;
+import tbcloud.user.job.impl.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,8 +31,10 @@ public class UserJobPlugin extends PluginSenderRecver {
     }
 
     private void startJobs() { //TODO
-        startJob(MobileVCodeJob.class);
         startJob(EmailModifyJob.class);
+        startJob(MobileVCodeJob.class);
+        startJob(NodeJoinShareJob.class);
+        startJob(NodeQuitShareJob.class);
         startJob(UserLoginJob.class);
     }
 
