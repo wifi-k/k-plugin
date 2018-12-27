@@ -67,6 +67,21 @@
 
         <dependency>
             <groupId>io.github.dzh</groupId>
+            <artifactId>jframe-ext</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.activemq</groupId>
+                    <artifactId>activemq-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.activemq</groupId>
+                    <artifactId>activemq-jms-pool</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.dzh</groupId>
             <artifactId>jframe-jedis</artifactId>
             <classifier>plugin</classifier>
         </dependency>

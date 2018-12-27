@@ -11,6 +11,7 @@ import tbcloud.lib.api.msg.EmailModify;
 import tbcloud.lib.api.msg.MobileVCode;
 import tbcloud.lib.api.msg.MsgType;
 import tbcloud.lib.api.msg.UserLogin;
+import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.model.*;
@@ -101,7 +102,10 @@ public class UserResource extends BaseResource {
             msg.setType(req.getType());
             msg.setMobile(mobile);
             msg.setCode(vcode);
-            Plugin.send(new PluginMsg<MobileVCode>().setType(MsgType.MOBILE_VCODE).setValue(msg));
+
+
+            Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.MOBILE_VCODE).setValue(GsonUtil.toJson(msg)));
+            //Plugin.send(new PluginMsg<MobileVCode>().setType(MsgType.MOBILE_VCODE).setValue(msg));
         }
 
         // cache
@@ -206,7 +210,8 @@ public class UserResource extends BaseResource {
         msg.setDate(System.currentTimeMillis());
         msg.setStatus(ApiConst.IS_ONLINE);
         msg.setToken(token);
-        Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.USER_LOGIN).setValue(msg));
+        Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.USER_LOGIN).setValue(GsonUtil.toJson(msg)), userInfo.getId());
+//        Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.USER_LOGIN).setValue(msg));
 
         SignInRsp rsp = new SignInRsp();
         rsp.setToken(token);
@@ -408,7 +413,8 @@ public class UserResource extends BaseResource {
         em.setName(Optional.ofNullable(name).orElse(userInfo.getMobile()));
         em.setToken(emailToken);
 
-        Plugin.send(new PluginMsg<EmailModify>().setType(MsgType.EMAIL_MODIFY).setValue(em));
+        Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.EMAIL_MODIFY).setValue(GsonUtil.toJson(em)), userInfo.getId());
+//        Plugin.send(new PluginMsg<EmailModify>().setType(MsgType.EMAIL_MODIFY).setValue(em));
         return r;
     }
 
@@ -776,7 +782,9 @@ public class UserResource extends BaseResource {
         shareNode.setUserId(userInfo.getId());
         shareNode.setIsShare(NodeConst.IS_SHARE);
         shareNode.setShareTime(System.currentTimeMillis());
-        Plugin.send(new PluginMsg<NodeInfo>().setType(MsgType.NODE_JOIN_SHARE).setValue(shareNode));
+
+        Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.NODE_JOIN_SHARE).setValue(GsonUtil.toJson(shareNode)), userInfo.getId());
+//        Plugin.send(new PluginMsg<NodeInfo>().setType(MsgType.NODE_JOIN_SHARE).setValue(shareNode));
 
         return r;
     }
@@ -825,7 +833,9 @@ public class UserResource extends BaseResource {
         shareNode.setNodeId(nodeId);
         shareNode.setIsShare(NodeConst.IS_UNSHARE);
         shareNode.setUnshareTime(System.currentTimeMillis());
-        Plugin.send(new PluginMsg<NodeInfo>().setType(MsgType.NODE_QUIT_SHARE).setValue(shareNode));
+
+        Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.NODE_QUIT_SHARE).setValue(GsonUtil.toJson(shareNode)), userInfo.getId());
+//        Plugin.send(new PluginMsg<NodeInfo>().setType(MsgType.NODE_QUIT_SHARE).setValue(shareNode));
         return r;
     }
 
@@ -853,7 +863,9 @@ public class UserResource extends BaseResource {
         msg.setUserId(userInfo.getId());
         msg.setDate(System.currentTimeMillis());
         msg.setStatus(ApiConst.IS_OFFLINE);
-        Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.USER_LOGIN).setValue(msg));
+
+        Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.USER_LOGIN).setValue(GsonUtil.toJson(msg)), userInfo.getId());
+//        Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.USER_LOGIN).setValue(msg));
 
         return r;
     }

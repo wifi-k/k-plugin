@@ -1,6 +1,7 @@
 package tbcloud.user.api.http;
 
 import jframe.core.msg.PluginMsg;
+import jframe.qiniu.QiniuConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.ApiCode;
@@ -25,6 +26,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -525,6 +527,8 @@ public class OpenUserResource extends BaseResource {
                 r.setMsg("auth passwd");
                 return r;
             }
+            // TODO clean old
+
             developer = req.toDeveloper(userInfo.getId());
             developer.setStatus(ApiConst.AUTH_STATUS_WAIT);
             UserDao.updateUserDeveloper(developer);
@@ -588,10 +592,10 @@ public class OpenUserResource extends BaseResource {
     }
 
     @POST
-    @Path("qiniu/token/get")
-    public Result<String> getQiniuToken(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token) {
+    @Path("qiniu/get")
+    public Result<Map<String, String>> getQiniu(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
-        Result<String> r = new Result<>();
+        Result<Map<String, String>> r = new Result<>();
 
         ReqContext reqContext = ReqContext.create(version, token);
         r.setCode(validateToken(reqContext));
@@ -602,8 +606,10 @@ public class OpenUserResource extends BaseResource {
         UserInfo userInfo = reqContext.getUserInfo();
 
         // TODO limit req
-
-        r.setData(Qiniu.uploadToken(ApiConst.QINIU_ID_DEVELOPER, null));
+        Map<String, String> data = new HashMap<>(2, 1);
+        data.put("token", Qiniu.uploadToken(ApiConst.QINIU_ID_DEVELOPER, null));
+        data.put("bucket", Qiniu.info(ApiConst.QINIU_ID_DEVELOPER, QiniuConfig.BUCKET));
+        r.setData(data);
         return r;
     }
 

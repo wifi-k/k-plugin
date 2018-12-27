@@ -22,6 +22,7 @@ import tbcloud.httpproxy.protocol.data.*;
 import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.msg.MsgType;
+import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.httpproxy.NodeHttpProxyPlugin;
@@ -129,7 +130,9 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
         offline.setOfflineTime(System.currentTimeMillis());
         offline.setStatus(ApiConst.IS_OFFLINE);
 
-        Plugin.send(new PluginMsg<HttpProxyOnline>().setType(MsgType.NODE_QUIT_HTTPPROXY).setValue(offline));
+
+        Plugin.sendToNode(new PluginMsg<String>().setType(MsgType.NODE_QUIT_HTTPPROXY).setValue(GsonUtil.toJson(offline)), nodeId);
+//        Plugin.send(new PluginMsg<HttpProxyOnline>().setType(MsgType.NODE_QUIT_HTTPPROXY).setValue(offline));
         // HttpProxyDao.updateHttpProxyOnline(offline);
     }
 
@@ -205,7 +208,8 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
 //            HttpProxyDao.updateHttpProxyOnline(online);
 //        }
         // async
-        Plugin.send(new PluginMsg<HttpProxyOnline>().setType(MsgType.NODE_JOIN_HTTPPROXY).setValue(online));
+        Plugin.sendToNode(new PluginMsg<String>().setType(MsgType.NODE_JOIN_HTTPPROXY).setValue(GsonUtil.toJson(online)), nodeId);
+//        Plugin.send(new PluginMsg<HttpProxyOnline>().setType(MsgType.NODE_JOIN_HTTPPROXY).setValue(online));
 
         DataAck ack = new DataAck();
         ack.setCode(ApiCode.SUCC);

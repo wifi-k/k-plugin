@@ -30,7 +30,7 @@ public class UserJobPlugin extends PluginSenderRecver {
         startJobs();
     }
 
-    private void startJobs() { //TODO
+    private void startJobs() { // TODO conf
         startJob(EmailModifyJob.class);
         startJob(MobileVCodeJob.class);
         startJob(NodeJoinShareJob.class);

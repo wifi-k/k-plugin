@@ -2,10 +2,12 @@ package tbcloud.node.httpproxy;
 
 import jframe.core.msg.Msg;
 import jframe.core.plugin.PluginException;
-import jframe.core.plugin.PluginSenderRecver;
 import jframe.core.plugin.annotation.Plugin;
+import jframe.ext.plugin.KafkaPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tbcloud.lib.api.msg.MsgMeta;
+import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.httpproxy.dispatch.HttpProxyDispatch;
 
 import java.lang.management.ManagementFactory;
@@ -16,7 +18,7 @@ import java.util.Calendar;
  * @date 2018-11-26 01:09
  */
 @Plugin(startOrder = -1)
-public class NodeHttpProxyPlugin extends PluginSenderRecver {
+public class NodeHttpProxyPlugin extends KafkaPlugin {
 
     static Logger LOG = LoggerFactory.getLogger(NodeHttpProxyPlugin.class);
 
@@ -79,13 +81,15 @@ public class NodeHttpProxyPlugin extends PluginSenderRecver {
         return httpServer;
     }
 
-    @Override
-    protected void doRecvMsg(Msg<?> msg) {
-
+    public void sendToNode(Msg<String> msg, String nodeId) {
+        if (StringUtil.isEmpty(nodeId))
+            sendToNode(msg);
+        else
+            send(msg, MsgMeta.Topic_Node, nodeId);
     }
 
-    @Override
-    protected boolean canRecvMsg(Msg<?> msg) {
-        return false;
+    public void sendToNode(Msg<String> msg) {
+        send(msg, MsgMeta.Topic_Node);
     }
+
 }
