@@ -129,11 +129,19 @@ public class UserDaoServiceImpl implements UserDaoService {
     }
 
     @Override
-    public UserInfo selectUserInfo(long userId) { //TODO cache
+    public UserInfo selectUserInfo(long userId) {
+        String json = getFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_INFO_ + userId);
+        if (!StringUtil.isEmpty(json)) {
+            return GsonUtil.fromJson(json, UserInfo.class);
+        }
+
         UserInfo userInfo = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
             try {
                 userInfo = session.getMapper(UserInfoMapper.class).selectByPrimaryKey(userId);
+                if (userInfo != null) {
+                    setToRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_INFO_ + userId, GsonUtil.toJson(userInfo), ApiConst.REDIS_EXPIRED_1H);
+                }
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
             }
@@ -169,12 +177,13 @@ public class UserDaoServiceImpl implements UserDaoService {
                 userInfo.setUpdateTime(System.currentTimeMillis());
                 int r = session.getMapper(UserInfoMapper.class).updateByPrimaryKeySelective(userInfo);
                 session.commit();
+                if (r > 0) {
+                    deleteFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_INFO_ + userInfo.getId());
+                }
                 return r;
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
                 session.rollback();
-            } finally {
-                //TODO rm cache redis
             }
         }
         return 0;
@@ -471,10 +480,18 @@ public class UserDaoServiceImpl implements UserDaoService {
 
     @Override
     public UserDeveloper selectUserDeveloper(long userId) {
+        String json = getFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_PERSONAL_ + userId);
+        if (!StringUtil.isEmpty(json)) {
+            return GsonUtil.fromJson(json, UserDeveloper.class);
+        }
+
         UserDeveloper developer = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
             try {
                 developer = session.getMapper(UserDeveloperMapper.class).selectByPrimaryKey(userId);
+                if (developer != null) {
+                    setToRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_PERSONAL_ + userId, GsonUtil.toJson(developer), ApiConst.REDIS_EXPIRED_1H);
+                }
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
             }
@@ -510,12 +527,13 @@ public class UserDaoServiceImpl implements UserDaoService {
                 developer.setUpdateTime(System.currentTimeMillis());
                 int r = session.getMapper(UserDeveloperMapper.class).updateByPrimaryKeySelective(developer);
                 session.commit();
+                if (r > 0) {
+                    deleteFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_PERSONAL_ + developer.getUserId());
+                }
                 return r;
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
                 session.rollback();
-            } finally {
-                //TODO rm cache redis
             }
         }
         return 0;
