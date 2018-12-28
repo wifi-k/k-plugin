@@ -1,7 +1,6 @@
 package tbcloud.user.api.http;
 
 import jframe.core.msg.PluginMsg;
-import jframe.qiniu.QiniuConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.ApiCode;
@@ -529,6 +528,7 @@ public class OpenUserResource extends BaseResource {
             }
             // TODO clean old
 
+
             developer = req.toDeveloper(userInfo.getId());
             developer.setStatus(ApiConst.AUTH_STATUS_WAIT);
             UserDao.updateUserDeveloper(developer);
@@ -606,9 +606,9 @@ public class OpenUserResource extends BaseResource {
         UserInfo userInfo = reqContext.getUserInfo();
 
         // TODO limit req
-        Map<String, String> data = new HashMap<>(2, 1);
+        Map<String, String> data = new HashMap<>(1, 1);
         data.put("token", Qiniu.uploadToken(ApiConst.QINIU_ID_DEVELOPER, null));
-        data.put("bucket", Qiniu.info(ApiConst.QINIU_ID_DEVELOPER, QiniuConfig.BUCKET));
+        //data.put("bucket", Qiniu.info(ApiConst.QINIU_ID_DEVELOPER, QiniuConfig.BUCKET));
         r.setData(data);
         return r;
     }

@@ -13,7 +13,7 @@ public class PersonalAuthReq {
     private String name;
     private String idNum;
     private String imgIdBack;
-    private String imgidUsr;
+    private String imgIdUser;
 
     public String getName() {
         return name;
@@ -39,12 +39,12 @@ public class PersonalAuthReq {
         this.imgIdBack = imgIdBack;
     }
 
-    public String getImgidUsr() {
-        return imgidUsr;
+    public String getImgidUser() {
+        return imgIdUser;
     }
 
-    public void setImgidUsr(String imgidUsr) {
-        this.imgidUsr = imgidUsr;
+    public void setImgidUser(String imgIdUser) {
+        this.imgIdUser = imgIdUser;
     }
 
     public UserDeveloper toDeveloper(long userId) {
@@ -52,7 +52,7 @@ public class PersonalAuthReq {
         developer.setUserId(userId);
         developer.setIdNum(idNum);
         developer.setImgIdBack(imgIdBack);
-        developer.setImgIdUser(imgidUsr);
+        developer.setImgIdUser(imgIdUser);
         return developer;
     }
 
@@ -62,6 +62,6 @@ public class PersonalAuthReq {
      * @return
      */
     public boolean isMissing() {
-        return StringUtil.isEmpty(idNum) || StringUtil.isEmpty(imgIdBack) || StringUtil.isEmpty(imgidUsr);
+        return StringUtil.isEmpty(idNum) || StringUtil.isEmpty(imgIdBack) || StringUtil.isEmpty(imgIdUser);
     }
 }

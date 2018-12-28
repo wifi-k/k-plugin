@@ -91,11 +91,13 @@ public abstract class UserJob extends AbstractJob {
         if (closed) return false;
         try {
             threads.submit(() -> {
+                long ts = System.currentTimeMillis();
                 try {
                     UserJob.this.doJob(msg);
                 } catch (Exception e) {
                     catchException(e, msg);
                 }
+                LOG.info("msg {} use {} ms", msg.getType(), System.currentTimeMillis() - ts);
             });
             return true;
         } catch (Exception e) {
