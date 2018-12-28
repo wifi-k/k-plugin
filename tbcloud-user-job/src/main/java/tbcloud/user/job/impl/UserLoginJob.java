@@ -45,7 +45,8 @@ public class UserLoginJob extends UserJob {
                 }
 
                 if (online.getStatus().intValue() == ApiConst.IS_OFFLINE) {
-                    // TODO delete token in redis
+                    // delete token in redis
+                    deleteFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_TOKEN_ + online.getUserId());
                 }
                 break;
             }
@@ -57,7 +58,8 @@ public class UserLoginJob extends UserJob {
                 }
 
                 if (online.getStatus().intValue() == ApiConst.IS_OFFLINE) {
-                    // TODO delete token in redis
+                    // delete token in redis
+                    deleteFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_OPEN_TOKEN_ + online.getUserId());
                 }
                 break;
             }

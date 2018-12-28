@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.util.GsonUtil;
+import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.dao.service.NodeDaoService;
 import tbcloud.user.dao.service.UserDaoService;
 
@@ -121,6 +122,16 @@ public abstract class UserJob extends AbstractJob {
     protected void catchException(Exception e, Msg<?> msg) {
         LOG.error("submit miss-{}", GsonUtil.toJson(msg));
         LOG.error(e.getMessage(), e);
+    }
+
+    public void deleteFromRedis(String id, String key) {
+        if (StringUtil.isEmpty(key)) return;
+
+        try (redis.clients.jedis.Jedis jedis = Jedis.getJedis(id)) {
+            if (jedis != null) {
+                jedis.del(key);
+            }
+        }
     }
 
 
