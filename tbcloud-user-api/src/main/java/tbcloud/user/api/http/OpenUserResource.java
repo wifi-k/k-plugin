@@ -528,7 +528,6 @@ public class OpenUserResource extends BaseResource {
             }
             // TODO clean old
 
-
             developer = req.toDeveloper(userInfo.getId());
             developer.setStatus(ApiConst.AUTH_STATUS_WAIT);
             UserDao.updateUserDeveloper(developer);

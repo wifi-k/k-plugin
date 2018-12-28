@@ -39,11 +39,11 @@ public class PersonalAuthReq {
         this.imgIdBack = imgIdBack;
     }
 
-    public String getImgidUser() {
+    public String getImgIdUser() {
         return imgIdUser;
     }
 
-    public void setImgidUser(String imgIdUser) {
+    public void setImgIdUser(String imgIdUser) {
         this.imgIdUser = imgIdUser;
     }
 
@@ -62,6 +62,6 @@ public class PersonalAuthReq {
      * @return
      */
     public boolean isMissing() {
-        return StringUtil.isEmpty(idNum) || StringUtil.isEmpty(imgIdBack) || StringUtil.isEmpty(imgIdUser);
+        return StringUtil.isEmpty(name) && StringUtil.isEmpty(idNum) && StringUtil.isEmpty(imgIdBack) && StringUtil.isEmpty(imgIdUser);
     }
 }
