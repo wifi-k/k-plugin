@@ -53,6 +53,7 @@ public class PersonalAuthReq {
         developer.setIdNum(idNum);
         developer.setImgIdBack(imgIdBack);
         developer.setImgIdUser(imgIdUser);
+        developer.setName(name);
         return developer;
     }
 
