@@ -7,10 +7,8 @@ import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.ApiField;
 import tbcloud.lib.api.Result;
-import tbcloud.lib.api.msg.EmailModify;
-import tbcloud.lib.api.msg.MobileVCode;
-import tbcloud.lib.api.msg.MsgType;
-import tbcloud.lib.api.msg.UserLogin;
+import tbcloud.lib.api.msg.*;
+import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.user.api.http.req.*;
@@ -25,10 +23,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * 开放平台 用户相关接口
@@ -526,7 +521,20 @@ public class OpenUserResource extends BaseResource {
                 r.setMsg("auth passwd");
                 return r;
             }
-            // TODO clean old
+            // clean useless keys
+            List<String> deletedKey = new LinkedList<>();
+            String oldImgIdUser = developer.getImgIdUser();
+            if (isUselessKey(oldImgIdUser, req.getImgIdUser())) {
+                deletedKey.add(oldImgIdUser);
+            }
+            String oldImgIdBack = developer.getImgIdBack();
+            if (isUselessKey(oldImgIdBack, req.getImgIdBack())) {
+                deletedKey.add(oldImgIdBack);
+            }
+            if (!deletedKey.isEmpty()) {
+                Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.DELETE_QINIU_OBJECT)
+                        .setValue(GsonUtil.toJson(DeleteQiniuObject.create(ApiConst.QINIU_ID_DEVELOPER, deletedKey))));
+            }
 
             developer = req.toDeveloper(userInfo.getId());
             developer.setStatus(ApiConst.AUTH_STATUS_WAIT);
@@ -534,6 +542,13 @@ public class OpenUserResource extends BaseResource {
         }
 
         return r;
+    }
+
+    private boolean isUselessKey(String oldKey, String newKey) {
+        if (!StringUtil.isEmpty(oldKey) && !StringUtil.isEmpty(newKey) && !oldKey.equals(newKey)) {
+            return true;
+        }
+        return false;
     }
 
     @POST

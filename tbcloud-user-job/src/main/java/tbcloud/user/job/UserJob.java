@@ -43,7 +43,6 @@ public abstract class UserJob extends AbstractJob {
     @InjectService(id = "tbcloud.service.node.dao")
     protected static NodeDaoService NodeDao;
 
-
     public UserJob() {
 
     }
@@ -92,12 +91,13 @@ public abstract class UserJob extends AbstractJob {
         try {
             threads.submit(() -> {
                 long ts = System.currentTimeMillis();
+
                 try {
                     UserJob.this.doJob(msg);
                 } catch (Exception e) {
                     catchException(e, msg);
                 }
-                LOG.info("msg {} use {} ms", msg.getType(), System.currentTimeMillis() - ts);
+                LOG.info("{} msg {}", System.currentTimeMillis() - ts, GsonUtil.toJson(msg));
             });
             return true;
         } catch (Exception e) {

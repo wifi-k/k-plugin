@@ -64,6 +64,11 @@
             <artifactId>tbcloud-httpproxy-dao</artifactId>
             <classifier>plugin</classifier>
         </dependency>
+        <dependency>
+            <groupId>io.github.dzh</groupId>
+            <artifactId>jframe-qiniu</artifactId>
+            <classifier>plugin</classifier>
+        </dependency>
 
 
     </dependencies>

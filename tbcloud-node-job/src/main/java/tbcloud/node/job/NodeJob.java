@@ -98,7 +98,7 @@ public abstract class NodeJob extends AbstractJob {
                 } catch (Exception e) {
                     catchException(e, msg);
                 }
-                LOG.info("msg {} use {} ms", msg.getType(), System.currentTimeMillis() - ts);
+                LOG.info("{} msg {}", System.currentTimeMillis() - ts, GsonUtil.toJson(msg));
             });
             return true;
         } catch (Exception e) {

@@ -17,7 +17,7 @@ import java.util.Map;
  * @date 2018-11-19 16:32
  */
 @Message(isSender = true, isRecver = true, msgTypes = {MsgType.USER_LOGIN, MsgType.EMAIL_MODIFY, MsgType.MOBILE_VCODE,
-        MsgType.NODE_JOIN_SHARE, MsgType.NODE_QUIT_SHARE})
+        MsgType.NODE_JOIN_SHARE, MsgType.NODE_QUIT_SHARE, MsgType.DELETE_QINIU_OBJECT})
 public class UserJobPlugin extends PluginSenderRecver {
 
     static Logger LOG = LoggerFactory.getLogger(UserJobPlugin.class);
@@ -36,6 +36,7 @@ public class UserJobPlugin extends PluginSenderRecver {
         startJob(NodeJoinShareJob.class);
         startJob(NodeQuitShareJob.class);
         startJob(UserLoginJob.class);
+        startJob(QiniuDeleteJob.class);
     }
 
     void startJob(Class<? extends UserJob> clazz) {
