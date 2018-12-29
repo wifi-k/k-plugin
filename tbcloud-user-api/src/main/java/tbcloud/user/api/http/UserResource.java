@@ -210,7 +210,7 @@ public class UserResource extends BaseResource {
         msg.setDate(System.currentTimeMillis());
         msg.setStatus(ApiConst.IS_ONLINE);
         msg.setToken(token);
-        Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.USER_LOGIN).setValue(GsonUtil.toJson(msg)), userInfo.getId());
+        Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.LOGIN_OUT).setValue(GsonUtil.toJson(msg)), userInfo.getId());
 //        Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.USER_LOGIN).setValue(msg));
 
         SignInRsp rsp = new SignInRsp();
@@ -855,7 +855,7 @@ public class UserResource extends BaseResource {
         UserInfo userInfo = reqContext.getUserInfo();
 
         // rm token
-        deleteFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_TOKEN_ + userInfo.getId());
+        //deleteFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_TOKEN_ + userInfo.getId());
 
         // user_online
         UserLogin msg = new UserLogin();
@@ -864,7 +864,7 @@ public class UserResource extends BaseResource {
         msg.setDate(System.currentTimeMillis());
         msg.setStatus(ApiConst.IS_OFFLINE);
 
-        Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.USER_LOGIN).setValue(GsonUtil.toJson(msg)), userInfo.getId());
+        Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.LOGIN_OUT).setValue(GsonUtil.toJson(msg)), userInfo.getId());
 //        Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.USER_LOGIN).setValue(msg));
 
         return r;

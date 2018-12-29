@@ -204,7 +204,9 @@ public class OpenUserResource extends BaseResource {
         msg.setDate(System.currentTimeMillis());
         msg.setStatus(ApiConst.IS_ONLINE);
         msg.setToken(token);
-        Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.USER_LOGIN).setValue(msg));
+        //Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.LOGIN_OUT).setValue(msg));
+        Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.LOGIN_OUT).setValue(GsonUtil.toJson(msg)), userInfo.getId());
+
 
         SignInRsp rsp = new SignInRsp();
         rsp.setToken(token);
@@ -406,7 +408,9 @@ public class OpenUserResource extends BaseResource {
         em.setName(Optional.ofNullable(name).orElse(userInfo.getMobile()));
         em.setToken(emailToken);
 
-        Plugin.send(new PluginMsg<EmailModify>().setType(MsgType.EMAIL_MODIFY).setValue(em));
+//        Plugin.send(new PluginMsg<EmailModify>().setType(MsgType.EMAIL_MODIFY).setValue(em));
+        Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.EMAIL_MODIFY).setValue(GsonUtil.toJson(em)), userInfo.getId());
+
         return r;
     }
 
@@ -478,7 +482,7 @@ public class OpenUserResource extends BaseResource {
         UserInfo userInfo = reqContext.getUserInfo();
 
         // rm token
-        deleteFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_OPEN_TOKEN_ + userInfo.getId());
+        // deleteFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_OPEN_TOKEN_ + userInfo.getId());
 
         // user_online
         UserLogin msg = new UserLogin();
@@ -486,7 +490,10 @@ public class OpenUserResource extends BaseResource {
         msg.setUserId(userInfo.getId());
         msg.setDate(System.currentTimeMillis());
         msg.setStatus(ApiConst.IS_OFFLINE);
-        Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.USER_LOGIN).setValue(msg));
+        //Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.USER_LOGIN).setValue(msg));
+
+        Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.LOGIN_OUT).setValue(GsonUtil.toJson(msg)), userInfo.getId());
+
 
         return r;
     }

@@ -30,10 +30,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
         if (msg instanceof HttpRequest) {
-            if (outChannel != null) { // keepAlive
-                if (outChannel.isActive()) outChannel.close();
-                outChannel = null;
-            }
+            resetState();
 
             // don't print apikey
             long userId = IDUtil.readUserIdFromApikey(((HttpRequest) msg).headers().get(ApiConst.API_APIKEY));
@@ -131,7 +128,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
                         p.addLast(new HttpProxyBackendHandler(ctx, keepAlive));
                     }
                 })
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 30)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10)
                 .option(ChannelOption.SO_TIMEOUT, 30);//TODO config
         //.option(ChannelOption.AUTO_READ, false);
         ChannelFuture f = b.connect(online.getServerIp(), online.getServerPort());

@@ -16,7 +16,7 @@ import tbcloud.user.model.UserOnline;
 public class UserLoginJob extends UserJob {
     @Override
     public int msgType() {
-        return MsgType.USER_LOGIN;
+        return MsgType.LOGIN_OUT;
     }
 
     @Override

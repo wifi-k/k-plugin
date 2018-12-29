@@ -44,11 +44,11 @@ public class HttpProxyServer implements Closeable {
 
     public void start() {
         try {
-            String ip = plugin.getConfig(ConfField.SHARE_HTTPPROXY_HOST, "0.0.0.0");
-            String port = plugin.getConfig(ConfField.SHARE_HTTPPROXY_PORT, "8108");
+            String ip = plugin.getConfig(ConfField.OPEN_HTTPPROXY_HOST, "0.0.0.0");
+            String port = plugin.getConfig(ConfField.OPEN_HTTPPROXY_PORT, "8108");
             InetSocketAddress addr = new InetSocketAddress(ip, Integer.parseInt(port));
 
-            LOG.info("Starting httpproxy server, listen on {}", addr);
+            LOG.info("Start httpproxy server, listen on {}", addr);
 
             parentGroup = new NioEventLoopGroup(1);
             childGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() + 1);

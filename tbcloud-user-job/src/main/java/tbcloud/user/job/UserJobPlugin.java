@@ -16,7 +16,7 @@ import java.util.Map;
  * @author dzh
  * @date 2018-11-19 16:32
  */
-@Message(isSender = true, isRecver = true, msgTypes = {MsgType.USER_LOGIN, MsgType.EMAIL_MODIFY, MsgType.MOBILE_VCODE,
+@Message(isSender = true, isRecver = true, msgTypes = {MsgType.LOGIN_OUT, MsgType.EMAIL_MODIFY, MsgType.MOBILE_VCODE,
         MsgType.NODE_JOIN_SHARE, MsgType.NODE_QUIT_SHARE, MsgType.DELETE_QINIU_OBJECT})
 public class UserJobPlugin extends PluginSenderRecver {
 
