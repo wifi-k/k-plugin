@@ -51,11 +51,9 @@ public class NodeDaoServiceImpl implements NodeDaoService {
         //TODO read cache
         NodeApp nodeApp = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                nodeApp = session.getMapper(NodeAppMapper.class).selectByPrimaryKey(id);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            nodeApp = session.getMapper(NodeAppMapper.class).selectByPrimaryKey(id);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return nodeApp;
     }
@@ -163,11 +161,9 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     public List<NodeInfo> selectNodeInfo(NodeInfoExample example) {
         List<NodeInfo> nodeInfoList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                nodeInfoList = session.getMapper(NodeInfoMapper.class).selectByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            nodeInfoList = session.getMapper(NodeInfoMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return nodeInfoList;
     }
@@ -177,11 +173,9 @@ public class NodeDaoServiceImpl implements NodeDaoService {
         //TODO read cache
         NodeInfo nodeInfo = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                nodeInfo = session.getMapper(NodeInfoMapper.class).selectByPrimaryKey(nodeId);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            nodeInfo = session.getMapper(NodeInfoMapper.class).selectByPrimaryKey(nodeId);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return nodeInfo;
     }
@@ -220,11 +214,9 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     public List<NodeInfoRt> selectNodeInfoLeftJoinRt(NodeInfoRtExample example) {
         List<NodeInfoRt> nodeInfoList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                nodeInfoList = session.getMapper(NodeInfoRtMapper.class).selectByExampleLeftJoinRt(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            nodeInfoList = session.getMapper(NodeInfoRtMapper.class).selectByExampleLeftJoinRt(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return nodeInfoList;
     }
@@ -233,11 +225,9 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     public List<NodeInfoRt> selectNodeRtLeftJoinInfo(NodeRtInfoExample example) {
         List<NodeInfoRt> nodeInfoList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                nodeInfoList = session.getMapper(NodeInfoRtMapper.class).selectByExampleLeftJoinInfo(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            nodeInfoList = session.getMapper(NodeInfoRtMapper.class).selectByExampleLeftJoinInfo(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return nodeInfoList;
     }
@@ -267,11 +257,9 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     public List<NodeRt> selectNodeRt(NodeRtExample example) {
         List<NodeRt> nodeRtList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                nodeRtList = session.getMapper(NodeRtMapper.class).selectByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            nodeRtList = session.getMapper(NodeRtMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return nodeRtList;
     }
@@ -280,11 +268,9 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     public NodeRt selectNodeRt(String nodeId) {
         NodeRt nodeRt = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                nodeRt = session.getMapper(NodeRtMapper.class).selectByPrimaryKey(nodeId);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            nodeRt = session.getMapper(NodeRtMapper.class).selectByPrimaryKey(nodeId);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return nodeRt;
     }
@@ -400,11 +386,9 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     public List<NodeIns> selectNodeIns(NodeInsExample example) {
         List<NodeIns> nodeInsList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                nodeInsList = session.getMapper(NodeInsMapper.class).selectByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            nodeInsList = session.getMapper(NodeInsMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return nodeInsList;
     }

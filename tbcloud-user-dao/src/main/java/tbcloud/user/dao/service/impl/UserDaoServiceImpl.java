@@ -48,14 +48,12 @@ public class UserDaoServiceImpl implements UserDaoService {
 
         UserImgCode imgCode = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                imgCode = session.getMapper(UserImgCodeMapper.class).selectByPrimaryKey(id);
-                if (imgCode != null) {  //TODO async
-                    setToRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_IMGCODE_ + id, GsonUtil.toJson(imgCode), ApiConst.REDIS_EXPIRED_1H);
-                }
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
+            imgCode = session.getMapper(UserImgCodeMapper.class).selectByPrimaryKey(id);
+            if (imgCode != null) {  //TODO async
+                setToRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_IMGCODE_ + id, GsonUtil.toJson(imgCode), ApiConst.REDIS_EXPIRED_1H);
             }
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return imgCode;
     }
@@ -119,11 +117,9 @@ public class UserDaoServiceImpl implements UserDaoService {
     public List<UserInfo> selectUserInfo(UserInfoExample example) {
         List<UserInfo> userInfoList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                userInfoList = session.getMapper(UserInfoMapper.class).selectByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            userInfoList = session.getMapper(UserInfoMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return userInfoList;
     }
@@ -137,14 +133,12 @@ public class UserDaoServiceImpl implements UserDaoService {
 
         UserInfo userInfo = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                userInfo = session.getMapper(UserInfoMapper.class).selectByPrimaryKey(userId);
-                if (userInfo != null) {
-                    setToRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_INFO_ + userId, GsonUtil.toJson(userInfo), ApiConst.REDIS_EXPIRED_1H);
-                }
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
+            userInfo = session.getMapper(UserInfoMapper.class).selectByPrimaryKey(userId);
+            if (userInfo != null) {
+                setToRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_INFO_ + userId, GsonUtil.toJson(userInfo), ApiConst.REDIS_EXPIRED_1H);
             }
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return userInfo;
     }
@@ -193,11 +187,9 @@ public class UserDaoServiceImpl implements UserDaoService {
     public UserOnline selectUserOnline(long userId) {
         UserOnline userOnline = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                userOnline = session.getMapper(UserOnlineMapper.class).selectByPrimaryKey(userId);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            userOnline = session.getMapper(UserOnlineMapper.class).selectByPrimaryKey(userId);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return userOnline;
     }
@@ -245,11 +237,9 @@ public class UserDaoServiceImpl implements UserDaoService {
     public List<UserOnline> selectUserOnline(UserOnlineExample example) {
         List<UserOnline> userOnlineList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                userOnlineList = session.getMapper(UserOnlineMapper.class).selectByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            userOnlineList = session.getMapper(UserOnlineMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return userOnlineList;
     }
@@ -274,11 +264,9 @@ public class UserDaoServiceImpl implements UserDaoService {
     public List<UserShareRecord> selectUserShareRecord(UserShareRecordExample example) {
         List<UserShareRecord> shareRecordList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                shareRecordList = session.getMapper(UserShareRecordMapper.class).selectByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            shareRecordList = session.getMapper(UserShareRecordMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return shareRecordList;
     }
@@ -308,11 +296,9 @@ public class UserDaoServiceImpl implements UserDaoService {
     public List<UserShareDay> selectUserShareDay(UserShareDayExample example) {
         List<UserShareDay> shareDayList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                shareDayList = session.getMapper(UserShareDayMapper.class).selectByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            shareDayList = session.getMapper(UserShareDayMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return shareDayList;
     }
@@ -342,11 +328,9 @@ public class UserDaoServiceImpl implements UserDaoService {
     public List<UserShareSum> selectUserShareSum(UserShareSumExample example) {
         List<UserShareSum> shareSumList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                shareSumList = session.getMapper(UserShareSumMapper.class).selectByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            shareSumList = session.getMapper(UserShareSumMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return shareSumList;
     }
@@ -376,11 +360,9 @@ public class UserDaoServiceImpl implements UserDaoService {
     public UserShareSum selectUserShareSum(long userId) {
         UserShareSum shareSum = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                shareSum = session.getMapper(UserShareSumMapper.class).selectByPrimaryKey(userId);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            shareSum = session.getMapper(UserShareSumMapper.class).selectByPrimaryKey(userId);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return shareSum;
     }
@@ -388,11 +370,9 @@ public class UserDaoServiceImpl implements UserDaoService {
     @Override
     public long countUserShareDay(UserShareDayExample example) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                return session.getMapper(UserShareDayMapper.class).countByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            return session.getMapper(UserShareDayMapper.class).countByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return -1L;
     }
@@ -401,11 +381,9 @@ public class UserDaoServiceImpl implements UserDaoService {
     public OpenOnline selectOpenOnline(long userId) {
         OpenOnline online = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                online = session.getMapper(OpenOnlineMapper.class).selectByPrimaryKey(userId);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            online = session.getMapper(OpenOnlineMapper.class).selectByPrimaryKey(userId);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return online;
     }
@@ -453,11 +431,9 @@ public class UserDaoServiceImpl implements UserDaoService {
     public List<OpenOnline> selectOpenOnline(OpenOnlineExample example) {
         List<OpenOnline> onlineList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                onlineList = session.getMapper(OpenOnlineMapper.class).selectByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            onlineList = session.getMapper(OpenOnlineMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return onlineList;
     }
@@ -487,14 +463,12 @@ public class UserDaoServiceImpl implements UserDaoService {
 
         UserDeveloper developer = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                developer = session.getMapper(UserDeveloperMapper.class).selectByPrimaryKey(userId);
-                if (developer != null) {
-                    setToRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_PERSONAL_ + userId, GsonUtil.toJson(developer), ApiConst.REDIS_EXPIRED_1H);
-                }
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
+            developer = session.getMapper(UserDeveloperMapper.class).selectByPrimaryKey(userId);
+            if (developer != null) {
+                setToRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_PERSONAL_ + userId, GsonUtil.toJson(developer), ApiConst.REDIS_EXPIRED_1H);
             }
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return developer;
     }
@@ -543,11 +517,9 @@ public class UserDaoServiceImpl implements UserDaoService {
     public List<UserDeveloper> selectUserDeveloper(UserDeveloperExample example) {
         List<UserDeveloper> developers = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                developers = session.getMapper(UserDeveloperMapper.class).selectByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            developers = session.getMapper(UserDeveloperMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return developers;
     }

@@ -65,11 +65,9 @@ public class HttpProxyDaoServiceImpl implements HttpProxyDaoService {
     public List<HttpProxyRecord> selectHttpProxyRecord(HttpProxyRecordExample example) {
         List<HttpProxyRecord> httpProxyRecords = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                httpProxyRecords = session.getMapper(HttpProxyRecordMapper.class).selectByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            httpProxyRecords = session.getMapper(HttpProxyRecordMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return httpProxyRecords;
     }
@@ -78,11 +76,9 @@ public class HttpProxyDaoServiceImpl implements HttpProxyDaoService {
     public HttpProxyRecord selectHttpProxyRecord(String id) {
         HttpProxyRecord httpProxyRecord = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                httpProxyRecord = session.getMapper(HttpProxyRecordMapper.class).selectByPrimaryKey(id);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            httpProxyRecord = session.getMapper(HttpProxyRecordMapper.class).selectByPrimaryKey(id);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return httpProxyRecord;
     }
@@ -130,11 +126,9 @@ public class HttpProxyDaoServiceImpl implements HttpProxyDaoService {
     public HttpProxyOnline selectHttpProxyOnline(String nodeId) {
         HttpProxyOnline httpProxyOnline = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                httpProxyOnline = session.getMapper(HttpProxyOnlineMapper.class).selectByPrimaryKey(nodeId);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            httpProxyOnline = session.getMapper(HttpProxyOnlineMapper.class).selectByPrimaryKey(nodeId);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return httpProxyOnline;
     }
@@ -161,11 +155,9 @@ public class HttpProxyDaoServiceImpl implements HttpProxyDaoService {
     public List<HttpProxyOnline> selectHttpProxyOnline(HttpProxyOnlineExample example) {
         List<HttpProxyOnline> httpProxyOnlineList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                httpProxyOnlineList = session.getMapper(HttpProxyOnlineMapper.class).selectByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            httpProxyOnlineList = session.getMapper(HttpProxyOnlineMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return httpProxyOnlineList;
     }

@@ -43,11 +43,9 @@ public class CommonDaoServiceImpl implements CommonDaoService {
     public List<IpInfo> selectIpInfo(IpInfoExample example) {
         List<IpInfo> ipInfoList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                ipInfoList = session.getMapper(IpInfoMapper.class).selectByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            ipInfoList = session.getMapper(IpInfoMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return ipInfoList;
     }
@@ -56,11 +54,9 @@ public class CommonDaoServiceImpl implements CommonDaoService {
     public IpInfo selectIpInfo(String ip) {
         IpInfo ipInfo = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                ipInfo = session.getMapper(IpInfoMapper.class).selectByPrimaryKey(ip);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            ipInfo = session.getMapper(IpInfoMapper.class).selectByPrimaryKey(ip);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return ipInfo;
     }
@@ -107,11 +103,9 @@ public class CommonDaoServiceImpl implements CommonDaoService {
     @Override
     public List<Province> selectProvince(ProvinceExample example) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                return session.getMapper(ProvinceMapper.class).selectByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            return session.getMapper(ProvinceMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return Collections.emptyList();
     }
@@ -119,11 +113,9 @@ public class CommonDaoServiceImpl implements CommonDaoService {
     @Override
     public List<City> selectCity(CityExample example) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                return session.getMapper(CityMapper.class).selectByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            return session.getMapper(CityMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return Collections.emptyList();
     }
@@ -131,11 +123,9 @@ public class CommonDaoServiceImpl implements CommonDaoService {
     @Override
     public List<Area> selectArea(AreaExample example) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                return session.getMapper(AreaMapper.class).selectByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            return session.getMapper(AreaMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return Collections.emptyList();
     }
@@ -143,11 +133,9 @@ public class CommonDaoServiceImpl implements CommonDaoService {
     @Override
     public long countProvince(ProvinceExample example) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                return session.getMapper(ProvinceMapper.class).countByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            return session.getMapper(ProvinceMapper.class).countByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return -1;
     }
@@ -155,11 +143,9 @@ public class CommonDaoServiceImpl implements CommonDaoService {
     @Override
     public long countCity(CityExample example) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                return session.getMapper(CityMapper.class).countByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            return session.getMapper(CityMapper.class).countByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return -1;
     }
@@ -167,11 +153,9 @@ public class CommonDaoServiceImpl implements CommonDaoService {
     @Override
     public long countArea(AreaExample example) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                return session.getMapper(AreaMapper.class).countByExample(example);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            return session.getMapper(AreaMapper.class).countByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return -1;
     }
@@ -179,12 +163,10 @@ public class CommonDaoServiceImpl implements CommonDaoService {
     @Override
     public Province selectProvince(String provinceId) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                return session.getMapper(ProvinceMapper.class).selectByPrimaryKey(provinceId);
-                // setProvinceToRedis(province);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            return session.getMapper(ProvinceMapper.class).selectByPrimaryKey(provinceId);
+            // setProvinceToRedis(province);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return null;
     }
@@ -192,11 +174,9 @@ public class CommonDaoServiceImpl implements CommonDaoService {
     @Override
     public City selectCity(String cityId) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                return session.getMapper(CityMapper.class).selectByPrimaryKey(cityId);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            return session.getMapper(CityMapper.class).selectByPrimaryKey(cityId);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return null;
     }
@@ -204,11 +184,9 @@ public class CommonDaoServiceImpl implements CommonDaoService {
     @Override
     public Area selectArea(String areaId) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            try {
-                return session.getMapper(AreaMapper.class).selectByPrimaryKey(areaId);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
+            return session.getMapper(AreaMapper.class).selectByPrimaryKey(areaId);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
         }
         return null;
     }
