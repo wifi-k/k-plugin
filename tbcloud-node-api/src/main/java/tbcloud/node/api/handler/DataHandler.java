@@ -68,6 +68,7 @@ public abstract class DataHandler<T extends DataReq> implements Runnable {
 
     @Override
     public void run() {
+        LOG.info("run {} ", getClass().getName());
         //TODO thread exception handle
         T dataReq = null;
         try {
