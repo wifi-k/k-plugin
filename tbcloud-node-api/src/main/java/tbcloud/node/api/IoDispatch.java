@@ -58,7 +58,9 @@ public class IoDispatch implements Closeable {
                 LOG.info("dispatch {} {}", context.request().id(), dataType);
                 switch (dataType) {
                     case DataType.AUTH:
+                        LOG.info("dispatch {} auth", context.request().id());
                         handlerThread.submit(new AuthHandler(context));
+                        LOG.info("dispatch {} auth end", context.request().id());
                         break;
                     case DataType.HEARTBEAT:
                         handlerThread.submit(new HeartbeatHandler(context));
