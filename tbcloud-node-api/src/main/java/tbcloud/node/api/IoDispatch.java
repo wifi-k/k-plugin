@@ -55,6 +55,7 @@ public class IoDispatch implements Closeable {
             try {
                 ByteBufNodePacket req = context.request();
                 int dataType = req.dataType();
+                LOG.info("dispatch {} {}", context.request().id(), dataType);
                 switch (dataType) {
                     case DataType.AUTH:
                         handlerThread.submit(new AuthHandler(context));
