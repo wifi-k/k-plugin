@@ -61,8 +61,7 @@ public class AuthHandler extends DataHandler<NodeAuth> {
         info.setUpstream(dataReq.getUpstream());
         info.setDownstream(dataReq.getDownstream());
         String ip = context().remote().getAddress().getHostAddress();
-        if (!ip.equals(nodeInfo.getIp()))
-            nodeInfo.setIp(ip);
+        if (!ip.equals(nodeInfo.getIp())) info.setIp(ip);
         NodeDao.updateNodeInfo(info);
 
         // insert ip_info TODO aysnc
