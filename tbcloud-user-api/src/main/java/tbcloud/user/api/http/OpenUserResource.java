@@ -146,7 +146,7 @@ public class OpenUserResource extends BaseResource {
         userInfo.setName(req.getName());
         //TODO userInfo.setInviteCode("");
         userInfo.setPasswd(StringUtil.MD5Encode(req.getPasswd() + ApiConst.USER_PASSWD_SALT_1));
-        userInfo.setApikey(IDUtil.genApikeyV1(userInfo.getId()));
+        //userInfo.setApikey(IDUtil.genApikeyV1(userInfo.getId())); //TODO 这里没有id
         userInfo.setRole(ApiConst.USER_ROLE_DEVELOPER);
 
         if (UserDao.insertUserInfo(userInfo) != 1) {

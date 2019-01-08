@@ -7,5 +7,4 @@ package tbcloud.open.httpproxy.client;
 public class TestJsop {
 
 
-
 }
