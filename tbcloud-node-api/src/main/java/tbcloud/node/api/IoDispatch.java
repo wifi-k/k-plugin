@@ -50,6 +50,7 @@ public class IoDispatch implements Closeable {
     }
 
     public void dispatch(final IoContext context) {
+        LOG.info("dispatch {}", context.request().id());
         dispatchThread.submit(() -> {
             try {
                 ByteBufNodePacket req = context.request();
