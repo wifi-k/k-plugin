@@ -9,6 +9,7 @@ import tbcloud.node.api.IoContext;
 import tbcloud.node.model.NodeConst;
 import tbcloud.node.model.NodeInfo;
 import tbcloud.node.model.NodeRt;
+import tbcloud.node.protocol.PacketConst;
 import tbcloud.node.protocol.data.DataRsp;
 import tbcloud.node.protocol.data.NodeAuth;
 import tbcloud.node.protocol.data.rsp.NodeAuthRsp;
@@ -86,7 +87,7 @@ public class AuthHandler extends DataHandler<NodeAuth> {
 
     @Override
     protected NodeAuth decodeDataReq(IoContext context) {
-        //LOG.info("data {}", new String(context.request().data().array(), PacketConst.CHARSET));
+        LOG.info("data {}", new String(context.request().data().array(), PacketConst.UTF_8));
         return context.dataCodec().decode(context.request().data(), NodeAuth.class);
     }
 

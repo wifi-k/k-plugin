@@ -21,6 +21,7 @@ import tbcloud.node.protocol.PacketConst;
 import tbcloud.node.protocol.data.DataReq;
 import tbcloud.node.protocol.data.DataRsp;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 
 /**
@@ -68,7 +69,17 @@ public abstract class DataHandler<T extends DataReq> implements Runnable {
     @Override
     public void run() {
         //TODO thread exception handle
-        T dataReq = decodeDataReq(context);
+        T dataReq = null;
+        try {
+            dataReq = decodeDataReq(context);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+            try {
+                context.write(ApiCode.ERROR_UNKNOWN);
+            } catch (IOException e1) {
+            }
+            return;
+        }
 
         LOG.info("run {} {}", context.request().id(), dataReq);
         if (isValidToken(context, dataReq)) {
