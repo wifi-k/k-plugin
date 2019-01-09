@@ -724,7 +724,7 @@ public class UserResource extends BaseResource {
         }
         // status
         List<Integer> status = req.getStatus();
-        if (status != null || status.size() > 0) {
+        if (status != null && status.size() > 0) {
             exampleCritera.andStatusIn(status);
             countExampleCriteria.andStatusIn(status);
         }
