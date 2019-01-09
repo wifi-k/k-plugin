@@ -35,7 +35,7 @@ public class IoDispatch implements Closeable {
     private ExecutorService dispatchThread = Executors.newSingleThreadExecutor();
 
     // TODO
-    private ExecutorService handlerThread = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+    private ExecutorService handlerThread = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2 + 1);
 
     public IoDispatch(NodeApiServerNio server) {
         this.server = server;
@@ -50,7 +50,7 @@ public class IoDispatch implements Closeable {
     }
 
     public void dispatch(final IoContext context) {
-        LOG.info("dispatch {}", context.request().id());
+        //LOG.info("dispatch {}", context.request().id());
         dispatchThread.submit(() -> {
             try {
                 ByteBufNodePacket req = context.request();
@@ -58,9 +58,9 @@ public class IoDispatch implements Closeable {
                 LOG.info("dispatch {} {}", context.request().id(), dataType);
                 switch (dataType) {
                     case DataType.AUTH:
-                        LOG.info("dispatch {} auth", context.request().id());
+                        //LOG.info("dispatch {} auth", context.request().id());
                         handlerThread.submit(new AuthHandler(context));
-                        LOG.info("dispatch {} auth end", context.request().id());
+                        //LOG.info("dispatch {} auth end", context.request().id());
                         break;
                     case DataType.HEARTBEAT:
                         handlerThread.submit(new HeartbeatHandler(context));
