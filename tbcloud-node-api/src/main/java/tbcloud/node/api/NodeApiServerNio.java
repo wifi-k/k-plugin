@@ -100,12 +100,16 @@ public class NodeApiServerNio implements Closeable {
                             SocketAddress remote = ch.receive(recvBuf);
                             recvBuf.flip();
                             //LOG.info("recvBuf {} {} {}", recvBuf.position(), recvBuf.limit(), recvBuf.capacity());
+                            if (recvBuf.limit() < PacketConst.MIN_SIZE) {
+                                LOG.debug("discard {} {}", remote, recvBuf);
+                                continue;
+                            }
                             // calc crc32
                             crc32.update(recvBuf.array(), 0, recvBuf.limit() - 8);
                             long hash = crc32.getValue();
                             ByteBufNodePacket req = codec.decode(recvBuf);
                             if (req == null) {
-                                LOG.debug("ignore {} req is null", remote);
+                                LOG.debug("discard {} {}", remote, recvBuf);
                                 continue;
                             }
                             LOG.info("{} -> {} {} {} {}", remote, req.version(), req.id(), req.token(), req.dataType());
