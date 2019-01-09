@@ -103,7 +103,7 @@ public class MobileVCodeJob extends UserJob {
         LOG.info("send sms {} {}", id, GsonUtil.toJson(request));
         try {
             SendSmsResponse rsp = SmsService.send(id, request);
-            if (!"OK".equalsIgnoreCase(rsp.getCode())) {
+            if (rsp != null && !"OK".equalsIgnoreCase(rsp.getCode())) {
                 LOG.warn("send error {}", GsonUtil.toJson(rsp));
             }
         } catch (Exception e) {  //TODO
