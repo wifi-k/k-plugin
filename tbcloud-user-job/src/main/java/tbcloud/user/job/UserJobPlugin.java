@@ -52,7 +52,7 @@ public class UserJobPlugin extends PluginSenderRecver {
 
     @Override
     protected void doRecvMsg(Msg<?> msg) {
-        LOG.info("recv msg-{}", msg);
+        LOG.info("recv msg {}", msg);
         int type = msg.getType();
         UserJob job = jobs.get(type);
         if (job == null) {

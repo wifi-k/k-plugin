@@ -1,7 +1,7 @@
 package tbcloud.user.job.impl;
 
 import com.aliyuncs.dysmsapi.model.v20170525.SendSmsRequest;
-import com.aliyuncs.exceptions.ClientException;
+import com.aliyuncs.dysmsapi.model.v20170525.SendSmsResponse;
 import com.aliyuncs.http.MethodType;
 import jframe.aliyun.service.SMSService;
 import jframe.core.msg.Msg;
@@ -102,10 +102,12 @@ public class MobileVCodeJob extends UserJob {
     void doSend(String id, SendSmsRequest request) {
         LOG.info("send sms {} {}", id, GsonUtil.toJson(request));
         try {
-            SmsService.send(id, request);
-        } catch (ClientException e) {
+            SendSmsResponse rsp = SmsService.send(id, request);
+            if (!"OK".equalsIgnoreCase(rsp.getCode())) {
+                LOG.warn("send error {}", GsonUtil.toJson(rsp));
+            }
+        } catch (Exception e) {  //TODO
             LOG.error(e.getMessage(), e);
-            //TODO retry
         }
     }
 
