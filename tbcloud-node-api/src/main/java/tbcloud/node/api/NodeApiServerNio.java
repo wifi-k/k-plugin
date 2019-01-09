@@ -104,6 +104,10 @@ public class NodeApiServerNio implements Closeable {
                             crc32.update(recvBuf.array(), 0, recvBuf.limit() - 8);
                             long hash = crc32.getValue();
                             ByteBufNodePacket req = codec.decode(recvBuf);
+                            if (req == null) {
+                                LOG.debug("ignore {} req is null", remote);
+                                continue;
+                            }
                             LOG.info("{} -> {} {} {} {}", remote, req.version(), req.id(), req.token(), req.dataType());
 
                             IoContext context = dispatch.context(ch, req, remote);
