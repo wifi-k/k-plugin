@@ -732,7 +732,7 @@ public class UserResource extends BaseResource {
         exampleCritera.andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
         countExampleCriteria.andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
         // page
-        example.setOrderByClause("update_time desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
+        example.setOrderByClause("create_time desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
 
         List<NodeInfoRt> nodeList = NodeDao.selectNodeRtLeftJoinInfo(example);
         long count = NodeDao.countNodeRt(countExample); //TODO cache
