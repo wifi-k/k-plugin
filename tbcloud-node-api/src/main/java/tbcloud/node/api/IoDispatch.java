@@ -32,9 +32,6 @@ public class IoDispatch implements Closeable {
     private DataCodecFactory dataCodecFactory = new DefaultDataCodecFactory(); //TODO
 
     // TODO
-    private ExecutorService dispatchThread = Executors.newSingleThreadExecutor();
-
-    // TODO
     private ExecutorService handlerThread = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2 + 1);
 
     public IoDispatch(NodeApiServerNio server) {
@@ -50,31 +47,29 @@ public class IoDispatch implements Closeable {
     }
 
     public void dispatch(final IoContext context) {
-        dispatchThread.submit(() -> {
-            try {
-                ByteBufNodePacket req = context.request();
-                int dataType = req.dataType();
-                switch (dataType) {
-                    case DataType.AUTH:
-                        handlerThread.submit(new AuthHandler(context));
-                        break;
-                    case DataType.HEARTBEAT:
-                        handlerThread.submit(new HeartbeatHandler(context));
-                        break;
-                    case DataType.MONITOR:
-                        handlerThread.submit(new MonitorInfoHandler(context));
-                        break;
-                    case DataType.INS_STATUS:
-                        handlerThread.submit(new InsStatusHandler(context));
-                        break;
-                    default:
-                        LOG.warn("unknown packet {} {} {}", req.id(), req.token(), req.dataType());
-                }
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e); //TODO
+        try {
+            ByteBufNodePacket req = context.request();
+            int dataType = req.dataType();
+            switch (dataType) {
+                case DataType.AUTH:
+                    handlerThread.submit(new AuthHandler(context));
+                    break;
+                case DataType.HEARTBEAT:
+                    handlerThread.submit(new HeartbeatHandler(context));
+                    break;
+                case DataType.MONITOR:
+                    handlerThread.submit(new MonitorInfoHandler(context));
+                    break;
+                case DataType.INS_STATUS:
+                    handlerThread.submit(new InsStatusHandler(context));
+                    break;
+                default:
+                    LOG.warn("unknown packet {} {} {}", req.id(), req.token(), req.dataType());
             }
-            //LOG.info("dispatch {}", context.request().id());
-        });
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e); //TODO
+        }
+        //LOG.info("dispatch {}", context.request().id());
     }
 
     public IoContext context(DatagramChannel chanenl, ByteBufNodePacket req, SocketAddress remote) {
@@ -83,13 +78,6 @@ public class IoDispatch implements Closeable {
 
     @Override
     public void close() throws IOException {
-        dispatchThread.shutdown();
-        try { //TODO
-            dispatchThread.awaitTermination(60, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            LOG.error(e.getMessage(), e);
-        }
-
         handlerThread.shutdown();
         try {
             handlerThread.awaitTermination(60, TimeUnit.SECONDS);
