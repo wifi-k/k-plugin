@@ -6,7 +6,17 @@ package tbcloud.user.api.http.req;
  */
 public class NodeListReq extends PageReq {
 
+    private String nodeId;
+
     private Integer status = -1;
+
+    public String getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
 
     public Integer getStatus() {
         return status;

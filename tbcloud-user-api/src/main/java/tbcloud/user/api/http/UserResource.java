@@ -505,7 +505,12 @@ public class UserResource extends BaseResource {
                 return r;
             }
         } else {  //update
-            //TODO check binded
+            if (nodeInfo.getIsBind() == NodeConst.IS_BIND) {
+                r.setCode(ApiCode.INVALID_PARAM);
+                r.setMsg(nodeId + " be bound!");
+                return r;
+            }
+
             Long ownUserId = nodeInfo.getUserId();
             if (ownUserId != null && ownUserId != userInfo.getId()) {
                 r.setCode(ApiCode.USR_INVALID);
@@ -673,6 +678,7 @@ public class UserResource extends BaseResource {
         unbindNode.setNodeId(nodeId);
         unbindNode.setIsBind(NodeConst.IS_UNBIND);
         unbindNode.setUnbindTime(System.currentTimeMillis());
+        unbindNode.setUserId(0L);
         NodeDao.updateNodeInfo(unbindNode);
 
         // update node_rt
@@ -703,23 +709,32 @@ public class UserResource extends BaseResource {
         Integer pageSize = req.getPageSize();
 
         NodeRtInfoExample example = new NodeRtInfoExample();
+        NodeRtInfoExample.Criteria exampleCritera = example.createCriteria();
+
         NodeRtExample countExample = new NodeRtExample(); //TODO opt
+        NodeRtExample.Criteria countExampleCriteria = countExample.createCriteria();
+
+        // userId
+        exampleCritera.andUserIdEqualTo(userInfo.getId());
+        countExampleCriteria.andUserIdEqualTo(userInfo.getId());
+        // nodeId
+        if (!StringUtil.isEmpty(req.getNodeId())) {
+            exampleCritera.andNodeIdLike(req.getNodeId());
+            countExampleCriteria.andNodeIdLike(req.getNodeId());
+        }
+        // status
         Integer status = req.getStatus();
         if (status == null || status < 0) { //search all
-            example.createCriteria().andUserIdEqualTo(userInfo.getId()).andStatusGreaterThanOrEqualTo(0).
-                    andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
-            countExample.createCriteria().andUserIdEqualTo(userInfo.getId()).andStatusGreaterThanOrEqualTo(0).
-                    andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+            exampleCritera.andStatusGreaterThanOrEqualTo(0).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+            countExampleCriteria.andStatusGreaterThanOrEqualTo(0).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
         } else {
-            example.createCriteria().andUserIdEqualTo(userInfo.getId()).andStatusEqualTo(status).
-                    andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
-            countExample.createCriteria().andUserIdEqualTo(userInfo.getId()).andStatusEqualTo(status).
-                    andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+            exampleCritera.andStatusEqualTo(status).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+            countExampleCriteria.andStatusEqualTo(status).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
         }
-        example.setOrderByClause("create_time desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
+        // page
+        example.setOrderByClause("update_time desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
+
         List<NodeInfoRt> nodeList = NodeDao.selectNodeRtLeftJoinInfo(example);
-
-
         long count = NodeDao.countNodeRt(countExample); //TODO cache
 
         // TODO firmwareUpgrade NodeRsp
