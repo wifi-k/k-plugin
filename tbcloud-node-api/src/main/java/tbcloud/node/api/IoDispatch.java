@@ -17,7 +17,9 @@ import java.net.SocketAddress;
 import java.nio.channels.DatagramChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author dzh
@@ -31,8 +33,8 @@ public class IoDispatch implements Closeable {
 
     private DataCodecFactory dataCodecFactory = new DefaultDataCodecFactory(); //TODO
 
-    // TODO
-    private ExecutorService handlerThread = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2 + 1);
+    // TODO reject
+    private ExecutorService handlerThread = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2 + 1, new DefaultThreadFactory());
 
     public IoDispatch(NodeApiServerNio server) {
         this.server = server;
@@ -52,7 +54,7 @@ public class IoDispatch implements Closeable {
             int dataType = req.dataType();
             switch (dataType) {
                 case DataType.AUTH:
-                    handlerThread.submit(new AuthHandler(context));
+                    handlerThread.submit(new AuthHandler(context)).get(1, TimeUnit.SECONDS); //TODO
                     break;
                 case DataType.HEARTBEAT:
                     handlerThread.submit(new HeartbeatHandler(context));
@@ -87,4 +89,33 @@ public class IoDispatch implements Closeable {
 
     }
 
+    private static class DefaultThreadFactory implements ThreadFactory {
+        private static final AtomicInteger poolNumber = new AtomicInteger(1);
+        private final ThreadGroup group;
+        private final AtomicInteger threadNumber = new AtomicInteger(1);
+        private final String namePrefix;
+
+        DefaultThreadFactory() {
+            SecurityManager s = System.getSecurityManager();
+            group = (s != null) ? s.getThreadGroup() :
+                    Thread.currentThread().getThreadGroup();
+            namePrefix = "IoDispatch-" +
+                    poolNumber.getAndIncrement() +
+                    "-thread-";
+        }
+
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(group, r,
+                    namePrefix + threadNumber.getAndIncrement(),
+                    0);
+            if (t.isDaemon())
+                t.setDaemon(false);
+            if (t.getPriority() != Thread.NORM_PRIORITY)
+                t.setPriority(Thread.NORM_PRIORITY);
+            return t;
+        }
+    }
+
 }
+
+
