@@ -719,8 +719,8 @@ public class UserResource extends BaseResource {
         countExampleCriteria.andUserIdEqualTo(userInfo.getId());
         // nodeId
         if (!StringUtil.isEmpty(req.getNodeId())) {
-            exampleCritera.andNodeIdLike(req.getNodeId());
-            countExampleCriteria.andNodeIdLike(req.getNodeId());
+            exampleCritera.andNodeIdLike(req.getNodeId() + "%");
+            countExampleCriteria.andNodeIdLike(req.getNodeId() + "%");
         }
         // status
         List<Integer> status = req.getStatus();
