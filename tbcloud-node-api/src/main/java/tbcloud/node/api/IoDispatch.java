@@ -51,7 +51,6 @@ public class IoDispatch implements Closeable {
 
     public void dispatch(final IoContext context) {
         dispatchThread.submit(() -> {
-            long st = System.currentTimeMillis();
             try {
                 ByteBufNodePacket req = context.request();
                 int dataType = req.dataType();
@@ -74,7 +73,7 @@ public class IoDispatch implements Closeable {
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e); //TODO
             }
-            LOG.info("dispatch {} {}", context.request().id(), System.currentTimeMillis() - st);
+            //LOG.info("dispatch {}", context.request().id());
         });
     }
 

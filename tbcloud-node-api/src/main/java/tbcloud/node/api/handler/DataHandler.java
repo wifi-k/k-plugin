@@ -77,7 +77,8 @@ public abstract class DataHandler<T extends DataReq> implements Runnable {
             }
             return;
         }
-        LOG.info("run {} {}", context.request().id(), dataReq);
+
+        long st = System.currentTimeMillis();
         if (isValidToken(context, dataReq)) {
             DataRsp<?> rsp = null;
             try {
@@ -87,14 +88,15 @@ public abstract class DataHandler<T extends DataReq> implements Runnable {
                 catchException(e, dataReq);
                 if (rsp != null) LOG.error("write error! {}", rsp);
             }
+            LOG.info("run succ {} {} {}", context.request().id(), System.currentTimeMillis() - st, dataReq);
         } else {
             try { // invalid token, maybe expired
                 context.write(ApiCode.TOKEN_INVALID);
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
             }
+            LOG.info("run fail {} {} {}", context.request().id(), System.currentTimeMillis() - st, dataReq);
         }
-
     }
 
     protected abstract DataRsp<?> handle(T dataReq);
