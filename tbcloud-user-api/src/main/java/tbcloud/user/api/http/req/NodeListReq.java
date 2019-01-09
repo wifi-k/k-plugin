@@ -1,5 +1,7 @@
 package tbcloud.user.api.http.req;
 
+import java.util.List;
+
 /**
  * @author dzh
  * @date 2018-11-20 15:26
@@ -8,7 +10,7 @@ public class NodeListReq extends PageReq {
 
     private String nodeId;
 
-    private Integer status = -1;
+    private List<Integer> status;
 
     public String getNodeId() {
         return nodeId;
@@ -18,11 +20,11 @@ public class NodeListReq extends PageReq {
         this.nodeId = nodeId;
     }
 
-    public Integer getStatus() {
+    public List<Integer> getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(List<Integer> status) {
         this.status = status;
     }
 }

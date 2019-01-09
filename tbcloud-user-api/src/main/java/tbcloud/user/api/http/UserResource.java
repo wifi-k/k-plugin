@@ -723,14 +723,14 @@ public class UserResource extends BaseResource {
             countExampleCriteria.andNodeIdLike(req.getNodeId());
         }
         // status
-        Integer status = req.getStatus();
-        if (status == null || status < 0) { //search all
-            exampleCritera.andStatusGreaterThanOrEqualTo(0).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
-            countExampleCriteria.andStatusGreaterThanOrEqualTo(0).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
-        } else {
-            exampleCritera.andStatusEqualTo(status).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
-            countExampleCriteria.andStatusEqualTo(status).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        List<Integer> status = req.getStatus();
+        if (status != null || status.size() > 0) {
+            exampleCritera.andStatusIn(status);
+            countExampleCriteria.andStatusIn(status);
         }
+        // not delete
+        exampleCritera.andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        countExampleCriteria.andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
         // page
         example.setOrderByClause("update_time desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
 
