@@ -148,6 +148,7 @@ public class NodeApiServerNio implements Closeable {
         } finally {
             dispatch.close();
         }
+        LOG.info("{} closed", getClass().getName());
     }
 
     private void closeChannel(Selector sel) throws IOException {

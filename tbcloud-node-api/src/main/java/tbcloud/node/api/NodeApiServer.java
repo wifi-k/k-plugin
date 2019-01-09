@@ -121,6 +121,7 @@ public class NodeApiServer implements Closeable {
         } finally {
             dispatch.close();
         }
+        LOG.info("{} closed", getClass().getName());
     }
 
     private void closeChannel() throws IOException {

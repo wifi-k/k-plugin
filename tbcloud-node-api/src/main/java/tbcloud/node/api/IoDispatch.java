@@ -50,17 +50,14 @@ public class IoDispatch implements Closeable {
     }
 
     public void dispatch(final IoContext context) {
-        //LOG.info("dispatch {}", context.request().id());
         dispatchThread.submit(() -> {
+            long st = System.currentTimeMillis();
             try {
                 ByteBufNodePacket req = context.request();
                 int dataType = req.dataType();
-                LOG.info("dispatch {} {}", context.request().id(), dataType);
                 switch (dataType) {
                     case DataType.AUTH:
-                        //LOG.info("dispatch {} auth", context.request().id());
                         handlerThread.submit(new AuthHandler(context));
-                        //LOG.info("dispatch {} auth end", context.request().id());
                         break;
                     case DataType.HEARTBEAT:
                         handlerThread.submit(new HeartbeatHandler(context));
@@ -77,6 +74,7 @@ public class IoDispatch implements Closeable {
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e); //TODO
             }
+            LOG.info("dispatch {} {}", context.request().id(), System.currentTimeMillis() - st);
         });
     }
 

@@ -68,20 +68,15 @@ public abstract class DataHandler<T extends DataReq> implements Runnable {
 
     @Override
     public void run() {
-        LOG.info("run {} ", getClass().getName());
-        //TODO thread exception handle
-        T dataReq = null;
-        try {
-            dataReq = decodeDataReq(context);
-        } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+        T dataReq = decodeDataReq(context);
+        if (dataReq == null) {
             try {
-                context.write(ApiCode.ERROR_UNKNOWN);
-            } catch (IOException e1) {
+                context.write(ApiCode.INVALID_PARAM); //TODO
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
             }
             return;
         }
-
         LOG.info("run {} {}", context.request().id(), dataReq);
         if (isValidToken(context, dataReq)) {
             DataRsp<?> rsp = null;
