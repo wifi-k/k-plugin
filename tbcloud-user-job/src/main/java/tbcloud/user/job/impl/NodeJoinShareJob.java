@@ -97,6 +97,6 @@ public class NodeJoinShareJob extends UserJob {
 
     @Override
     protected String id() {
-        return "nodejoinshare";
+        return "NodeJoinShareJob";
     }
 }

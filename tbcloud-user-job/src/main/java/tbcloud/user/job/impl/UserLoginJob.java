@@ -99,6 +99,6 @@ public class UserLoginJob extends UserJob {
 
     @Override
     protected String id() {
-        return "userlogin";
+        return "UserLoginJob";
     }
 }

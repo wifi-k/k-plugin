@@ -1,6 +1,9 @@
 package tbcloud.node.api.handler;
 
+import jframe.core.msg.TextMsg;
 import tbcloud.lib.api.ApiCode;
+import tbcloud.lib.api.msg.MsgType;
+import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.api.IoContext;
 import tbcloud.node.model.NodeConst;
@@ -9,8 +12,6 @@ import tbcloud.node.protocol.data.DataRsp;
 import tbcloud.node.protocol.data.InsStatus;
 
 /**
- * TODO
- *
  * @author dzh
  * @date 2018-11-28 19:11
  */
@@ -31,7 +32,7 @@ public class InsStatusHandler extends DataHandler<InsStatus> {
             return rsp;
         }
 
-        // update node_ins TODO async
+        // update node_ins
         NodeIns nodeIns = new NodeIns();
         nodeIns.setId(insId);
         // status
@@ -48,7 +49,8 @@ public class InsStatusHandler extends DataHandler<InsStatus> {
                 nodeIns.setEndTime(System.currentTimeMillis());
                 break;
         }
-        NodeDao.updateNodeIns(nodeIns);
+//        NodeDao.updateNodeIns(nodeIns);
+        Plugin.sendToNode(new TextMsg().setType(MsgType.NODE_INS_UPDATE).setValue(GsonUtil.toJson(nodeIns)), nodeId);
         return rsp;
     }
 

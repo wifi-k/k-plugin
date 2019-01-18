@@ -132,6 +132,6 @@ public class EmailModifyJob extends UserJob {
 
     @Override
     protected String id() {
-        return "emailmodify";
+        return "EmailModifyJob";
     }
 }

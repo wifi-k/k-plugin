@@ -1,12 +1,13 @@
 package tbcloud.node.api.handler;
 
+import jframe.core.msg.TextMsg;
 import tbcloud.lib.api.ApiConst;
+import tbcloud.lib.api.msg.MsgType;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.api.IoContext;
 import tbcloud.node.model.NodeConst;
 import tbcloud.node.model.NodeRt;
-import tbcloud.node.model.NodeRtExample;
 import tbcloud.node.protocol.data.DataRsp;
 import tbcloud.node.protocol.data.Heartbeat;
 import tbcloud.node.protocol.data.ins.Ins;
@@ -27,6 +28,7 @@ public class HeartbeatHandler extends DataHandler<Heartbeat> {
         String nodeId = dataReq.getNodeId();
         DataRsp<HeartbeatRsp> dataRsp = new DataRsp<>();
 
+        // send ins to node
         try (redis.clients.jedis.Jedis jedis = Jedis.getJedis(ApiConst.REDIS_ID_NODE)) {
             String insJson = jedis.spop(ApiConst.REDIS_KEY_NODE_INS_ + nodeId);
             if (!StringUtil.isEmpty(insJson)) {
@@ -36,14 +38,12 @@ public class HeartbeatHandler extends DataHandler<Heartbeat> {
             }
         }
 
-        // update node_rt TODO fix
+        // update node_rt
         NodeRt nodeRt = new NodeRt();
-        nodeRt.setOnlineTime(System.currentTimeMillis());  //TODO offline
+        nodeRt.setOnlineTime(System.currentTimeMillis());
         nodeRt.setStatus(NodeConst.STATUS_NORMAIL);
 
-        NodeRtExample example = new NodeRtExample();
-        example.createCriteria().andNodeIdEqualTo(nodeId).andStatusEqualTo(NodeConst.STATUS_OFFLINE);
-        NodeDao.updateNodeRtSelective(nodeRt, example);
+        Plugin.sendToNode(new TextMsg().setType(MsgType.NODE_RT_UPDATE).setValue(GsonUtil.toJson(nodeRt)), nodeId);
 
         return dataRsp;
     }

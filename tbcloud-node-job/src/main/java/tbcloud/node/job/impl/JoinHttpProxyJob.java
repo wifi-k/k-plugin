@@ -45,6 +45,6 @@ public class JoinHttpProxyJob extends NodeJob {
 
     @Override
     protected String id() {
-        return "nodejoinhttpproxy";
+        return "JoinHttpProxyJob";
     }
 }

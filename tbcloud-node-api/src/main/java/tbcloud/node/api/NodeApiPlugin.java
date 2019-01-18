@@ -1,12 +1,15 @@
 package tbcloud.node.api;
 
+import jframe.core.msg.Msg;
 import jframe.core.plugin.PluginException;
-import jframe.core.plugin.PluginSender;
 import jframe.core.plugin.annotation.Plugin;
+import jframe.ext.plugin.KafkaPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.ConfField;
+import tbcloud.lib.api.msg.MsgMeta;
+import tbcloud.lib.api.util.StringUtil;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -16,7 +19,7 @@ import java.net.InetSocketAddress;
  * @date 2018-11-11 17:55
  */
 @Plugin(startOrder = -1)
-public class NodeApiPlugin extends PluginSender {
+public class NodeApiPlugin extends KafkaPlugin {
 
     static Logger LOG = LoggerFactory.getLogger(NodeApiPlugin.class);
 
@@ -68,6 +71,17 @@ public class NodeApiPlugin extends PluginSender {
     // 开启认证节点功能
     public boolean isAuth() {
         return "true".equalsIgnoreCase(getConfig(ConfField.NODE_API_AUTH_ENABLED, "true").trim());
+    }
+
+    public void sendToNode(Msg<String> msg, String nodeId) {
+        if (StringUtil.isEmpty(nodeId))
+            sendToNode(msg);
+        else
+            send(msg, MsgMeta.Topic_Node, nodeId);
+    }
+
+    public void sendToNode(Msg<String> msg) {
+        send(msg, MsgMeta.Topic_Node);
     }
 
 }

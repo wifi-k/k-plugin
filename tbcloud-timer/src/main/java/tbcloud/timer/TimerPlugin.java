@@ -27,12 +27,13 @@ public class TimerPlugin extends DefPlugin {
     }
 
     private void startMutexTimer() {
+        startTimer(HttpProxyOnlineAdd.class);
         startTimer(IpInfoFind.class);
         startTimer(NodeInsFailed.class);
         startTimer(NodeInsRetry.class);
-        //startTimer(NodeOffline.class);
-        //startTimer(UserOffline.class);
-        startTimer(HttpProxyOnlineAdd.class);
+
+        startTimer(NodeOffline.class);
+        startTimer(UserOffline.class);
     }
 
     private void startTimer(Class<? extends MutexTimer> clazz) {

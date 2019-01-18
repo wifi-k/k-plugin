@@ -9,16 +9,15 @@ import tbcloud.node.protocol.ProtocolConst;
 /**
  * 在线节点但超过5次心跳没有更新online_time,设置为离线
  * <p>
- * 消耗性能 想其他方式做
+ * 消耗性能 想其他方式做 TODO
  *
  * @author dzh
  * @date 2018-12-13 19:57
  */
-@Deprecated
 public class NodeOffline extends MutexTimer {
 
     @Override
-    protected int doTimer() {  // TODO alert to user?
+    protected int doTimer() {
         long ts = System.currentTimeMillis();
         NodeRtExample example = new NodeRtExample();
         example.createCriteria().andStatusGreaterThan(NodeConst.STATUS_OFFLINE)
@@ -29,7 +28,8 @@ public class NodeOffline extends MutexTimer {
         offline.setOfflineTime(ts);
 
         int count = NodeDao.updateNodeRtSelective(offline, example);
-        // TODO send alert
+        LOG.info("node offline {}", count);
+        // TODO alert user？
 
         return count;
     }
@@ -41,7 +41,7 @@ public class NodeOffline extends MutexTimer {
 
     @Override
     protected long delayMs() {
-        return 1800 * 1000;
+        return 3600 * 1000;
     }
 
     @Override

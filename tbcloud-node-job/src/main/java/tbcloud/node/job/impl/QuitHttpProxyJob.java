@@ -42,6 +42,6 @@ public class QuitHttpProxyJob extends NodeJob {
 
     @Override
     protected String id() {
-        return "nodequithttpproxy";
+        return "QuitHttpProxyJob";
     }
 }

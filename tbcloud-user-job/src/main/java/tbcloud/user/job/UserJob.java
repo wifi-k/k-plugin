@@ -70,7 +70,7 @@ public abstract class UserJob extends AbstractJob {
     protected int threadSize() {
         int defThreads = Runtime.getRuntime().availableProcessors();
         try {
-            String jobThreadSize = Optional.ofNullable(plugin().getConfig(id() + ".job.threadpool.size")).orElse(
+            String jobThreadSize = Optional.ofNullable(plugin().getConfig(id() + ".threadpool.size")).orElse(
                     plugin().getConfig(ApiConst.JOB_THREADPOOL_SIZE, String.valueOf(defThreads))
             );
             int th = Integer.parseInt(jobThreadSize);

@@ -70,6 +70,6 @@ public class QiniuDeleteJob extends UserJob {
 
     @Override
     protected String id() {
-        return "qiniudelete";
+        return "QiniuDeleteJob";
     }
 }

@@ -7,12 +7,11 @@ import tbcloud.user.model.UserOnlineExample;
 /**
  * 在线时长超过24小时，且token不存在的用户(超过token有效期)，设置为离线状态
  * <p>
- * 消耗性能，暂时不要
+ * 消耗性能，暂时不要  // TODO 改成在凌晨执行
  *
  * @author dzh
  * @date 2018-12-13 19:57
  */
-@Deprecated
 public class UserOffline extends MutexTimer {
 
     @Override
@@ -25,6 +24,7 @@ public class UserOffline extends MutexTimer {
         offline.setOfflineTime(ts);
         offline.setStatus(ApiConst.IS_OFFLINE);
         int count = UserDao.updateUserOnlineSelective(offline, example);
+        LOG.info("user offline {}", count);
 
 //            example.setOrderByClause("online_time limit 100");
 //            List<UserOnline> list = UserDao.selectUserOnline(example);

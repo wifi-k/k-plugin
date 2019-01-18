@@ -1,9 +1,11 @@
 package tbcloud.node.api.handler;
 
-import tbcloud.common.model.IpInfo;
+import jframe.core.msg.TextMsg;
 import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.ConfField;
+import tbcloud.lib.api.msg.MsgType;
+import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.IDUtil;
 import tbcloud.node.api.IoContext;
 import tbcloud.node.model.NodeConst;
@@ -38,19 +40,18 @@ public class AuthHandler extends DataHandler<NodeAuth> {
 
         String token = IDUtil.genNodeToken(nodeId);
         int tokenExpired = tokenExpired(); // seconds
-        setToRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_TOKEN_ + token, nodeId, tokenExpired + 1800);
+        setToRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_TOKEN_ + token, nodeId, tokenExpired + 600);
 
-        // TODO rm old token
-
-        // update node_rt TODO async
+        // update node_rt
         NodeRt rt = new NodeRt();
         rt.setNodeId(nodeId);
         rt.setStatus(NodeConst.STATUS_NORMAIL);
         rt.setOnlineTime(System.currentTimeMillis());
         rt.setToken(token);
-        NodeDao.updateNodeRt(rt);
+        Plugin.sendToNode(new TextMsg().setType(MsgType.NODE_RT_UPDATE).setValue(GsonUtil.toJson(rt)), nodeId);
+        //NodeDao.updateNodeRt(rt);
 
-        // update node_info TODO async
+        // update node_info
         NodeInfo info = new NodeInfo();
         info.setNodeId(nodeId);
         info.setPartner(dataReq.getParnter());
@@ -63,17 +64,18 @@ public class AuthHandler extends DataHandler<NodeAuth> {
         info.setDownstream(dataReq.getDownstream());
         String ip = context().remote().getAddress().getHostAddress();
         if (!ip.equals(nodeInfo.getIp())) info.setIp(ip);
-        NodeDao.updateNodeInfo(info);
+        Plugin.sendToNode(new TextMsg().setType(MsgType.NODE_INFO_UPDATE).setValue(GsonUtil.toJson(info)), nodeId);
+//        NodeDao.updateNodeInfo(info);
 
-        // insert ip_info TODO aysnc
-        if (!ip.equals(nodeInfo.getIp())) {
-            IpInfo ipInfo = CommonDao.selectIpInfo(ip);
-            if (ipInfo == null) {
-                ipInfo = new IpInfo();
-                ipInfo.setIp(ip);
-                CommonDao.insertIpInfo(ipInfo);
-            }
-        }
+        // insert ip_info
+//        if (!ip.equals(nodeInfo.getIp())) {
+//            IpInfo ipInfo = CommonDao.selectIpInfo(ip);
+//            if (ipInfo == null) {
+//                ipInfo = new IpInfo();
+//                ipInfo.setIp(ip);
+//                CommonDao.insertIpInfo(ipInfo);
+//            }
+//        }
 
         dataRsp.setCode(ApiCode.SUCC);
         NodeAuthRsp data = new NodeAuthRsp();

@@ -1,5 +1,8 @@
 package tbcloud.node.api.handler;
 
+import jframe.core.msg.TextMsg;
+import tbcloud.lib.api.msg.MsgType;
+import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.node.api.IoContext;
 import tbcloud.node.model.NodeConst;
 import tbcloud.node.model.NodeRt;
@@ -23,9 +26,6 @@ public class MonitorInfoHandler extends DataHandler<MonitorInfo> {
 
         if (dataReq.getTakeTime() < 1) dataReq.setTakeTime(System.currentTimeMillis());
 
-        // TODO async
-        // insert es
-
         // update node_rt
         if (dataReq.getType() == PacketConst.MONITOR_TYPE_SYS) {
             NodeRt nodeRt = new NodeRt();
@@ -39,19 +39,10 @@ public class MonitorInfoHandler extends DataHandler<MonitorInfo> {
             nodeRt.setMemUsage(memUsage);
             nodeRt.setDiskUsage(diskUsage);
             nodeRt.setTakeTime(dataReq.getTakeTime());
+            nodeRt.setStatus(NodeConst.STATUS_NORMAIL);
 
-            int status = NodeConst.STATUS_NORMAIL;
-            // status TODO config
-            if (cpuUsage > 80 || memUsage > 80 || diskUsage > 80) {
-                status = NodeConst.STATUS_WARN;
-            }
-            if (cpuUsage > 95 || memUsage > 95 || diskUsage > 95) {
-                status = NodeConst.STATUS_ERROR;
-                // TODO alert
-            }
-            nodeRt.setStatus(status);
-
-            NodeDao.updateNodeRt(nodeRt);
+//            NodeDao.updateNodeRt(nodeRt);
+            Plugin.sendToNode(new TextMsg().setType(MsgType.NODE_RT_UPDATE).setValue(GsonUtil.toJson(nodeRt)), nodeId);
         }
 
         DataRsp<Void> rsp = new DataRsp<>();

@@ -56,7 +56,7 @@ public class UserJobPlugin extends PluginSenderRecver {
         int type = msg.getType();
         UserJob job = jobs.get(type);
         if (job == null) {
-            LOG.error("not found ScanJob of this msgType-{}", type);
+            LOG.error("not found Job of msgType-{}", type);
             LOG.error("discard msg-{}", msg);
             return;
         }

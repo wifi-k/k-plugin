@@ -6,6 +6,7 @@ import jframe.core.plugin.annotation.Injector;
 import jframe.jedis.service.JedisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tbcloud.common.dao.service.CommonDaoService;
 import tbcloud.httpproxy.dao.service.HttpProxyDaoService;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.util.GsonUtil;
@@ -44,6 +45,9 @@ public abstract class NodeJob extends AbstractJob {
     @InjectService(id = "tbcloud.service.httpproxy.dao")
     protected static HttpProxyDaoService HttpProxyDao;
 
+    @InjectService(id = "tbcloud.service.common.dao")
+    protected static CommonDaoService CommonDao;
+
 
     public NodeJob() {
 
@@ -71,7 +75,7 @@ public abstract class NodeJob extends AbstractJob {
     protected int threadSize() {
         int defThreads = Runtime.getRuntime().availableProcessors();
         try {
-            String jobThreadSize = Optional.ofNullable(plugin().getConfig(id() + ".job.threadpool.size")).orElse(
+            String jobThreadSize = Optional.ofNullable(plugin().getConfig(id() + ".threadpool.size")).orElse(
                     plugin().getConfig(ApiConst.JOB_THREADPOOL_SIZE, String.valueOf(defThreads))
             );
             int th = Integer.parseInt(jobThreadSize);
