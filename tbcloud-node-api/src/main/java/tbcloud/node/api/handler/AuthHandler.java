@@ -37,8 +37,8 @@ public class AuthHandler extends DataHandler<NodeAuth> {
         }
 
         String token = IDUtil.genNodeToken(nodeId);
-        int tokenExpired = tokenExpired(); // hours
-        setToRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_TOKEN_ + token, nodeId, tokenExpired * ApiConst.REDIS_EXPIRED_1H);
+        int tokenExpired = tokenExpired(); // seconds
+        setToRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_TOKEN_ + token, nodeId, tokenExpired + 1800);
 
         // TODO rm old token
 
@@ -79,7 +79,9 @@ public class AuthHandler extends DataHandler<NodeAuth> {
         NodeAuthRsp data = new NodeAuthRsp();
         data.setToken(token);
         data.setInsHost(insHost());
-        data.setTokenExpired(tokenExpired - 1);// before 1 hour
+        data.setTickTime(tickTime());
+        data.setTokenExpired(tokenExpired);
+
         dataRsp.setData(data);
 
         return dataRsp;
@@ -97,8 +99,13 @@ public class AuthHandler extends DataHandler<NodeAuth> {
     }
 
     public int tokenExpired() {
-        int tokenExpired = Integer.parseInt(plugin().getConfig(ConfField.NODE_API_TOKEN_EXPIRED, "24"));
+        int tokenExpired = Integer.parseInt(plugin().getConfig(ConfField.NODE_API_TOKEN_EXPIRED, "86400")); // second,24h
         return tokenExpired;
+    }
+
+    public int tickTime() {
+        int tickTime = Integer.parseInt(plugin().getConfig(ConfField.NODE_API_TICK_TIME, "3")); // second
+        return tickTime;
     }
 
 }

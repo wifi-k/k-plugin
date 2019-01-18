@@ -28,7 +28,7 @@ import java.util.zip.CRC32;
  */
 public class NodeApiServerNio implements Closeable {
 
-    static Logger LOG = LoggerFactory.getLogger(NodeApiServerNio.class);
+    static final Logger LOG = LoggerFactory.getLogger(NodeApiServerNio.class);
 
     private SocketAddress listenAddr; //服务端地址
     private boolean authEnabled; //认证节点功能是否启用
@@ -83,7 +83,7 @@ public class NodeApiServerNio implements Closeable {
 
                 try {
                     n = sel.select();
-                    LOG.info("select {}", n);
+                    LOG.debug("select {}", n);
                 } catch (Exception e) {
                     LOG.error(e.getMessage(), e);
                 }

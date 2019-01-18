@@ -48,10 +48,14 @@ public class NodeDaoServiceImpl implements NodeDaoService {
 
     @Override
     public NodeApp selectNodeApp(long id) {
-        //TODO read cache
-        NodeApp nodeApp = null;
+        NodeApp nodeApp = getFromRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_APP_ + id, NodeApp.class);
+        if (nodeApp != null) return nodeApp;
+
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
             nodeApp = session.getMapper(NodeAppMapper.class).selectByPrimaryKey(id);
+            if (nodeApp != null) {
+                setToRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_APP_ + id, GsonUtil.toJson(nodeApp), ApiConst.REDIS_EXPIRED_1H);
+            }
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }
@@ -91,7 +95,7 @@ public class NodeDaoServiceImpl implements NodeDaoService {
                 LOG.error(e.getMessage(), e);
                 session.rollback();
             } finally {
-                //TODO rm cache redis
+                deleteFromRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_APP_ + nodeApp.getId());
             }
         }
         return 0;
@@ -170,10 +174,14 @@ public class NodeDaoServiceImpl implements NodeDaoService {
 
     @Override
     public NodeInfo selectNodeInfo(String nodeId) {
-        //TODO read cache
-        NodeInfo nodeInfo = null;
+        NodeInfo nodeInfo = getFromRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_INFO_ + nodeId, NodeInfo.class);
+        if (nodeInfo != null) return nodeInfo;
+
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
             nodeInfo = session.getMapper(NodeInfoMapper.class).selectByPrimaryKey(nodeId);
+            if (nodeInfo != null) {
+                setToRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_INFO_ + nodeId, GsonUtil.toJson(nodeInfo), ApiConst.REDIS_EXPIRED_24H);
+            }
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }
@@ -192,7 +200,7 @@ public class NodeDaoServiceImpl implements NodeDaoService {
                 LOG.error(e.getMessage(), e);
                 session.rollback();
             } finally {
-                //TODO rm cache redis
+                deleteFromRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_INFO_ + nodeInfo.getNodeId());
             }
         }
         return 0;
@@ -286,8 +294,6 @@ public class NodeDaoServiceImpl implements NodeDaoService {
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
                 session.rollback();
-            } finally {
-                //TODO rm cache redis
             }
         }
         return 0;
@@ -375,8 +381,6 @@ public class NodeDaoServiceImpl implements NodeDaoService {
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
                 session.rollback();
-            } finally {
-                //TODO rm cache redis
             }
         }
         return 0;
