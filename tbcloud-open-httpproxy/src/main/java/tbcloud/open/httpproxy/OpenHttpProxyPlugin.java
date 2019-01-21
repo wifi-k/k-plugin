@@ -1,8 +1,7 @@
 package tbcloud.open.httpproxy;
 
-import jframe.core.msg.Msg;
+import jframe.core.plugin.DefPlugin;
 import jframe.core.plugin.PluginException;
-import jframe.core.plugin.PluginSenderRecver;
 import jframe.core.plugin.annotation.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,18 +14,19 @@ import java.util.Calendar;
  * @date 2018-11-26 01:13
  */
 @Plugin(startOrder = -1)
-public class OpenHttpProxyPlugin extends PluginSenderRecver {
+public class OpenHttpProxyPlugin extends DefPlugin {
 
-    static Logger LOG = LoggerFactory.getLogger(OpenHttpProxyPlugin.class);
+    static final Logger LOG = LoggerFactory.getLogger(OpenHttpProxyPlugin.class);
 
     private HttpProxyServer httpProxyServer;
 
-    private int serverId; //TODO global unique id redis or zk
+    private int serverId; //TODO global unique id
 
     public void start() throws PluginException {
         super.start();
 
         serverId = Math.abs(ManagementFactory.getRuntimeMXBean().getName().hashCode() + Calendar.getInstance().hashCode());
+        LOG.info("serverId {}", serverId);
 
         httpProxyServer = new HttpProxyServer(this);
         httpProxyServer.start();
@@ -46,15 +46,5 @@ public class OpenHttpProxyPlugin extends PluginSenderRecver {
 
     public int serverId() {
         return serverId;
-    }
-
-    @Override
-    protected void doRecvMsg(Msg<?> msg) {
-
-    }
-
-    @Override
-    protected boolean canRecvMsg(Msg<?> msg) {
-        return false;
     }
 }

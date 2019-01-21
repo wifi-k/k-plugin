@@ -37,7 +37,7 @@ public class QuitHttpProxyJob extends NodeJob {
         HttpProxyDao.updateHttpProxyOnline(offline);
 
         // remove nodeId from redis online set
-        sremFromRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_HTTPPROXY_ALL, offline.getNodeId());
+        sremFromRedis(ApiConst.REDIS_ID_HTTPPROXY, ApiConst.REDIS_KEY_NODE_HTTPPROXY_ALL, offline.getNodeId());
     }
 
     @Override

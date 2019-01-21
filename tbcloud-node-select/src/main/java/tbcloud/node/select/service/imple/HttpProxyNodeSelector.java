@@ -12,6 +12,6 @@ class HttpProxyNodeSelector extends NodeSelector {
 
     // TODO
     public List<String> randomOnline(int count) {
-        return this.srandmemberFromRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_HTTPPROXY_ALL, count);
+        return srandmemberFromRedis(ApiConst.REDIS_ID_HTTPPROXY, ApiConst.REDIS_KEY_NODE_HTTPPROXY_ALL, count);
     }
 }

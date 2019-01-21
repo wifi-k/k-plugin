@@ -27,12 +27,12 @@ public class ApikeyHandler extends AbstractInboundHandler {
             String apikey = ((HttpRequest) msg).headers().get(ApiConst.API_APIKEY);
             String apiVersion = ((HttpRequest) msg).headers().get(ApiConst.API_VERSION);
             long userId = IDUtil.readUserIdFromApikey(apikey);
+            LOG.info("req {} {} {} {} ", userId, apiVersion, ((HttpRequest) msg).uri(), ((HttpRequest) msg).method());
+
             if (userId < 1) {
                 writeError(ctx, false, null, newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey));
                 return;
             }
-
-            LOG.info("req {} {} {} {} ", userId, apiVersion, ((HttpRequest) msg).uri(), ((HttpRequest) msg).method());
 
             UserInfo userInfo = UserDao.selectUserInfo(userId);
             if (userInfo == null) {

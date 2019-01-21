@@ -2,6 +2,7 @@ package tbcloud.node.job.impl;
 
 import jframe.core.msg.Msg;
 import tbcloud.httpproxy.model.HttpProxyOnline;
+import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.msg.MsgType;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.node.job.NodeJob;
@@ -41,6 +42,8 @@ public class JoinHttpProxyJob extends NodeJob {
         } else {
             HttpProxyDao.updateHttpProxyOnline(online);
         }
+
+        saddFromRedis(ApiConst.REDIS_ID_HTTPPROXY, ApiConst.REDIS_KEY_NODE_HTTPPROXY_ALL, nodeId);
     }
 
     @Override

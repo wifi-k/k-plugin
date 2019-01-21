@@ -138,5 +138,15 @@ public abstract class NodeJob extends AbstractJob {
         }
     }
 
+    public void saddFromRedis(String id, String key, String... members) {
+        if (StringUtil.isEmpty(key)) return;
+
+        try (redis.clients.jedis.Jedis jedis = Jedis.getJedis(id)) {
+            if (jedis != null) {
+                jedis.sadd(key, members);
+            }
+        }
+    }
+
 
 }

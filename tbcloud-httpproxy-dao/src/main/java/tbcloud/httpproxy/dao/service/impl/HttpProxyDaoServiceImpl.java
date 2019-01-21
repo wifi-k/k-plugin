@@ -8,6 +8,7 @@ import jframe.mybatis.MultiMybatisService;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.Jedis;
 import tbcloud.httpproxy.dao.HttpProxyDaoPlugin;
 import tbcloud.httpproxy.dao.service.HttpProxyDaoService;
 import tbcloud.httpproxy.model.HttpProxyOnline;
@@ -18,7 +19,9 @@ import tbcloud.httpproxy.model.mapper.HttpProxyOnlineMapper;
 import tbcloud.httpproxy.model.mapper.HttpProxyRecordMapper;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.util.GsonUtil;
+import tbcloud.lib.api.util.StringUtil;
 
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
 
@@ -124,9 +127,13 @@ public class HttpProxyDaoServiceImpl implements HttpProxyDaoService {
 
     @Override
     public HttpProxyOnline selectHttpProxyOnline(String nodeId) {
-        HttpProxyOnline httpProxyOnline = null;
+        HttpProxyOnline httpProxyOnline = getFromRedis(ApiConst.REDIS_ID_HTTPPROXY, ApiConst.REDIS_KEY_NODE_HTTPPROXY_ONLINE_ + nodeId, HttpProxyOnline.class);
+        if (httpProxyOnline != null) return httpProxyOnline;
+
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
             httpProxyOnline = session.getMapper(HttpProxyOnlineMapper.class).selectByPrimaryKey(nodeId);
+            if (httpProxyOnline != null)
+                setToRedis(ApiConst.REDIS_ID_HTTPPROXY, ApiConst.REDIS_KEY_NODE_HTTPPROXY_ONLINE_ + nodeId, GsonUtil.toJson(httpProxyOnline), ApiConst.REDIS_EXPIRED_1H);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }
@@ -145,7 +152,7 @@ public class HttpProxyDaoServiceImpl implements HttpProxyDaoService {
                 LOG.error(e.getMessage(), e);
                 session.rollback();
             } finally {
-                //TODO rm cache redis
+                deleteFromRedis(ApiConst.REDIS_ID_HTTPPROXY, ApiConst.REDIS_KEY_NODE_HTTPPROXY_ONLINE_ + httpProxyOnline.getNodeId());
             }
         }
         return 0;
@@ -160,5 +167,58 @@ public class HttpProxyDaoServiceImpl implements HttpProxyDaoService {
             LOG.error(e.getMessage(), e);
         }
         return httpProxyOnlineList;
+    }
+
+    protected String getFromRedis(String id, String key) {
+        try (redis.clients.jedis.Jedis jedis = Jedis.getJedis(id)) {
+            if (jedis != null) {
+                return jedis.get(key);
+            }
+        }
+        return null;
+    }
+
+    protected <T> T getFromRedis(String id, String key, Type type) {
+        try (redis.clients.jedis.Jedis jedis = Jedis.getJedis(id)) {
+            if (jedis != null) {
+                String json = jedis.get(key);
+                if (!StringUtil.isEmpty(json)) {
+                    return GsonUtil.<T>fromJson(json, type);
+                }
+            }
+        }
+        return null;
+    }
+
+    protected <T> T getFromRedis(String id, String key, Class<T> clazz) {
+        try (Jedis jedis = Jedis.getJedis(id)) {
+            if (jedis != null) {
+                String json = jedis.get(key);
+                if (!StringUtil.isEmpty(json)) {
+                    return GsonUtil.<T>fromJson(json, clazz);
+                }
+            }
+        }
+        return null;
+    }
+
+    public void setToRedis(String id, String key, String value, Integer expiredSeconds) {
+        if (value == null) return;
+
+        try (Jedis jedis = Jedis.getJedis(id)) {
+            if (jedis != null) {
+                jedis.setex(key, expiredSeconds, value);
+            }
+        }
+    }
+
+    public void deleteFromRedis(String id, String key) {
+        if (StringUtil.isEmpty(key)) return;
+
+        try (Jedis jedis = Jedis.getJedis(id)) {
+            if (jedis != null) {
+                jedis.del(key);
+            }
+        }
     }
 }

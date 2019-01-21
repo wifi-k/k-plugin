@@ -22,7 +22,7 @@ public class NodeHttpProxyPlugin extends KafkaPlugin {
 
     static Logger LOG = LoggerFactory.getLogger(NodeHttpProxyPlugin.class);
 
-    private int serverId; //TODO global unique id redis or zk
+    private int serverId; //TODO global unique id
 
     private NodeHttpServer httpServer;
     private NodeTcpServer tcpServer;
@@ -33,6 +33,7 @@ public class NodeHttpProxyPlugin extends KafkaPlugin {
         super.start();
 
         serverId = Math.abs(ManagementFactory.getRuntimeMXBean().getName().hashCode() + Calendar.getInstance().hashCode());
+        LOG.info("serverId {}", serverId);
 
         httpServer = new NodeHttpServer(this);
         httpServer.start();

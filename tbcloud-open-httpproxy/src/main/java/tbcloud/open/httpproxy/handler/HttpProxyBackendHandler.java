@@ -22,7 +22,7 @@ import tbcloud.lib.api.util.StringUtil;
  * @date 2018-12-17 21:11
  */
 class HttpProxyBackendHandler extends AbstractInboundHandler {
-    static Logger LOG = LoggerFactory.getLogger(HttpProxyBackendHandler.class);
+    static final Logger LOG = LoggerFactory.getLogger(HttpProxyBackendHandler.class);
 
     private final ChannelHandlerContext inChannelContext; //  user connection
 

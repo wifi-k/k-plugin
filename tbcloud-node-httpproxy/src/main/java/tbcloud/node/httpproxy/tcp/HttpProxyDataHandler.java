@@ -170,6 +170,11 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
 
         DataAck ack = new DataAck();
         ack.setCode(ApiCode.SUCC);
+        //
+//        HttpProxyOnline online = HttpProxyDao.selectHttpProxyOnline(nodeId);
+//        if (online.getStatus() != ApiConst.IS_ONLINE) {
+//            ack.setCode(ApiCode);
+//        }
 
         return ack;
     }
