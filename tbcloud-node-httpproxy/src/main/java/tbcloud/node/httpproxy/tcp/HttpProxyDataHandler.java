@@ -6,6 +6,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.ReadTimeoutException;
 import jframe.core.msg.PluginMsg;
+import jframe.core.msg.TextMsg;
 import jframe.core.plugin.annotation.InjectPlugin;
 import jframe.core.plugin.annotation.InjectService;
 import jframe.core.plugin.annotation.Injector;
@@ -131,7 +132,7 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
         offline.setStatus(ApiConst.IS_OFFLINE);
 
 
-        Plugin.sendToNode(new PluginMsg<String>().setType(MsgType.NODE_QUIT_HTTPPROXY).setValue(GsonUtil.toJson(offline)), nodeId);
+        Plugin.sendToNode(new TextMsg().setType(MsgType.NODE_QUIT_HTTPPROXY).setValue(GsonUtil.toJson(offline)), nodeId);
 //        Plugin.send(new PluginMsg<HttpProxyOnline>().setType(MsgType.NODE_QUIT_HTTPPROXY).setValue(offline));
         // HttpProxyDao.updateHttpProxyOnline(offline);
     }

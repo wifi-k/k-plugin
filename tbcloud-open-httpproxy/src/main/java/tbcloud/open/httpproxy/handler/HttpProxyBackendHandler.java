@@ -7,6 +7,7 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.timeout.ReadTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.httpproxy.model.HttpProxyRecord;
@@ -43,8 +44,15 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
                     //
                     ctx.channel().close();
                     //
-                    if (!keepAlive) {
-                        inChannelContext.channel().close();
+                    if (future.isSuccess()) {
+                        if (!keepAlive) {
+                            inChannelContext.channel().close();
+                        }
+                    } else {
+                        Result<Void> r = new Result();
+                        r.setCode(ApiCode.IO_ERROR);
+                        r.setMsg("failed to write response");
+                        writeError(inChannelContext, false, null, r);
                     }
                 }
             });
@@ -55,20 +63,7 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
                     HttpProxyDao.updateHttpProxyRecord(record);// TODO asyn
             }
 
-            inChannelContext.write(msg).addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture future) {
-                    if (!future.isSuccess()) {
-                        //
-                        ctx.channel().close();
-                        //
-                        Result<Void> r = new Result();
-                        r.setCode(ApiCode.IO_ERROR);
-                        r.setMsg("failed to write response");
-                        writeError(inChannelContext, false, null, r);
-                    }
-                }
-            });
+            inChannelContext.write(msg);
         }
     }
 
@@ -83,6 +78,8 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
         record.setRspTime(System.currentTimeMillis());
         record.setRspReason(((HttpResponse) msg).status().reasonPhrase());
         record.setRspSize(((HttpResponse) msg).headers().getInt(HttpHeaderNames.CONTENT_LENGTH));
+
+        msg.headers().remove(ApiConst.HTTPPROXY_RECORD);
         return record;
     }
 
@@ -90,7 +87,19 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         LOG.error(cause.getLocalizedMessage(), cause);
 
-        ctx.close();
+        if (ctx.channel().isActive()) {
+            if (cause instanceof ReadTimeoutException) {
+                Result<Void> r = new Result<>();
+                r.setCode(ApiCode.RESPONSE_TIMEOUT);
+                r.setMsg(cause.getMessage());
+                writeError(ctx, false, null, r);
+            } else {
+                Result<Void> r = new Result<>();
+                r.setCode(ApiCode.ERROR_UNKNOWN);
+                r.setMsg(cause.getMessage());
+                writeError(ctx, false, null, r);
+            }
+        }
     }
 
 //    static void closeOnFlush(Channel ch) {

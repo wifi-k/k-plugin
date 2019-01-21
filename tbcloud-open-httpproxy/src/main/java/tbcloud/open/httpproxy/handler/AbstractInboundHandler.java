@@ -168,16 +168,17 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         LOG.error(cause.getMessage(), cause);
 
-        if (cause instanceof ReadTimeoutException) {
-            // TODO
-        } else {
-            if (ctx.channel().isActive()) {
+        if (ctx.channel().isActive()) {
+            if (cause instanceof ReadTimeoutException) {
+                Result<Void> r = new Result<>();
+                r.setCode(ApiCode.REQUEST_TIMEOUT);
+                r.setMsg(cause.getMessage());
+                writeError(ctx, false, null, r);
+            } else {
                 Result<Void> r = new Result<>();
                 r.setCode(ApiCode.ERROR_UNKNOWN);
                 r.setMsg(cause.getMessage());
-                writeError(ctx, false, null, r); //close channel
-            } else {
-                ctx.close();
+                writeError(ctx, false, null, r);
             }
         }
 
