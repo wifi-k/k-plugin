@@ -57,7 +57,7 @@ public class NodeQuitShareJob extends UserJob {
         Ins ins = new Ins();
         ins.setId(IDUtil.genInsId(nodeId, Ins.INS_HTTPPROXY));
         ins.setIns(Ins.INS_HTTPPROXY);
-        ins.setVal(GsonUtil.toJson(insHost));
+        ins.setVal(GsonUtil.toJson(insHttpProxy));
 
         NodeIns nodeIns = new NodeIns();
         nodeIns.setId(ins.getId());
@@ -82,7 +82,7 @@ public class NodeQuitShareJob extends UserJob {
             long count = jedis.scard(ApiConst.REDIS_KEY_NODE_INS_ + nodeId);
             if (count == 0) {
                 jedis.sadd(ApiConst.REDIS_KEY_NODE_INS_ + nodeId, GsonUtil.toJson(ins));
-                LOG.info("node {}, retry ins {} {} {}", nodeId, ins.getId(), ins.getIns(), ins.getVal());
+                LOG.info("node {}, add ins {} {} {}", nodeId, ins.getId(), ins.getIns(), ins.getVal());
                 return true;
             }
         }

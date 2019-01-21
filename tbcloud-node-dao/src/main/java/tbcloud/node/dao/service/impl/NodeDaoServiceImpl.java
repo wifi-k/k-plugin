@@ -84,6 +84,17 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     }
 
     @Override
+    public List<NodeApp> selectNodeApp(NodeAppExample example) {
+        List<NodeApp> nodeAppList = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            nodeAppList = session.getMapper(NodeAppMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return nodeAppList;
+    }
+
+    @Override
     public int updateNodeApp(NodeApp nodeApp) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
             try {
@@ -384,6 +395,28 @@ public class NodeDaoServiceImpl implements NodeDaoService {
             }
         }
         return 0;
+    }
+
+    @Override
+    public boolean batchUpdateNodeIns(List<NodeIns> nodeInsList) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                for (NodeIns nodeIns : nodeInsList) {
+                    nodeIns.setUpdateTime(st);
+
+                    session.getMapper(NodeInsMapper.class).updateByPrimaryKeySelective(nodeIns);
+                }
+
+                LOG.info("batch update {} {}", nodeInsList.size(), GsonUtil.toJson(nodeInsList));
+                session.commit();
+                return true;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return false;
     }
 
     @Override

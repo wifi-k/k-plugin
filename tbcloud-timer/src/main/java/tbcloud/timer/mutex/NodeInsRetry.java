@@ -9,6 +9,7 @@ import tbcloud.node.model.NodeInsExample;
 import tbcloud.node.protocol.ProtocolConst;
 import tbcloud.node.protocol.data.ins.Ins;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -33,26 +34,27 @@ public class NodeInsRetry extends MutexTimer {
         example.setOrderByClause("create_time limit 1000"); // 先创建的优先 TODO
         List<NodeIns> list = NodeDao.selectNodeIns(example);
 
+        List<NodeIns> retryList = new LinkedList<>();
         list.forEach(r -> { // TODO async to send msg with job
+            NodeIns updated = new NodeIns();
+            updated.setId(r.getId());
+            updated.setRetry(r.getRetry() + 1);
+            retryList.add(updated);
+
             Ins ins = new Ins();
             ins.setId(r.getId());
             ins.setIns(r.getIns());
             ins.setVal(r.getVal());
             try {
-                boolean retrySucc = addToRedis(r.getNodeId(), ins);
-
-                if (retrySucc) {  //TODO batch update
-                    NodeIns updated = new NodeIns();
-                    updated.setId(r.getId());
+                if (addToRedis(r.getNodeId(), ins)) {
                     updated.setSendTime(System.currentTimeMillis());
-                    updated.setRetry(r.getRetry() + 1);
-                    NodeDao.updateNodeIns(updated);
+                    LOG.info("node {}, retry {} ins {} {} {}", r.getNodeId(), updated.getRetry(), ins.getId(), ins.getIns(), ins.getVal());
                 }
-
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
             }
         });
+        NodeDao.batchUpdateNodeIns(retryList);
 
         return list.size();
     }
@@ -67,7 +69,6 @@ public class NodeInsRetry extends MutexTimer {
             long count = jedis.scard(ApiConst.REDIS_KEY_NODE_INS_ + nodeId);
             if (count == 0) { //目前保证指令有序发送
                 jedis.sadd(ApiConst.REDIS_KEY_NODE_INS_ + nodeId, GsonUtil.toJson(ins));
-                LOG.info("node {}, retry ins {} {} {}", nodeId, ins.getId(), ins.getIns(), ins.getVal());
                 return true;
             }
         }

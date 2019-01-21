@@ -8,13 +8,12 @@ import tbcloud.lib.api.msg.MsgType;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
-import tbcloud.node.model.NodeApp;
-import tbcloud.node.model.NodeConst;
-import tbcloud.node.model.NodeInfo;
-import tbcloud.node.model.NodeIns;
+import tbcloud.node.model.*;
 import tbcloud.node.protocol.data.ins.HttpProxy;
 import tbcloud.node.protocol.data.ins.Ins;
 import tbcloud.user.job.UserJob;
+
+import java.util.List;
 
 /**
  * @author dzh
@@ -47,13 +46,18 @@ public class NodeJoinShareJob extends UserJob {
         NodeDao.updateNodeInfo(nodeInfo);
 
         // TODO how to select app for node
-        // insert share app  TODO joined checking
-        NodeApp nodeApp = new NodeApp();
-        nodeApp.setNodeId(nodeId);
-        nodeApp.setAppId(AppEnum.HTTP_PROXY.getId());
-        nodeApp.setAppName(AppEnum.HTTP_PROXY.getName());
-        NodeDao.insertNodeApp(nodeApp);
-
+        // httpproxy feature
+        NodeAppExample example = new NodeAppExample();
+        example.createCriteria().andNodeIdEqualTo(nodeId).andAppIdEqualTo(AppEnum.HTTP_PROXY.getId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        List<NodeApp> nodeApps = NodeDao.selectNodeApp(example);
+        if (nodeApps == null || nodeApps.isEmpty()) {
+            // insert share app
+            NodeApp nodeApp = new NodeApp();
+            nodeApp.setNodeId(nodeId);
+            nodeApp.setAppId(AppEnum.HTTP_PROXY.getId());
+            nodeApp.setAppName(AppEnum.HTTP_PROXY.getName());
+            NodeDao.insertNodeApp(nodeApp);
+        }
         // insert node_ins
         String insHost = plugin().getConfig(ConfField.NODE_HTTPPROXY_DOMAIN);
         HttpProxy insHttpProxy = new HttpProxy();
@@ -63,7 +67,7 @@ public class NodeJoinShareJob extends UserJob {
         Ins ins = new Ins();
         ins.setId(IDUtil.genInsId(nodeId, Ins.INS_HTTPPROXY));
         ins.setIns(Ins.INS_HTTPPROXY);
-        ins.setVal(GsonUtil.toJson(insHost));
+        ins.setVal(GsonUtil.toJson(insHttpProxy));
 
         NodeIns nodeIns = new NodeIns();
         nodeIns.setId(ins.getId());
@@ -88,7 +92,7 @@ public class NodeJoinShareJob extends UserJob {
             long count = jedis.scard(ApiConst.REDIS_KEY_NODE_INS_ + nodeId);
             if (count == 0) {
                 jedis.sadd(ApiConst.REDIS_KEY_NODE_INS_ + nodeId, GsonUtil.toJson(ins));
-                LOG.info("node {}, retry ins {} {} {}", nodeId, ins.getId(), ins.getIns(), ins.getVal());
+                LOG.info("node {}, add ins {} {} {}", nodeId, ins.getId(), ins.getIns(), ins.getVal());
                 return true;
             }
         }

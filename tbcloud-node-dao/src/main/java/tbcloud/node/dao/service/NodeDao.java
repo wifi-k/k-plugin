@@ -17,6 +17,8 @@ public interface NodeDao {
 
     int insertNodeApp(NodeApp nodeApp);
 
+    List<NodeApp> selectNodeApp(NodeAppExample example);
+
     int updateNodeApp(NodeApp nodeApp);
 
     int updateNodeAppSelective(NodeApp nodeApp, NodeAppExample example);
@@ -55,6 +57,8 @@ public interface NodeDao {
     int insertNodeIns(NodeIns nodeIns);
 
     int updateNodeIns(NodeIns nodeIns);
+
+    boolean batchUpdateNodeIns(List<NodeIns> nodeInsList);
 
     List<NodeIns> selectNodeIns(NodeInsExample example);
 
