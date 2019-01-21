@@ -1,10 +1,13 @@
 package tbcloud.open.httpproxy;
 
-import jframe.core.plugin.DefPlugin;
+import jframe.core.msg.Msg;
 import jframe.core.plugin.PluginException;
 import jframe.core.plugin.annotation.Plugin;
+import jframe.ext.plugin.KafkaPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tbcloud.lib.api.msg.MsgMeta;
+import tbcloud.lib.api.util.StringUtil;
 
 import java.lang.management.ManagementFactory;
 import java.util.Calendar;
@@ -14,7 +17,7 @@ import java.util.Calendar;
  * @date 2018-11-26 01:13
  */
 @Plugin(startOrder = -1)
-public class OpenHttpProxyPlugin extends DefPlugin {
+public class OpenHttpProxyPlugin extends KafkaPlugin {
 
     static final Logger LOG = LoggerFactory.getLogger(OpenHttpProxyPlugin.class);
 
@@ -46,5 +49,16 @@ public class OpenHttpProxyPlugin extends DefPlugin {
 
     public int serverId() {
         return serverId;
+    }
+
+    public void sendToNode(Msg<String> msg, String nodeId) {
+        if (StringUtil.isEmpty(nodeId))
+            sendToNode(msg);
+        else
+            send(msg, MsgMeta.Topic_HttpProxy, nodeId);
+    }
+
+    public void sendToNode(Msg<String> msg) {
+        send(msg, MsgMeta.Topic_HttpProxy);
     }
 }

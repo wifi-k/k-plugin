@@ -1,17 +1,17 @@
-package tbcloud.node.job.impl;
+package tbcloud.httpproxy.job.impl;
 
 import jframe.core.msg.Msg;
+import tbcloud.httpproxy.job.HttpProxyJob;
 import tbcloud.httpproxy.model.HttpProxyOnline;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.msg.MsgType;
 import tbcloud.lib.api.util.GsonUtil;
-import tbcloud.node.job.NodeJob;
 
 /**
  * @author dzh
  * @date 2018-12-20 21:51
  */
-public class QuitHttpProxyJob extends NodeJob {
+public class QuitHttpProxyJob extends HttpProxyJob {
     @Override
     public int msgType() {
         return MsgType.NODE_QUIT_HTTPPROXY;

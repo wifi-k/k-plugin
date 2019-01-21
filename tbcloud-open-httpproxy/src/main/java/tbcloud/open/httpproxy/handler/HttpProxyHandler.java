@@ -49,6 +49,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
                 }
                 // connect to node's http server
                 outChannel = connectNodeServer(ctx, keepAlive, online);
+                // TODO 连接失败的分析处理，可能的结果是从redis集合里删除这个nodeId
             }
 
             if (outChannel == null || !outChannel.isActive()) {

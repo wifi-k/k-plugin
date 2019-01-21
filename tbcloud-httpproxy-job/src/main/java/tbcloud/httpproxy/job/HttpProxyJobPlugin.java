@@ -1,4 +1,4 @@
-package tbcloud.node.job;
+package tbcloud.httpproxy.job;
 
 import jframe.core.msg.Msg;
 import jframe.core.plugin.PluginException;
@@ -6,25 +6,23 @@ import jframe.core.plugin.PluginSenderRecver;
 import jframe.core.plugin.annotation.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tbcloud.httpproxy.job.impl.JoinHttpProxyJob;
+import tbcloud.httpproxy.job.impl.QuitHttpProxyJob;
 import tbcloud.lib.api.msg.MsgType;
-import tbcloud.node.job.impl.NodeInfoUpdateJob;
-import tbcloud.node.job.impl.NodeInsUpdateJob;
-import tbcloud.node.job.impl.NodeRtUpdateJob;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author dzh
- * @date 2018-12-13 13:54
+ * @date 2019-01-21 17:31
  */
-@Message(isSender = true, isRecver = true, msgTypes = {MsgType.NODE_ONLINE, MsgType.NODE_OFFLINE,
-        MsgType.NODE_INFO_UPDATE, MsgType.NODE_RT_UPDATE, MsgType.NODE_INS_UPDATE})
-public class NodeJobPlugin extends PluginSenderRecver {
+@Message(isSender = true, isRecver = true, msgTypes = {MsgType.NODE_JOIN_HTTPPROXY, MsgType.NODE_QUIT_HTTPPROXY})
+public class HttpProxyJobPlugin extends PluginSenderRecver {
 
-    static Logger LOG = LoggerFactory.getLogger(NodeJobPlugin.class);
+    static Logger LOG = LoggerFactory.getLogger(HttpProxyJobPlugin.class);
 
-    private Map<Integer, NodeJob> jobs = new HashMap<>();
+    private Map<Integer, HttpProxyJob> jobs = new HashMap<>();
 
     @Override
     public void start() throws PluginException {
@@ -33,14 +31,13 @@ public class NodeJobPlugin extends PluginSenderRecver {
     }
 
     private void startJobs() {
-        startJob(NodeInfoUpdateJob.class);
-        startJob(NodeRtUpdateJob.class);
-        startJob(NodeInsUpdateJob.class);
+        startJob(JoinHttpProxyJob.class);
+        startJob(QuitHttpProxyJob.class);
     }
 
-    void startJob(Class<? extends NodeJob> clazz) {
+    void startJob(Class<? extends HttpProxyJob> clazz) {
         try {
-            NodeJob job = clazz.getConstructor().newInstance();
+            HttpProxyJob job = clazz.getConstructor().newInstance();
             job.plugin(this);
             job.start();
             jobs.put(job.msgType(), job);
@@ -54,7 +51,7 @@ public class NodeJobPlugin extends PluginSenderRecver {
     protected void doRecvMsg(Msg<?> msg) {
         LOG.info("recv msg {}", msg);
         int type = msg.getType();
-        NodeJob job = jobs.get(type);
+        HttpProxyJob job = jobs.get(type);
         if (job == null) {
             LOG.error("not found Job of msgType-{}", type);
             LOG.error("discard msg-{}", msg);

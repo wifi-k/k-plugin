@@ -19,6 +19,7 @@
         <module>tbcloud-node-job</module>
         <module>tbcloud-common-dao</module>
         <module>tbcloud-node-select</module>
+        <module>tbcloud-httpproxy-job</module>
     </modules>
 
     <properties>

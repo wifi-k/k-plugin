@@ -86,11 +86,11 @@ public class NodeHttpProxyPlugin extends KafkaPlugin {
         if (StringUtil.isEmpty(nodeId))
             sendToNode(msg);
         else
-            send(msg, MsgMeta.Topic_Node, nodeId);
+            send(msg, MsgMeta.Topic_HttpProxy, nodeId);
     }
 
     public void sendToNode(Msg<String> msg) {
-        send(msg, MsgMeta.Topic_Node);
+        send(msg, MsgMeta.Topic_HttpProxy);
     }
 
 }
