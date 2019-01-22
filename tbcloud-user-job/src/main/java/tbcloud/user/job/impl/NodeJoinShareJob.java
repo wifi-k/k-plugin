@@ -77,7 +77,7 @@ public class NodeJoinShareJob extends UserJob {
         nodeIns.setVal(ins.getVal());
         nodeIns.setSendTime(System.currentTimeMillis());
         nodeIns.setRetry(0);
-        NodeDao.updateNodeIns(nodeIns);
+        NodeDao.insertNodeIns(nodeIns);
 
         // send ins
         addToRedis(nodeId, ins);
