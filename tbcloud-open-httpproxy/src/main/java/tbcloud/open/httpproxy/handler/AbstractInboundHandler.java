@@ -54,20 +54,16 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
     static NodeSelectService NodeSelector;
 
     public static final void writeError(ChannelHandlerContext ctx, boolean keepAlive, String cookieString, Result<?> r) {
-        String json = GsonUtil.toJson(r);
-        LOG.info("write error {}", json);
+        if (!ctx.channel().isActive()) return;
 
+        String json = GsonUtil.toJson(r);
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, newStatus(r.getCode()),
                 Unpooled.copiedBuffer(json, CharsetUtil.UTF_8));
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json; charset=UTF-8");
         response.headers().set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
 
-        if (keepAlive) {
-            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-        }
-
         //String cookieString = request.headers().get(HttpHeaderNames.COOKIE);
-        if (cookieString != null) {
+        if (!StringUtil.isEmpty(cookieString)) {
             Set<io.netty.handler.codec.http.cookie.Cookie> cookies = ServerCookieDecoder.STRICT.decode(cookieString);
             if (!cookies.isEmpty()) {  // Reset the cookies if necessary.
                 for (Cookie cookie : cookies) {
@@ -78,11 +74,13 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
             // response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode("key1", "value1"));
         }
 
-        ctx.writeAndFlush(response);
-
-        if (!keepAlive) {
-            ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+        if (keepAlive) {
+            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            ctx.write(response);
+        } else {
+            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
         }
+        LOG.info("write error {}", json);
     }
 
     static HttpResponseStatus newStatus(int code) {
@@ -99,9 +97,9 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
                 return HttpResponseStatus.GATEWAY_TIMEOUT;
             case ApiCode.IO_ERROR:
                 return HttpResponseStatus.INTERNAL_SERVER_ERROR;
+            default:
+                return HttpResponseStatus.BAD_GATEWAY;
         }
-
-        return HttpResponseStatus.BAD_GATEWAY;
     }
 
     protected Result<Void> newResult(int code, String msg) {
@@ -166,20 +164,18 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        LOG.error(cause.getMessage(), cause);
+        LOG.error(cause.getMessage(), cause.getCause());
 
-        if (ctx.channel().isActive()) {
-            if (cause instanceof ReadTimeoutException) {
-                Result<Void> r = new Result<>();
-                r.setCode(ApiCode.REQUEST_TIMEOUT);
-                r.setMsg(cause.getMessage());
-                writeError(ctx, false, null, r);
-            } else {
-                Result<Void> r = new Result<>();
-                r.setCode(ApiCode.ERROR_UNKNOWN);
-                r.setMsg(cause.getMessage());
-                writeError(ctx, false, null, r);
-            }
+        if (cause instanceof ReadTimeoutException) {
+            Result<Void> r = new Result<>();
+            r.setCode(ApiCode.REQUEST_TIMEOUT);
+            r.setMsg(cause.getMessage());
+            writeError(ctx, false, null, r);
+        } else {
+            Result<Void> r = new Result<>();
+            r.setCode(ApiCode.ERROR_UNKNOWN);
+            r.setMsg(cause.getMessage());
+            writeError(ctx, false, null, r);
         }
 
     }

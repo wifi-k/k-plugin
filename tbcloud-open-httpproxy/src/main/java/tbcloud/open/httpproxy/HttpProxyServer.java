@@ -104,6 +104,7 @@ class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
         p.addLast(new HttpContentCompressor());
         p.addLast(new HttpRequestDecoder(4096, 8192, 8192, true));
         p.addLast(new HttpContentDecompressor());
+
         p.addLast(workGroup, new ApikeyHandler());
         p.addLast(proxyGroup, new HttpProxyHandler());
     }

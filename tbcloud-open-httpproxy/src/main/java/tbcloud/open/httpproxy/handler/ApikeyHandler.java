@@ -1,6 +1,5 @@
 package tbcloud.open.httpproxy.handler;
 
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
@@ -15,27 +14,39 @@ import tbcloud.user.model.UserInfo;
  * @author dzh
  * @date 2018-12-06 20:10
  */
-@ChannelHandler.Sharable
 public class ApikeyHandler extends AbstractInboundHandler {
 
     static Logger LOG = LoggerFactory.getLogger(ApikeyHandler.class);
 
+    boolean isValid = true;
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
         if (msg instanceof HttpRequest) {
+            isValid = true;
             // check apikey
             String apikey = ((HttpRequest) msg).headers().get(ApiConst.API_APIKEY);
             String apiVersion = ((HttpRequest) msg).headers().get(ApiConst.API_VERSION);
             long userId = IDUtil.readUserIdFromApikey(apikey);
-            LOG.info("req {} {} {} {} ", userId, apiVersion, ((HttpRequest) msg).uri(), ((HttpRequest) msg).method());
+            String uri = ((HttpRequest) msg).uri();
+            LOG.info("req {} {} {} {} ", userId, apiVersion, uri, ((HttpRequest) msg).method());
+
+
+            if ("/api/test/ping".equals(uri)) { // health checking
+                isValid = false;
+                writeError(ctx, false, null, newResult(ApiCode.SUCC, "ok"));
+                return;
+            }
 
             if (userId < 1) {
+                isValid = false;
                 writeError(ctx, false, null, newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey));
                 return;
             }
 
             UserInfo userInfo = UserDao.selectUserInfo(userId);
             if (userInfo == null) {
+                isValid = false;
                 writeError(ctx, false, null, newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey));
                 return;
             }
@@ -43,7 +54,7 @@ public class ApikeyHandler extends AbstractInboundHandler {
             // TODO 频率限制
 
         }
-        ctx.fireChannelRead(msg);
+        if (isValid) ctx.fireChannelRead(msg);
     }
 
 }

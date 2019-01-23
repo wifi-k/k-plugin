@@ -25,7 +25,7 @@ public class HttpProxyOnlineAdd extends MutexTimer {
         List<HttpProxyOnline> onlineList = HttpProxyDao.selectHttpProxyOnline(example);
         int size = onlineList.size();
         if (size < 1) {
-            LOG.error("HttpProxyOnline {}", size);
+            LOG.warn("HttpProxyOnline {}", size);
             // TODO send alert
             return size;
         }

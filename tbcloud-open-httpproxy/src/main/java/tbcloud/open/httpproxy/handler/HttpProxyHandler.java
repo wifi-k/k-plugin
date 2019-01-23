@@ -69,7 +69,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
             LOG.info("{} {} {} {} {}", userId, keepAlive, policy, online.getNodeId(), record.getId());
         }
 
-        if (msg instanceof LastHttpContent) {
+        if (outChannel != null && msg instanceof LastHttpContent) {
             outChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) {
