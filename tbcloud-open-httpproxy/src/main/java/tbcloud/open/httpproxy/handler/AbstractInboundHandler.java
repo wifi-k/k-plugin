@@ -76,7 +76,7 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
 
         if (keepAlive) {
             response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-            ctx.write(response);
+            ctx.writeAndFlush(response);
         } else {
             ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
         }

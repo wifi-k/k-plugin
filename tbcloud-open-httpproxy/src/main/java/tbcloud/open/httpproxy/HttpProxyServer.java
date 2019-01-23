@@ -5,7 +5,6 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpContentDecompressor;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
@@ -100,10 +99,12 @@ class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
 
         //TODO
         p.addLast(new ReadTimeoutHandler(30));
-        p.addLast(new HttpResponseEncoder());
-        p.addLast(new HttpContentCompressor());
+
         p.addLast(new HttpRequestDecoder(4096, 8192, 8192, true));
         p.addLast(new HttpContentDecompressor());
+
+        p.addLast(new HttpResponseEncoder());
+//        p.addLast(new HttpContentCompressor()); //TODO HttpContentEncoder 110 cannot send more responses than requests
 
         p.addLast(workGroup, new ApikeyHandler());
         p.addLast(proxyGroup, new HttpProxyHandler());

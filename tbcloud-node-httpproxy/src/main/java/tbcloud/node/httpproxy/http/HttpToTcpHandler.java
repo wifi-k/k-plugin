@@ -110,7 +110,6 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
 
     public static final void writeError(ChannelHandlerContext ctx, Result<?> r) {
         String json = GsonUtil.toJson(r);
-        LOG.info("write error {}", json);
 
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, code2Status(r.getCode()),
                 Unpooled.copiedBuffer(json, CharsetUtil.UTF_8));
@@ -122,6 +121,7 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
 //        }
 
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        LOG.info("write error {}", json);
     }
 
     final static HttpResponseStatus code2Status(int code) {

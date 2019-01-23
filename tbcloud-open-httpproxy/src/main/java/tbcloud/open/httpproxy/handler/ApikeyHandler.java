@@ -34,7 +34,7 @@ public class ApikeyHandler extends AbstractInboundHandler {
 
             if ("/api/test/ping".equals(uri)) { // health checking
                 isValid = false;
-                writeError(ctx, false, null, newResult(ApiCode.SUCC, "ok"));
+                writeError(ctx, false, null, newResult(ApiCode.SUCC, "ping"));
                 return;
             }
 
