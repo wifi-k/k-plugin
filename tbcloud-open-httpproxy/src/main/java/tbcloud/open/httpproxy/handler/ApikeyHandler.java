@@ -34,20 +34,20 @@ public class ApikeyHandler extends AbstractInboundHandler {
 
             if ("/api/test/ping".equals(uri)) { // health checking
                 isValid = false;
-                writeError(ctx, false, null, newResult(ApiCode.SUCC, "ping"));
+                writeResponse(ctx, false, null, newResult(ApiCode.SUCC, "ping"));
                 return;
             }
 
             if (userId < 1) {
                 isValid = false;
-                writeError(ctx, false, null, newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey));
+                writeResponse(ctx, false, null, newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey));
                 return;
             }
 
             UserInfo userInfo = UserDao.selectUserInfo(userId);
             if (userInfo == null) {
                 isValid = false;
-                writeError(ctx, false, null, newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey));
+                writeResponse(ctx, false, null, newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey));
                 return;
             }
 

@@ -52,7 +52,7 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
                         Result<Void> r = new Result();
                         r.setCode(ApiCode.IO_ERROR);
                         r.setMsg("failed to write response");
-                        writeError(inChannelContext, false, null, r);
+                        writeResponse(inChannelContext, false, null, r);
                     }
                 }
             });
@@ -92,12 +92,12 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
                 Result<Void> r = new Result<>();
                 r.setCode(ApiCode.RESPONSE_TIMEOUT);
                 r.setMsg(cause.getMessage());
-                writeError(ctx, false, null, r);
+                writeResponse(ctx, false, null, r);
             } else {
                 Result<Void> r = new Result<>();
                 r.setCode(ApiCode.ERROR_UNKNOWN);
                 r.setMsg(cause.getMessage());
-                writeError(ctx, false, null, r);
+                writeResponse(ctx, false, null, r);
             }
         }
     }

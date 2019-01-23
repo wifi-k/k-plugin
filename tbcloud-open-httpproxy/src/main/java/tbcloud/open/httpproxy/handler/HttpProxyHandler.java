@@ -53,7 +53,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
             }
 
             if (outChannel == null || !outChannel.isActive()) {
-                writeError(ctx, false, null, newResult(ApiCode.NODE_NOT_FOUND, "failed to find proxy connection"));
+                writeResponse(ctx, false, null, newResult(ApiCode.NODE_NOT_FOUND, "failed to find proxy connection"));
                 return;
             }
 
@@ -78,7 +78,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
                     } else {
                         future.channel().close(); // close outChannel;
                         // write error and close connection
-                        writeError(ctx, false, null, newResult(ApiCode.IO_ERROR, "failed to send data"));
+                        writeResponse(ctx, false, null, newResult(ApiCode.IO_ERROR, "failed to send data"));
                     }
                 }
             });

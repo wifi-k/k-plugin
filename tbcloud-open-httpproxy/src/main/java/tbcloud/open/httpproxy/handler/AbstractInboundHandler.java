@@ -53,7 +53,7 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
     @InjectService(id = "tbcloud.service.node.select")
     static NodeSelectService NodeSelector;
 
-    public static final void writeError(ChannelHandlerContext ctx, boolean keepAlive, String cookieString, Result<?> r) {
+    public static final void writeResponse(ChannelHandlerContext ctx, boolean keepAlive, String cookieString, Result<?> r) {
         if (!ctx.channel().isActive()) return;
 
         String json = GsonUtil.toJson(r);
@@ -80,7 +80,7 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
         } else {
             ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
         }
-        LOG.info("write error {}", json);
+        LOG.info("write {}", json);
     }
 
     static HttpResponseStatus newStatus(int code) {
@@ -170,12 +170,12 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
             Result<Void> r = new Result<>();
             r.setCode(ApiCode.REQUEST_TIMEOUT);
             r.setMsg(cause.getMessage());
-            writeError(ctx, false, null, r);
+            writeResponse(ctx, false, null, r);
         } else {
             Result<Void> r = new Result<>();
             r.setCode(ApiCode.ERROR_UNKNOWN);
             r.setMsg(cause.getMessage());
-            writeError(ctx, false, null, r);
+            writeResponse(ctx, false, null, r);
         }
 
     }
