@@ -8,6 +8,7 @@ import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.api.IoContext;
 import tbcloud.node.model.NodeConst;
 import tbcloud.node.model.NodeIns;
+import tbcloud.node.protocol.PacketConst;
 import tbcloud.node.protocol.data.DataRsp;
 import tbcloud.node.protocol.data.InsStatus;
 
@@ -56,6 +57,7 @@ public class InsStatusHandler extends DataHandler<InsStatus> {
 
     @Override
     protected InsStatus decodeDataReq(IoContext context) {
+        LOG.info("data {}", new String(context.request().data().array(), PacketConst.UTF_8));
         return context.dataCodec().decode(context.request().data(), InsStatus.class);
     }
 }

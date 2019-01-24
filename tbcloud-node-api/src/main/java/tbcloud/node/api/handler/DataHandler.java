@@ -68,7 +68,14 @@ public abstract class DataHandler<T extends DataReq> implements Runnable {
 
     @Override
     public void run() {
-        T dataReq = decodeDataReq(context);
+        T dataReq = null;
+        try {
+            dataReq = decodeDataReq(context);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+
+        // error
         if (dataReq == null) {
             try {
                 context.write(ApiCode.INVALID_PARAM); //TODO
