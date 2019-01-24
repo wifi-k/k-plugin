@@ -1,7 +1,11 @@
 package tbcloud.node.httpproxy;
 
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * @author dzh
@@ -26,5 +30,10 @@ public class TestMsgType {
         public void setData(T data) {
             this.data = data;
         }
+    }
+
+    @Test
+    public void localIpTest() throws UnknownHostException {
+        LOG.info("local ip:{}", InetAddress.getLocalHost().getHostAddress());
     }
 }

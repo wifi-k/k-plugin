@@ -72,7 +72,7 @@ public class NodeHttpServer implements Closeable {
             ChannelFuture future = b.bind(addr).sync();
             LOG.info("Start httpproxy http server successfully!");
         } catch (Exception e) {
-            LOG.error(e.getMessage());
+            LOG.error(e.getMessage(), e);
             channelClosed();
         }
     }
