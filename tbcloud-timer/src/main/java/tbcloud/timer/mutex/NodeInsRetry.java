@@ -20,6 +20,8 @@ import java.util.List;
  */
 public class NodeInsRetry extends MutexTimer {
 
+    long INS_RETRY_INTERVL_MS = ProtocolConst.HEARTBEAT_TICK * 2;
+
     @Override
     protected int doTimer() {
         NodeInsExample example = new NodeInsExample();
@@ -27,7 +29,7 @@ public class NodeInsRetry extends MutexTimer {
         // TODO 加入到延迟队列
         // TODO status设置为超时
         // 重发超过1个心跳没有收到回复的指令
-        example.createCriteria().andStatusEqualTo(NodeConst.INS_STATUS_SEND).andSendTimeLessThan(ts - ProtocolConst.HEARTBEAT_TICK)
+        example.createCriteria().andStatusEqualTo(NodeConst.INS_STATUS_SEND).andSendTimeLessThan(ts - INS_RETRY_INTERVL_MS)
                 //.andCreateTimeGreaterThan(ts - 10 * NodeConst.HEARTBEAT_TICK)
                 .andRetryLessThan(NodeConst.INS_MAX_RETRY)
                 .andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
@@ -82,7 +84,7 @@ public class NodeInsRetry extends MutexTimer {
 
     @Override
     protected long delayMs() {
-        return ProtocolConst.HEARTBEAT_TICK * 2;
+        return INS_RETRY_INTERVL_MS;
     }
 
     @Override
