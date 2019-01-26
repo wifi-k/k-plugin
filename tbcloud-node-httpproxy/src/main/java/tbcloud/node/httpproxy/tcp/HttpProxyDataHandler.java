@@ -5,7 +5,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.ReadTimeoutException;
-import jframe.core.msg.PluginMsg;
 import jframe.core.msg.TextMsg;
 import jframe.core.plugin.annotation.InjectPlugin;
 import jframe.core.plugin.annotation.InjectService;
@@ -98,6 +97,8 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
         msg.dataFormat((byte) PacketConst.DataFormat.JSON.ordinal());
         msg.data(DataCodecFactory.codec(msg.dataType(), msg.dataFormat()).encode(ack));
         msg.hash(0L);
+
+        LOG.info("write {}", ack);
         return ctx.writeAndFlush(msg);
     }
 
@@ -214,7 +215,7 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
 //            HttpProxyDao.updateHttpProxyOnline(online);
 //        }
         // async
-        Plugin.sendToNode(new PluginMsg<String>().setType(MsgType.NODE_JOIN_HTTPPROXY).setValue(GsonUtil.toJson(online)), nodeId);
+        Plugin.sendToNode(new TextMsg().setType(MsgType.NODE_JOIN_HTTPPROXY).setValue(GsonUtil.toJson(online)), nodeId);
 //        Plugin.send(new PluginMsg<HttpProxyOnline>().setType(MsgType.NODE_JOIN_HTTPPROXY).setValue(online));
 
 

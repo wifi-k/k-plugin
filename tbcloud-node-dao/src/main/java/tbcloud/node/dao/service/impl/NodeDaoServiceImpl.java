@@ -151,6 +151,8 @@ public class NodeDaoServiceImpl implements NodeDaoService {
 
     @Override
     public boolean batchInsertNodeInfo(Set<NodeInfo> nodeInfoList) {
+        if (nodeInfoList == null || nodeInfoList.isEmpty()) return false;
+
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
             try {
                 for (NodeInfo nodeInfo : nodeInfoList) {
@@ -399,6 +401,8 @@ public class NodeDaoServiceImpl implements NodeDaoService {
 
     @Override
     public boolean batchUpdateNodeIns(List<NodeIns> nodeInsList) {
+        if (nodeInsList == null || nodeInsList.isEmpty()) return false;
+
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
             try {
                 long st = System.currentTimeMillis();
