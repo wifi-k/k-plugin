@@ -76,9 +76,9 @@ public class HttpProxyDecoder extends ByteToMessageDecoder {
                     msg.hash(in.readLong());//Hash
 
                     out.add(msg);
-                    resetDecode();
                     LOG.info("read msg m-{} v-{} id-{} t-{} dt-{} df-{} s-{}", msg.magic(), msg.version(),
                             msg.id(), msg.token(), msg.dataType(), msg.dataFormat(), msg.data().capacity());
+                    resetDecode();
                 } else break;
         }
     }

@@ -62,8 +62,7 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
             case HttpProxyDataType.HPROXY_JOIN:
                 ack = doJoin(msg);
                 if (isSucc(ack)) {
-                    this.nodeId = nodeId;
-                    Plugin.dispatch().attachNode(nodeId, ctx);
+                    Plugin.dispatch().attachNode(this.nodeId, ctx);
                 }
                 break;
             case HttpProxyDataType.HPROXY_HEARTBEAT:
@@ -195,6 +194,7 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
             return ack;
         }
 
+        this.nodeId = nodeId;
         // update online
         HttpProxyOnline online = new HttpProxyOnline();
         online.setNodeId(nodeId);
@@ -217,8 +217,11 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
         Plugin.sendToNode(new PluginMsg<String>().setType(MsgType.NODE_JOIN_HTTPPROXY).setValue(GsonUtil.toJson(online)), nodeId);
 //        Plugin.send(new PluginMsg<HttpProxyOnline>().setType(MsgType.NODE_JOIN_HTTPPROXY).setValue(online));
 
+
         DataAck ack = new DataAck();
         ack.setCode(ApiCode.SUCC);
+
+
         return ack;
     }
 
