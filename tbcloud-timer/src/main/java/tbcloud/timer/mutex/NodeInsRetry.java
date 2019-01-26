@@ -82,7 +82,7 @@ public class NodeInsRetry extends MutexTimer {
 
     @Override
     protected long delayMs() {
-        return ProtocolConst.HEARTBEAT_TICK;
+        return ProtocolConst.HEARTBEAT_TICK * 2;
     }
 
     @Override

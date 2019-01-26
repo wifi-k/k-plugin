@@ -46,7 +46,6 @@ public class HttpProxyJobPlugin extends PluginSenderRecver {
         }
     }
 
-
     @Override
     protected void doRecvMsg(Msg<?> msg) {
         LOG.info("recv msg {}", msg);
