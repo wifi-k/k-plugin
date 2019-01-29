@@ -51,9 +51,17 @@ public class OpenHttpProxyResource extends BaseResource {
             Integer pageNo = req.getPageNo();
             Integer pageSize = req.getPageSize();
 
-            if (req.getStartTime() == null || req.getEndTime() == null) {
-                r.setCode(ApiCode.HTTP_MISS_PARAM);
-                r.setMsg("miss time param");
+            long st = System.currentTimeMillis();
+            if (req.getStartTime() == null) {
+                req.setStartTime(st - 24 * 3600000);
+            }
+            if (req.getEndTime() == null) {
+                req.setEndTime(st);
+            }
+
+            if (req.getEndTime() - req.getStartTime() < 0) {
+                r.setCode(ApiCode.INVALID_PARAM);
+                r.setMsg("endTime - startTime < 0");
                 return r;
             }
 
