@@ -40,6 +40,7 @@ public class HttpProxyDispatch implements AutoCloseable {
                 LOG.error(e.getMessage(), e);
             }
         }
+        LOG.info("attachNode {}", nodeId);
     }
 
     public void detachNode(String nodeId) {
@@ -51,10 +52,16 @@ public class HttpProxyDispatch implements AutoCloseable {
                 LOG.error(e.getMessage(), e);
             }
         }
+        LOG.info("detachNode {}", nodeId);
     }
 
     public DispatchNode findNode(String nodeId) {
         return dispatchNode.get(nodeId);
+    }
+
+    @Override
+    public String toString() {
+        return dispatchNode.toString();
     }
 
 }
