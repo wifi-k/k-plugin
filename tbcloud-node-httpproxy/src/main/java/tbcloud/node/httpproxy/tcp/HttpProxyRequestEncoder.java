@@ -29,6 +29,7 @@ public class HttpProxyRequestEncoder extends MessageToMessageEncoder<HttpProxyRe
 
     @Override
     protected void encode(ChannelHandlerContext ctx, HttpProxyRequest data, List<Object> out) throws Exception {
+        LOG.info("encode {}", data.getId(), data.getSeq());
         ByteBufHttpProxy msg = new ByteBufHttpProxy(); //push http request
         msg.magic(PacketConst.M);
         msg.version(PacketConst.V_20181130);
