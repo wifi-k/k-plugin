@@ -635,7 +635,7 @@ public class OpenUserResource extends BaseResource {
     }
 
 
-    public final int validateToken(ReqContext reqContext) {
+    private final int validateToken(ReqContext reqContext) {
         String token = reqContext.getToken();
 
         long usrId = IDUtil.decodeUserIDFromToken(token);

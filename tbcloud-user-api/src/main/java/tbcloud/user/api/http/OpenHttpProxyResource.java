@@ -7,6 +7,7 @@ import tbcloud.httpproxy.model.HttpProxyRecord;
 import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.Result;
+import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.user.api.http.req.HttpProxyRecordReq;
 import tbcloud.user.api.http.req.ReqContext;
@@ -27,7 +28,7 @@ import java.util.Arrays;
 @Path("open/httpproxy")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class OpenHttpProxyResource extends OpenUserResource {
+public class OpenHttpProxyResource extends BaseResource {
 
     static final Logger LOG = LoggerFactory.getLogger(OpenHttpProxyResource.class);
 
@@ -77,5 +78,23 @@ public class OpenHttpProxyResource extends OpenUserResource {
         r.setData(data);
 
         return r;
+    }
+
+    private final int validateToken(ReqContext reqContext) {
+        String token = reqContext.getToken();
+
+        long usrId = IDUtil.decodeUserIDFromToken(token);
+        if (usrId <= 0) return ApiCode.TOKEN_INVALID;
+
+        UserInfo userInfo = UserDao.selectUserInfo(usrId);
+        if (userInfo == null) return ApiCode.TOKEN_INVALID;
+        reqContext.setUserInfo(userInfo); // update context
+
+        if (Plugin.envName().equals(ApiConst.ENV_DEV)) return ApiCode.SUCC;  // 方便测试
+        String usrToken = getFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_OPEN_TOKEN_ + usrId);
+        if (usrToken == null) return ApiCode.TOKEN_EXPIRED;
+        if (!usrToken.equals(token)) return ApiCode.TOKEN_INVALID;
+
+        return ApiCode.SUCC;
     }
 }
