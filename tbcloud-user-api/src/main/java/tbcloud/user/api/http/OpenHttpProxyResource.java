@@ -33,8 +33,8 @@ public class OpenHttpProxyResource extends BaseResource {
     static final Logger LOG = LoggerFactory.getLogger(OpenHttpProxyResource.class);
 
     @POST
-    @Path("node/list")
-    public Result<PageRsp<HttpProxyRecord>> listNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, HttpProxyRecordReq req) {
+    @Path("record/list")
+    public Result<PageRsp<HttpProxyRecord>> listRecord(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, HttpProxyRecordReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
         Result<PageRsp<HttpProxyRecord>> r = new Result<>();
 
