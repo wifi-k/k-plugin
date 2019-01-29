@@ -50,6 +50,12 @@ public class OpenHttpProxyResource extends OpenUserResource {
             Integer pageNo = req.getPageNo();
             Integer pageSize = req.getPageSize();
 
+            if (req.getStartTime() == null || req.getEndTime() == null) {
+                r.setCode(ApiCode.HTTP_MISS_PARAM);
+                r.setMsg("miss time param");
+                return r;
+            }
+
             try {
                 PageResult<HttpProxyRecord> result = Plugin.elastic().recordList(userInfo.getId(), pageNo, pageSize, req.getStartTime(), req.getEndTime(), null, null);
                 data.setTotal(result.getTotal());
