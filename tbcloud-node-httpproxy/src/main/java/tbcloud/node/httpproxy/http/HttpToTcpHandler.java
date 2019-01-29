@@ -53,6 +53,9 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
             ((HttpRequest) msg).headers().remove(ApiConst.HTTPPROXY_SSL);
             ((HttpRequest) msg).headers().remove(ApiConst.HTTPPROXY_PORT);
             ((HttpRequest) msg).headers().remove(ApiConst.HTTPPROXY_POLICY);
+            ((HttpRequest) msg).headers().remove(ApiConst.API_APIKEY);
+            ((HttpRequest) msg).headers().remove(ApiConst.API_VERSION);
+            ((HttpRequest) msg).headers().remove(ApiConst.API_TOKEN);
 
             // write header
             ByteBuf buf = ctx.alloc().buffer(1024, PacketConst.MAX_SIZE);
