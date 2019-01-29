@@ -44,7 +44,7 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
         if (msg instanceof HttpRequest) {
             String nodeId = ((HttpRequest) msg).headers().get(ApiConst.HTTPPROXY_NODE);
             String recordId = ((HttpRequest) msg).headers().get(ApiConst.HTTPPROXY_RECORD);
-            int sslEnabled = ((HttpRequest) msg).headers().getInt(ApiConst.HTTPPROXY_SSL);
+            int sslEnabled = ((HttpRequest) msg).headers().getInt(ApiConst.HTTPPROXY_SSL, 0);
             int httpPort = ((HttpRequest) msg).headers().getInt(ApiConst.HTTPPROXY_PORT, sslEnabled > 0 ? 443 : 80);
 
             // clear header

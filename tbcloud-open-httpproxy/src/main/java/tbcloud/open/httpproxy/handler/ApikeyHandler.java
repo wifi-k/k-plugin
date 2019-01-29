@@ -5,11 +5,9 @@ import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tbcloud.httpproxy.protocol.HttpProxyConst;
 import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.util.IDUtil;
-import tbcloud.open.httpproxy.handler.util.HttpProxyRecordUtil;
 import tbcloud.user.model.UserInfo;
 
 /**
@@ -41,16 +39,22 @@ public class ApikeyHandler extends AbstractInboundHandler {
 
             if (userId < 1) {
                 isValid = false;
-                writeResponse(ctx, false, null, newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey),
-                        HttpProxyRecordUtil.toRecord(((HttpRequest) msg), HttpProxyConst.PROXY_STATUS_FAIL, null));
+//                writeResponse(ctx, false, null, newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey),
+//                        HttpProxyRecordUtil.toRecord(((HttpRequest) msg), HttpProxyConst.PROXY_STATUS_FAIL, null));
+
+                writeResponse(ctx, false, null,
+                        newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey), null);
                 return;
             }
 
             UserInfo userInfo = UserDao.selectUserInfo(userId);
             if (userInfo == null) {
                 isValid = false;
-                writeResponse(ctx, false, null, newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey),
-                        HttpProxyRecordUtil.toRecord(((HttpRequest) msg), HttpProxyConst.PROXY_STATUS_FAIL, null));
+//                writeResponse(ctx, false, null, newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey),
+//                        HttpProxyRecordUtil.toRecord(((HttpRequest) msg), HttpProxyConst.PROXY_STATUS_FAIL, null));
+
+                writeResponse(ctx, false, null,
+                        newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey), null);
                 return;
             }
 
