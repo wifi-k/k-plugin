@@ -95,6 +95,7 @@ public class DispatchNode implements AutoCloseable {
     }
 
     public void writeRequest(ChannelHandlerContext httpContext, final HttpProxyRequest request) {
+        LOG.info("write req {}", request);
         if (request.getSeq() == HttpProxyConst.SEQ_LAST_NUM) {
             tcpContext.writeAndFlush(request).addListener(new ChannelFutureListener() {
                 @Override
@@ -120,6 +121,7 @@ public class DispatchNode implements AutoCloseable {
     }
 
     public void writeResponse(HttpProxyResponse response) { //TODO ProxyCost
+        LOG.info("write rsp {}", response);
         DispatchRecord record = findDispatchRecord(response.getId());
         if (record == null)
             return;

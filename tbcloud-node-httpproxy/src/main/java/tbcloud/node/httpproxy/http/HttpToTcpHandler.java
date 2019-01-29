@@ -58,7 +58,7 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
             ((HttpRequest) msg).headers().remove(ApiConst.API_TOKEN);
 
             // write header
-            ByteBuf buf = ctx.alloc().buffer(1024, PacketConst.MAX_SIZE);
+            ByteBuf buf = ctx.alloc().heapBuffer(1024, PacketConst.MAX_SIZE);
             // Encode the message.
             HttpRequestEncoderExt.encodeInitialLine(buf, (HttpRequest) msg);
             HttpRequestEncoderExt.encodeHeaders(((HttpRequest) msg).headers(), buf);
