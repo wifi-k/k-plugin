@@ -35,7 +35,7 @@ public class HttpProxyRecordUtil {
         record.setReqProtocol(msg.protocolVersion().protocolName());
         record.setReqSize(msg.headers().getInt(HttpHeaderNames.CONTENT_LENGTH));
         record.setReqTime(System.currentTimeMillis());
-        byte sslEnabled = ((HttpRequest) msg).headers().getInt(ApiConst.HTTPPROXY_SSL).byteValue();
+        byte sslEnabled = (byte) ((HttpRequest) msg).headers().getInt(ApiConst.HTTPPROXY_SSL, 0);
         record.setReqSsl(sslEnabled);
         record.setReqPort(((HttpRequest) msg).headers().getInt(ApiConst.HTTPPROXY_PORT, sslEnabled > 0 ? 443 : 80));
         record.setReqPolicy(((HttpRequest) msg).headers().get(ApiConst.HTTPPROXY_POLICY));
