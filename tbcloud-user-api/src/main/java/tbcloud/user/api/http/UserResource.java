@@ -740,7 +740,7 @@ public class UserResource extends BaseResource {
         // TODO firmwareUpgrade NodeRsp
 
         PageRsp<NodeInfoRt> data = new PageRsp<>();
-        data.setCount(count);
+        data.setTotal(count);
         data.setPage(nodeList);
         r.setData(data);
         return r;
@@ -958,7 +958,7 @@ public class UserResource extends BaseResource {
 
         PageRsp<UserShareDay> data = new PageRsp<>();
         data.setPage(page);
-        data.setCount(count);
+        data.setTotal(count);
         r.setData(data);
         return r;
     }

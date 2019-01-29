@@ -6,14 +6,13 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tbcloud.httpproxy.model.HttpProxyRecord;
 import tbcloud.httpproxy.protocol.HttpProxyConst;
 import tbcloud.httpproxy.protocol.data.HttpProxyRequest;
 import tbcloud.httpproxy.protocol.data.HttpProxyResponse;
 import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.Result;
-import tbcloud.node.httpproxy.http.HttpToTcpHandler;
 
+import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -100,21 +99,18 @@ public class DispatchNode implements AutoCloseable {
             tcpContext.writeAndFlush(request).addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) {
+                    DispatchRecord record = new DispatchRecord();
+                    record.setId(request.getId());
+                    record.setHttpContext(httpContext);
+
                     if (future.isSuccess()) {
-                        DispatchRecord record = new DispatchRecord();
-                        record.setId(request.getId());
-                        record.setHttpContext(httpContext);
-
-                        record.setRecord(new HttpProxyRecord());
-                        record.getRecord().setId(request.getId());
-                        record.getRecord().setProxySendTime(System.currentTimeMillis());
-
                         addDispatchRecord(record);
                     } else {
                         Result<Void> r = new Result<>();
                         r.setCode(ApiCode.IO_ERROR);
                         r.setMsg("failed to write request");
-                        HttpToTcpHandler.writeError(httpContext, r);
+
+                        record.writeError(r);
                     }
                 }
             });
@@ -123,16 +119,34 @@ public class DispatchNode implements AutoCloseable {
         }
     }
 
-    public void writeResponse(HttpProxyResponse response) {
+    public void writeResponse(HttpProxyResponse response) { //TODO ProxyCost
         DispatchRecord record = findDispatchRecord(response.getId());
         if (record == null)
             return;
 
-        if (response.getSeq() == HttpProxyConst.SEQ_LAST_NUM) {
-            record.getRecord().setProxyRecvTime(System.currentTimeMillis());
-            record.getRecord().setProxyCost(response.getProxyCost());
+        if (response.getProxyStatus() != HttpProxyConst.PROXY_STATUS_SUCC) {
+            Result<Void> r = new Result<>();
+            r.setCode(ApiCode.IO_ERROR);
+            r.setMsg("failed to proxy");
+            record.writeError(r);
 
-            record.getHttpContext().writeAndFlush(Unpooled.wrappedBuffer(response.getHttp()))
+            removeDispatchRecord(record.getId());
+            return;
+        }
+
+        ByteBuffer httpContent = response.getHttp();
+        if (httpContent == null || httpContent.array().length == 0) {
+            Result<Void> r = new Result<>();
+            r.setCode(ApiCode.IO_ERROR);
+            r.setMsg("node's response is nil");
+            record.writeError(r);
+
+            removeDispatchRecord(record.getId());
+            return;
+        }
+
+        if (response.getSeq() == HttpProxyConst.SEQ_LAST_NUM) {
+            record.getHttpContext().writeAndFlush(Unpooled.wrappedBuffer(httpContent))
                     .addListener(new ChannelFutureListener() {
                         @Override
                         public void operationComplete(ChannelFuture future) {
@@ -141,7 +155,7 @@ public class DispatchNode implements AutoCloseable {
                         }
                     });
         } else {
-            record.getHttpContext().write(response);
+            record.getHttpContext().write(Unpooled.wrappedBuffer(httpContent));
         }
     }
 }

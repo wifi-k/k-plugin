@@ -72,7 +72,10 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
                 break;
             case HttpProxyDataType.HPROXY_QUIT:
                 ack = doQuit(msg);
-                if (isSucc(ack)) this.closed = true; //close channel
+                if (isSucc(ack)) {
+                    detachNode();
+                    this.closed = true; //close channel
+                }
                 break;
             default:
                 LOG.error("discard error dataType {} {}", msg.dataType(), msg.id());
@@ -245,10 +248,10 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
         // close
         ctx.channel().close();
         //
-        clearDispatchNode();
+        detachNode();
     }
 
-    private void clearDispatchNode() {
+    private void detachNode() {
         Plugin.dispatch().detachNode(this.nodeId);
     }
 

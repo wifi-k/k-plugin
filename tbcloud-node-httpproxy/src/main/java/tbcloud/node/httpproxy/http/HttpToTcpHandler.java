@@ -1,25 +1,19 @@
 package tbcloud.node.httpproxy.http;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.timeout.ReadTimeoutException;
-import io.netty.util.CharsetUtil;
 import jframe.core.plugin.annotation.InjectPlugin;
 import jframe.core.plugin.annotation.Injector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.httpproxy.protocol.HttpProxyConst;
 import tbcloud.httpproxy.protocol.data.HttpProxyRequest;
-import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
-import tbcloud.lib.api.Result;
 import tbcloud.node.httpproxy.NodeHttpProxyPlugin;
 import tbcloud.node.protocol.PacketConst;
-import tbcloud.node.protocol.util.GsonUtil;
 
 import java.nio.ByteBuffer;
 
@@ -52,7 +46,13 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
             String recordId = ((HttpRequest) msg).headers().get(ApiConst.HTTPPROXY_RECORD);
             int sslEnabled = ((HttpRequest) msg).headers().getInt(ApiConst.HTTPPROXY_SSL);
             int httpPort = ((HttpRequest) msg).headers().getInt(ApiConst.HTTPPROXY_PORT, sslEnabled > 0 ? 443 : 80);
-            //int contentLength = ((HttpRequest) msg).headers().getInt(HttpHeaderNames.CONTENT_LENGTH);//body size
+
+            // clear header
+            ((HttpRequest) msg).headers().remove(ApiConst.HTTPPROXY_NODE);
+            ((HttpRequest) msg).headers().remove(ApiConst.HTTPPROXY_RECORD);
+            ((HttpRequest) msg).headers().remove(ApiConst.HTTPPROXY_SSL);
+            ((HttpRequest) msg).headers().remove(ApiConst.HTTPPROXY_PORT);
+            ((HttpRequest) msg).headers().remove(ApiConst.HTTPPROXY_POLICY);
 
             // write header
             ByteBuf buf = ctx.alloc().buffer(1024, PacketConst.MAX_SIZE);
@@ -89,7 +89,6 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         LOG.error(cause.getMessage(), cause);
         if (cause instanceof ReadTimeoutException) {
-            // update offline info
         }
         // close
         ctx.channel().close();
@@ -106,41 +105,6 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
         public void encodeHeaders(HttpHeaders headers, ByteBuf buf) {
             super.encodeHeaders(headers, buf);
         }
-    }
-
-    public static final void writeError(ChannelHandlerContext ctx, Result<?> r) {
-        String json = GsonUtil.toJson(r);
-
-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, code2Status(r.getCode()),
-                Unpooled.copiedBuffer(json, CharsetUtil.UTF_8));
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json; charset=UTF-8");
-        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
-
-//        if (keepAlive) {
-//            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-//        }
-
-        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-        LOG.info("write error {}", json);
-    }
-
-    final static HttpResponseStatus code2Status(int code) {
-        switch (code) {
-            case ApiCode.SUCC:
-                return HttpResponseStatus.OK;
-            case ApiCode.INVALID_APIKEY:
-                return HttpResponseStatus.NETWORK_AUTHENTICATION_REQUIRED;
-            case ApiCode.NODE_NOT_FOUND:
-                return HttpResponseStatus.SERVICE_UNAVAILABLE;
-            case ApiCode.REQUEST_TIMEOUT:
-                return HttpResponseStatus.GATEWAY_TIMEOUT;
-            case ApiCode.RESPONSE_TIMEOUT:
-                return HttpResponseStatus.GATEWAY_TIMEOUT;
-            case ApiCode.IO_ERROR:
-                return HttpResponseStatus.INTERNAL_SERVER_ERROR;
-        }
-
-        return HttpResponseStatus.BAD_GATEWAY;
     }
 
 }

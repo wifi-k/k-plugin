@@ -10,6 +10,7 @@ import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.util.CharsetUtil;
+import jframe.core.msg.TextMsg;
 import jframe.core.plugin.annotation.InjectPlugin;
 import jframe.core.plugin.annotation.InjectService;
 import jframe.core.plugin.annotation.Injector;
@@ -18,8 +19,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import tbcloud.httpproxy.dao.service.HttpProxyDaoService;
+import tbcloud.httpproxy.model.HttpProxyRecord;
+import tbcloud.httpproxy.protocol.HttpProxyConst;
 import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.Result;
+import tbcloud.lib.api.msg.MsgType;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.select.service.NodeSelectService;
@@ -53,7 +57,9 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
     @InjectService(id = "tbcloud.service.node.select")
     static NodeSelectService NodeSelector;
 
-    public static final void writeResponse(ChannelHandlerContext ctx, boolean keepAlive, String cookieString, Result<?> r) {
+    protected HttpProxyRecord record;
+
+    public static final void writeResponse(ChannelHandlerContext ctx, boolean keepAlive, String cookieString, Result<?> r, HttpProxyRecord record) {
         if (!ctx.channel().isActive()) return;
 
         String json = GsonUtil.toJson(r);
@@ -81,6 +87,12 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
             ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
         }
         LOG.info("write {}", json);
+
+        if (record != null) {
+            record.setRspCode(r.getCode());
+            record.setRspReason(r.getMsg());
+            Plugin.sendToHttpProxy(new TextMsg().setType(MsgType.HTTPPROXY_RECORD_ADD).setValue(GsonUtil.toJson(record)));
+        }
     }
 
     static HttpResponseStatus newStatus(int code) {
@@ -100,6 +112,31 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
             default:
                 return HttpResponseStatus.BAD_GATEWAY;
         }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        LOG.error(cause.getMessage(), cause);
+
+        if (cause instanceof ReadTimeoutException) {
+            Result<Void> r = new Result<>();
+            r.setCode(ApiCode.REQUEST_TIMEOUT);
+            r.setMsg(cause.getMessage());
+
+            if (record != null) {
+                record.setProxyStatus(HttpProxyConst.PROXY_STATUS_TIMEOUT);
+            }
+            writeResponse(ctx, false, null, r, record);
+        } else {
+            Result<Void> r = new Result<>();
+            r.setCode(ApiCode.ERROR_UNKNOWN);
+            r.setMsg(cause.getMessage());
+            if (record != null) {
+                record.setProxyStatus(HttpProxyConst.PROXY_STATUS_FAIL);
+            }
+            writeResponse(ctx, false, null, r, record);
+        }
+
     }
 
     protected Result<Void> newResult(int code, String msg) {
@@ -160,24 +197,6 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
                 jedis.del(key);
             }
         }
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        LOG.error(cause.getMessage(), cause.getCause());
-
-        if (cause instanceof ReadTimeoutException) {
-            Result<Void> r = new Result<>();
-            r.setCode(ApiCode.REQUEST_TIMEOUT);
-            r.setMsg(cause.getMessage());
-            writeResponse(ctx, false, null, r);
-        } else {
-            Result<Void> r = new Result<>();
-            r.setCode(ApiCode.ERROR_UNKNOWN);
-            r.setMsg(cause.getMessage());
-            writeResponse(ctx, false, null, r);
-        }
-
     }
 
 }

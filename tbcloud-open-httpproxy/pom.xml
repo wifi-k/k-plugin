@@ -49,6 +49,10 @@
             <groupId>cn.treebear</groupId>
             <artifactId>tbcloud-lib-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-httpproxy-protocol</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>io.github.dzh</groupId>

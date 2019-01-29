@@ -6,6 +6,7 @@ import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.ApiConst;
+import tbcloud.user.api.http.OpenHttpProxyResource;
 import tbcloud.user.api.http.OpenUserResource;
 import tbcloud.user.api.http.TestResource;
 import tbcloud.user.api.http.UserResource;
@@ -37,6 +38,7 @@ class ApiHttpServer extends Application {
         classes.add(UserResource.class);
         // open
         classes.add(OpenUserResource.class);
+        classes.add(OpenHttpProxyResource.class);
 
         return classes;
     }

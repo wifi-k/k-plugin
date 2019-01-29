@@ -7,7 +7,6 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpContentDecompressor;
 import io.netty.handler.codec.http.HttpRequestDecoder;
-import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
@@ -115,7 +114,7 @@ class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
         p.addLast(new HttpRequestDecoder(4096, 8192, 8192, true));
         p.addLast(new HttpContentDecompressor());
 
-        p.addLast(new HttpResponseEncoder());
+        //p.addLast(new HttpResponseEncoder());
 
         p.addLast(workGroup, new HttpToTcpHandler());
 //        p.addLast(workGroup, new ApikeyHandler());

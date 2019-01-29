@@ -8,15 +8,15 @@ import java.util.List;
  */
 public class PageRsp<T> {
 
-    private long count;
+    private long total;
     private List<T> page;
 
-    public long getCount() {
-        return count;
+    public long getTotal() {
+        return total;
     }
 
-    public void setCount(long count) {
-        this.count = count;
+    public void setTotal(long total) {
+        this.total = total;
     }
 
     public List<T> getPage() {

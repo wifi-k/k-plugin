@@ -223,6 +223,11 @@
                 <artifactId>tbcloud-httpproxy-protocol</artifactId>
                 <version>${tbcloud.version}</version>
             </dependency>
+            <dependency>
+                <groupId>cn.treebear</groupId>
+                <artifactId>tbcloud-elastic-model</artifactId>
+                <version>${tbcloud.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>cn.treebear</groupId>

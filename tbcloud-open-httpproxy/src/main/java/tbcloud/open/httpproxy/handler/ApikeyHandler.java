@@ -5,9 +5,11 @@ import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tbcloud.httpproxy.protocol.HttpProxyConst;
 import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.util.IDUtil;
+import tbcloud.open.httpproxy.handler.util.HttpProxyRecordUtil;
 import tbcloud.user.model.UserInfo;
 
 /**
@@ -31,23 +33,24 @@ public class ApikeyHandler extends AbstractInboundHandler {
             String uri = ((HttpRequest) msg).uri();
             LOG.info("req {} {} {} {} ", userId, apiVersion, uri, ((HttpRequest) msg).method());
 
-
             if ("/api/test/ping".equals(uri)) { // health checking
                 isValid = false;
-                writeResponse(ctx, false, null, newResult(ApiCode.SUCC, "ping"));
+                writeResponse(ctx, false, null, newResult(ApiCode.SUCC, "ping"), null);
                 return;
             }
 
             if (userId < 1) {
                 isValid = false;
-                writeResponse(ctx, false, null, newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey));
+                writeResponse(ctx, false, null, newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey),
+                        HttpProxyRecordUtil.toRecord(((HttpRequest) msg), HttpProxyConst.PROXY_STATUS_FAIL, null));
                 return;
             }
 
             UserInfo userInfo = UserDao.selectUserInfo(userId);
             if (userInfo == null) {
                 isValid = false;
-                writeResponse(ctx, false, null, newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey));
+                writeResponse(ctx, false, null, newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey),
+                        HttpProxyRecordUtil.toRecord(((HttpRequest) msg), HttpProxyConst.PROXY_STATUS_FAIL, null));
                 return;
             }
 
@@ -56,5 +59,6 @@ public class ApikeyHandler extends AbstractInboundHandler {
         }
         if (isValid) ctx.fireChannelRead(msg);
     }
+
 
 }

@@ -51,14 +51,14 @@ public class OpenHttpProxyPlugin extends KafkaPlugin {
         return serverId;
     }
 
-    public void sendToNode(Msg<String> msg, String nodeId) {
+    public void sendToHttpProxy(Msg<String> msg, String nodeId) {
         if (StringUtil.isEmpty(nodeId))
-            sendToNode(msg);
+            sendToHttpProxy(msg);
         else
             send(msg, MsgMeta.Topic_HttpProxy, nodeId);
     }
 
-    public void sendToNode(Msg<String> msg) {
+    public void sendToHttpProxy(Msg<String> msg) {
         send(msg, MsgMeta.Topic_HttpProxy);
     }
 }

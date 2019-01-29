@@ -7,11 +7,14 @@ import io.netty.handler.codec.http.*;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import tbcloud.httpproxy.model.HttpProxyOnline;
 import tbcloud.httpproxy.model.HttpProxyRecord;
+import tbcloud.httpproxy.protocol.HttpProxyConst;
 import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.AppEnum;
+import tbcloud.lib.api.Result;
 import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
+import tbcloud.open.httpproxy.handler.util.HttpProxyRecordUtil;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -22,8 +25,8 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class HttpProxyHandler extends AbstractInboundHandler {
 
-    private String nodeId; // 当前请求到的NodeId;keepAlive时，希望保持请求到同一个节点
     private Channel outChannel; // connect to node http server
+    private String prevNodeId; //
 
     private static final int MAX_RETRY = 3;
 
@@ -47,43 +50,47 @@ public class HttpProxyHandler extends AbstractInboundHandler {
                 if (online == null) {
                     break;
                 }
+                //new record
+                this.record = HttpProxyRecordUtil.toRecord(((HttpRequest) msg), HttpProxyConst.PROXY_STATUS_SUCC, online.getNodeId());
                 // connect to node's http server
-                outChannel = connectNodeServer(ctx, keepAlive, online);
+                this.outChannel = connectNodeServer(ctx, keepAlive, online, record);
                 // TODO 连接失败的分析处理，可能的结果是从redis集合里删除这个nodeId
             }
 
             if (outChannel == null || !outChannel.isActive()) {
-                writeResponse(ctx, false, null, newResult(ApiCode.NODE_NOT_FOUND, "failed to find proxy connection"));
+                writeResponse(ctx, false, null, newResult(ApiCode.NODE_NOT_FOUND, "failed to find proxy connection"),
+                        HttpProxyRecordUtil.toRecord(((HttpRequest) msg), HttpProxyConst.PROXY_STATUS_FAIL, null));
                 return;
             }
-
-            this.nodeId = online.getNodeId();
-            //new record
-            HttpProxyRecord record = initRecord((HttpRequest) msg, online);
-            HttpProxyDao.insertHttpProxyRecord(record); // TODO async
 
             // rewrite header
             ((HttpRequest) msg).headers().add(ApiConst.HTTPPROXY_NODE, online.getNodeId());
             ((HttpRequest) msg).headers().add(ApiConst.HTTPPROXY_RECORD, record.getId());
-            // ((HttpRequest) msg).headers().add(ApiConst.HTTPPROXY_REQTIME, String.valueOf(record.getReqTime()));
             LOG.info("{} {} {} {} {}", userId, keepAlive, policy, online.getNodeId(), record.getId());
         }
 
-        if (outChannel != null && msg instanceof LastHttpContent) {
-            outChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture future) {
-                    if (future.isSuccess()) {
-                        // do nothing
-                    } else {
-                        future.channel().close(); // close outChannel;
-                        // write error and close connection
-                        writeResponse(ctx, false, null, newResult(ApiCode.IO_ERROR, "failed to send data"));
+        if (outChannel != null) {
+            if (msg instanceof LastHttpContent) {
+                outChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture future) {
+                        if (future.isSuccess()) {
+                            prevNodeId = record.getNodeId();
+                        } else {
+                            // write error and close connection
+                            Result<Void> r = newResult(ApiCode.IO_ERROR, "failed to send data");
+                            record.setProxyStatus(HttpProxyConst.PROXY_STATUS_FAIL);
+                            record.setRspCode(r.getCode());
+                            record.setRspReason(r.getMsg());
+                            writeResponse(ctx, false, null, r, record);
+                            // close outChannel;
+                            future.channel().close();
+                        }
                     }
-                }
-            });
-        } else {
-            outChannel.write(msg);
+                });
+            } else {
+                outChannel.write(msg);
+            }
         }
     }
 
@@ -95,8 +102,8 @@ public class HttpProxyHandler extends AbstractInboundHandler {
             if (online.getStatus() == ApiConst.IS_ONLINE) return online;
         }
         // 2.`hold`策略时，优先路由到上一次的路由器
-        if (ApiConst.HTTPPROXY_POLICY_HOLD.equals(policy) && !StringUtil.isEmpty(this.nodeId)) { // TODO redis
-            online = HttpProxyDao.selectHttpProxyOnline(this.nodeId);
+        if (ApiConst.HTTPPROXY_POLICY_HOLD.equals(policy) && !StringUtil.isEmpty(this.prevNodeId)) {
+            online = HttpProxyDao.selectHttpProxyOnline(this.prevNodeId);
             if (online.getStatus() == ApiConst.IS_ONLINE) return online;
         }
         // TODO 支持复杂的查询条件
@@ -109,7 +116,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
         return online;
     }
 
-    private Channel connectNodeServer(ChannelHandlerContext ctx, boolean keepAlive, HttpProxyOnline online) {
+    private Channel connectNodeServer(ChannelHandlerContext ctx, boolean keepAlive, HttpProxyOnline online, HttpProxyRecord record) {
         final Channel inChannel = ctx.channel();
 
         Bootstrap b = new Bootstrap();
@@ -122,11 +129,12 @@ public class HttpProxyHandler extends AbstractInboundHandler {
 
                         p.addLast(new ReadTimeoutHandler(30));
                         p.addLast(new HttpRequestEncoder());
-                        p.addLast(new HttpContentCompressor());
+                        // p.addLast(new HttpContentCompressor());
+
                         p.addLast(new HttpResponseDecoder(4096, 8192, 8192, true));
                         p.addLast(new HttpContentDecompressor());
 
-                        p.addLast(new HttpProxyBackendHandler(ctx, keepAlive));
+                        p.addLast(new HttpProxyBackendHandler(ctx, keepAlive, record));
                     }
                 })
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10)
@@ -141,24 +149,6 @@ public class HttpProxyHandler extends AbstractInboundHandler {
             f.channel().close();
         }
         return null;
-    }
-
-
-    private HttpProxyRecord initRecord(HttpRequest msg, HttpProxyOnline online) {
-        HttpProxyRecord record = new HttpProxyRecord();
-        record.setId(IDUtil.genHttpProxyId(Plugin.serverId()));
-
-        long userId = IDUtil.readUserIdFromApikey(msg.headers().get(ApiConst.API_APIKEY));
-        record.setUserId(userId);
-
-        record.setNodeId(online.getNodeId());
-        record.setReqProtocol(msg.protocolVersion().protocolName());
-        record.setReqMethod(msg.method().name());
-        record.setReqSize(msg.headers().getInt(HttpHeaderNames.CONTENT_LENGTH));
-        record.setReqTime(System.currentTimeMillis());
-        record.setReqUri(msg.uri());
-
-        return record;
     }
 
     protected void resetState() {
