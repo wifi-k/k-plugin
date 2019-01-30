@@ -50,6 +50,8 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
 
     private short seqNum = 1;
 
+    private boolean succ_w = true; //write status
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
         //LOG.info("nodes {}", Plugin.dispatch());
@@ -84,8 +86,8 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
             request.setHttp(ByteBuffer.wrap(buf.array(), 0, buf.readableBytes()));
 
             buf.clear();
-            write(ctx, request);
-        } else if (msg instanceof HttpContent) {
+            succ_w = write(ctx, request);
+        } else if (succ_w && msg instanceof HttpContent) {
             HttpProxyRequest request = new HttpProxyRequest();
             request.setNodeId(nodeId);
             request.setId(recordId);
@@ -97,20 +99,22 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
 
             ByteBuf buf = ((HttpContent) msg).content();
             request.setHttp(ByteBuffer.wrap(buf.array(), 0, buf.readableBytes()));
-            write(ctx, request);
+            succ_w = write(ctx, request);
         }
     }
 
-    final void write(ChannelHandlerContext ctx, HttpProxyRequest request) {
+    final boolean write(ChannelHandlerContext ctx, HttpProxyRequest request) {
         DispatchNode dispatchNode = Plugin.dispatch().findNode(request.getNodeId());
         if (dispatchNode == null) {
             Result<Void> r = new Result<>();
             r.setCode(ApiCode.NODE_NOT_FOUND);
             r.setMsg("not found proxy node " + request.getNodeId());
             writeError(ctx, r);
+            return false;
         } else {
             dispatchNode.writeRequest(ctx, request);
         }
+        return true;
     }
 
     final void writeError(ChannelHandlerContext ctx, Result<?> r) {
