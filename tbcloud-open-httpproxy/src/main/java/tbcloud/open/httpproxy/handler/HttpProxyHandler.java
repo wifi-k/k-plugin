@@ -5,6 +5,7 @@ import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
 import tbcloud.httpproxy.model.HttpProxyOnline;
 import tbcloud.httpproxy.model.HttpProxyRecord;
 import tbcloud.httpproxy.protocol.HttpProxyConst;
@@ -127,7 +128,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline p = ch.pipeline();
 
-                        // p.addLast(new IdleStateHandler(0, 30, 0)); TODO
+                        p.addLast(new IdleStateHandler(30, 30, 0));
                         // p.addLast(new HttpContentCompressor());
 
                         p.addLast(new HttpResponseDecoder(4096, 8192, 8192, true));

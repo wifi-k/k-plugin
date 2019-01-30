@@ -8,6 +8,7 @@ import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.ReferenceCountUtil;
 import jframe.core.msg.TextMsg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,7 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
         if (msg instanceof LastHttpContent) {
-            inChannelContext.writeAndFlush(msg).addListener(new ChannelFutureListener() {
+            inChannelContext.writeAndFlush(ReferenceCountUtil.retain(msg)).addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) {
                     if (future.isSuccess()) {
