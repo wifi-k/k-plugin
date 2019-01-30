@@ -15,6 +15,7 @@ import tbcloud.lib.api.ApiConst;
 import tbcloud.node.httpproxy.NodeHttpProxyPlugin;
 import tbcloud.node.protocol.PacketConst;
 
+import java.net.URI;
 import java.nio.ByteBuffer;
 
 import static io.netty.handler.codec.http.HttpConstants.CR;
@@ -45,14 +46,10 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
         if (msg instanceof HttpRequest) {
             String nodeId = ((HttpRequest) msg).headers().get(ApiConst.HTTPPROXY_NODE);
             String recordId = ((HttpRequest) msg).headers().get(ApiConst.HTTPPROXY_RECORD);
-            int sslEnabled = ((HttpRequest) msg).headers().getInt(ApiConst.HTTPPROXY_SSL, 0);
-            int httpPort = ((HttpRequest) msg).headers().getInt(ApiConst.HTTPPROXY_PORT, sslEnabled > 0 ? 443 : 80);
 
             // clear header
             ((HttpRequest) msg).headers().remove(ApiConst.HTTPPROXY_NODE);
             ((HttpRequest) msg).headers().remove(ApiConst.HTTPPROXY_RECORD);
-            ((HttpRequest) msg).headers().remove(ApiConst.HTTPPROXY_SSL);
-            ((HttpRequest) msg).headers().remove(ApiConst.HTTPPROXY_PORT);
             ((HttpRequest) msg).headers().remove(ApiConst.HTTPPROXY_POLICY);
             ((HttpRequest) msg).headers().remove(ApiConst.API_APIKEY);
             ((HttpRequest) msg).headers().remove(ApiConst.API_VERSION);
@@ -66,12 +63,13 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
             buf.writeBytes(CRLF);
 
             //
+            URI uri = URI.create(((HttpRequest) msg).uri());
             this.request = new HttpProxyRequest();
             request.setNodeId(nodeId);
             request.setId(recordId);
-            request.setHost(((HttpRequest) msg).uri());
-            request.setScheme(sslEnabled > 0 ? HttpProxyConst.SCHEME_HTTPS : HttpProxyConst.SCHEME_HTTP);
-            request.setPort(httpPort);
+            request.setScheme("https".equals(uri.getScheme()) ? HttpProxyConst.SCHEME_HTTPS : HttpProxyConst.SCHEME_HTTP);
+            request.setHost(uri.getHost());
+            request.setPort(uri.getPort() < 0 ? 80 : uri.getPort());
             request.setSeq(seqNum);
             request.setHttp(ByteBuffer.wrap(buf.array(), 0, buf.readableBytes()));
 

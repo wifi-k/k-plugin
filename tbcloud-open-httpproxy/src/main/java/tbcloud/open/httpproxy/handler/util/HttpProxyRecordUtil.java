@@ -11,6 +11,8 @@ import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.util.IDUtil;
 import tbcloud.open.httpproxy.OpenHttpProxyPlugin;
 
+import java.net.URI;
+
 /**
  * @author dzh
  * @date 2019-01-29 12:06
@@ -30,14 +32,18 @@ public class HttpProxyRecordUtil {
         record.setId(IDUtil.genHttpProxyId(Plugin.serverId(), userId));
         record.setUserId(userId);
 
-        record.setReqUri(msg.uri());
         record.setReqMethod(msg.method().name());
         record.setReqProtocol(msg.protocolVersion().protocolName());
         record.setReqSize(msg.headers().getInt(HttpHeaderNames.CONTENT_LENGTH));
         record.setReqTime(System.currentTimeMillis());
-        byte sslEnabled = (byte) ((HttpRequest) msg).headers().getInt(ApiConst.HTTPPROXY_SSL, 0);
-        record.setReqSsl(sslEnabled);
-        record.setReqPort(((HttpRequest) msg).headers().getInt(ApiConst.HTTPPROXY_PORT, sslEnabled > 0 ? 443 : 80));
+
+        URI uri = URI.create(msg.uri());
+        record.setReqScheme(uri.getScheme());
+        record.setReqHost(uri.getHost());
+        record.setReqPort(uri.getPort() < 0 ? 80 : uri.getPort());
+        record.setReqPath(uri.getPath());
+        record.setReqQuery(uri.getQuery());
+
         record.setReqPolicy(((HttpRequest) msg).headers().get(ApiConst.HTTPPROXY_POLICY));
 
         record.setNodeId(nodeId);
