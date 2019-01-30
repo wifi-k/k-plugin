@@ -4,6 +4,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tbcloud.httpproxy.protocol.ByteBufHttpProxy;
 import tbcloud.node.protocol.PacketConst;
 
@@ -16,10 +18,13 @@ import tbcloud.node.protocol.PacketConst;
 @ChannelHandler.Sharable
 public class HttpProxyEncoder extends MessageToByteEncoder<ByteBufHttpProxy> {
 
+    static Logger LOG = LoggerFactory.getLogger(HttpProxyEncoder.class);
+
 //    static final PacketCodec codec = new PacketCodecV20181130(); //TODO
 
     @Override
     protected void encode(ChannelHandlerContext ctx, ByteBufHttpProxy msg, ByteBuf out) throws Exception {
+        LOG.info("HttpProxyEncoder encode {}", msg.id());
         out.writeInt(msg.magic());
         out.writeInt(msg.version());
 
