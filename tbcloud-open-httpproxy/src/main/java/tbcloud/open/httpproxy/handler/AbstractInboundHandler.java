@@ -120,24 +120,22 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         LOG.error(cause.getMessage(), cause);
 
+        Result<Void> r = new Result<>();
+        r.setMsg(cause.getMessage());
         if (cause instanceof ReadTimeoutException) {
-            Result<Void> r = new Result<>();
             r.setCode(ApiCode.REQUEST_TIMEOUT);
-            r.setMsg(cause.getMessage());
 
             if (record != null) {
                 record.setProxyStatus(HttpProxyConst.PROXY_STATUS_TIMEOUT);
             }
-            writeResponse(ctx, false, null, r, record);
         } else {
-            Result<Void> r = new Result<>();
             r.setCode(ApiCode.ERROR_UNKNOWN);
-            r.setMsg(cause.getMessage());
             if (record != null) {
                 record.setProxyStatus(HttpProxyConst.PROXY_STATUS_FAIL);
             }
-            writeResponse(ctx, false, null, r, record);
         }
+
+        writeResponse(ctx, false, null, r, record);
 
     }
 
