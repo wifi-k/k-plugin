@@ -91,7 +91,9 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
         if (record != null) {
             record.setRspCode(r.getCode());
             record.setRspReason(r.getMsg());
-            Plugin.sendToHttpProxy(new TextMsg().setType(MsgType.HTTPPROXY_RECORD_ADD).setValue(GsonUtil.toJson(record)));
+            String val = GsonUtil.toJson(record);
+            Plugin.sendToHttpProxy(new TextMsg().setType(MsgType.HTTPPROXY_RECORD_ADD).setValue(val));
+            LOG.info("send msg {} {}", MsgType.HTTPPROXY_RECORD_ADD, val);
         }
     }
 

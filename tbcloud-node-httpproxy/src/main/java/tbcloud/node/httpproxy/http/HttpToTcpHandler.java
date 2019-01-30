@@ -44,7 +44,7 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
-        LOG.info("nodes {}", Plugin.dispatch());
+        //LOG.info("nodes {}", Plugin.dispatch());
         if (msg instanceof HttpRequest) {
             this.nodeId = ((HttpRequest) msg).headers().get(ApiConst.HTTPPROXY_NODE);
             this.recordId = ((HttpRequest) msg).headers().get(ApiConst.HTTPPROXY_RECORD);

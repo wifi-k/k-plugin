@@ -100,25 +100,22 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         LOG.error(cause.getMessage(), cause);
 
+        Result<Void> r = new Result<>();
         if (cause instanceof ReadTimeoutException) {
-            Result<Void> r = new Result<>();
             r.setCode(ApiCode.REQUEST_TIMEOUT);
             r.setMsg(cause.getMessage());
 
             if (record != null) {
                 record.setProxyStatus(HttpProxyConst.PROXY_STATUS_TIMEOUT);
             }
-            writeResponse(inChannelContext, keepAlive, null, r, record);
         } else {
-            Result<Void> r = new Result<>();
             r.setCode(ApiCode.ERROR_UNKNOWN);
             r.setMsg(cause.getMessage());
             if (record != null) {
                 record.setProxyStatus(HttpProxyConst.PROXY_STATUS_FAIL);
             }
-            writeResponse(inChannelContext, keepAlive, null, r, record);
         }
-
+        writeResponse(inChannelContext, false, null, r, record);
         //
         ctx.channel().close();
     }
