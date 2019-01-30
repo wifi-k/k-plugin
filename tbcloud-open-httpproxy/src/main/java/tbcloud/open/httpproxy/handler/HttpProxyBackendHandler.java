@@ -42,6 +42,7 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
         if (msg instanceof LastHttpContent) {
+            // FIXED io.netty.util.IllegalReferenceCountException: refCnt: 0, decrement: 1
             inChannelContext.writeAndFlush(ReferenceCountUtil.retain(msg)).addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) {
