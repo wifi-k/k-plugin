@@ -8,7 +8,6 @@ import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
-import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.util.CharsetUtil;
 import jframe.core.msg.TextMsg;
 import jframe.core.plugin.annotation.InjectPlugin;
@@ -20,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import tbcloud.httpproxy.dao.service.HttpProxyDaoService;
 import tbcloud.httpproxy.model.HttpProxyRecord;
-import tbcloud.httpproxy.protocol.HttpProxyConst;
 import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.Result;
 import tbcloud.lib.api.msg.MsgType;
@@ -114,29 +112,6 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
             default:
                 return HttpResponseStatus.BAD_GATEWAY;
         }
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        LOG.error(cause.getMessage(), cause);
-
-        Result<Void> r = new Result<>();
-        r.setMsg(cause.getMessage());
-        if (cause instanceof ReadTimeoutException) {
-            r.setCode(ApiCode.REQUEST_TIMEOUT);
-
-            if (record != null) {
-                record.setProxyStatus(HttpProxyConst.PROXY_STATUS_TIMEOUT);
-            }
-        } else {
-            r.setCode(ApiCode.ERROR_UNKNOWN);
-            if (record != null) {
-                record.setProxyStatus(HttpProxyConst.PROXY_STATUS_FAIL);
-            }
-        }
-
-        writeResponse(ctx, false, null, r, record);
-
     }
 
     protected Result<Void> newResult(int code, String msg) {

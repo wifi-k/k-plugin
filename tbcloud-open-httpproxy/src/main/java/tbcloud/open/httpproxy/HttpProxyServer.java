@@ -10,7 +10,7 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
@@ -98,7 +98,7 @@ class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
         ChannelPipeline p = ch.pipeline();
 
         //TODO
-        p.addLast(new ReadTimeoutHandler(30));
+        p.addLast(new IdleStateHandler(30, 30, 0));
 
         p.addLast(new HttpRequestDecoder(4096, 8192, 8192, true));
         p.addLast(new HttpContentDecompressor());

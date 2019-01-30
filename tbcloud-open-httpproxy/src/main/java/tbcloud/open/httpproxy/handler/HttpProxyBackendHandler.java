@@ -7,7 +7,7 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.handler.timeout.ReadTimeoutException;
+import io.netty.handler.timeout.IdleStateEvent;
 import jframe.core.msg.TextMsg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,22 +101,28 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
         LOG.error(cause.getMessage(), cause);
 
         Result<Void> r = new Result<>();
-        if (cause instanceof ReadTimeoutException) {
+        r.setCode(ApiCode.ERROR_UNKNOWN);
+        r.setMsg(cause.getMessage());
+        if (record != null) {
+            record.setProxyStatus(HttpProxyConst.PROXY_STATUS_FAIL);
+        }
+        writeResponse(inChannelContext, false, null, r, record);
+        //
+        ctx.channel().close();
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) { //timeout
+            Result<Void> r = new Result<>();
             r.setCode(ApiCode.REQUEST_TIMEOUT);
-            r.setMsg(cause.getMessage());
+            r.setMsg("timeout");
 
             if (record != null) {
                 record.setProxyStatus(HttpProxyConst.PROXY_STATUS_TIMEOUT);
             }
-        } else {
-            r.setCode(ApiCode.ERROR_UNKNOWN);
-            r.setMsg(cause.getMessage());
-            if (record != null) {
-                record.setProxyStatus(HttpProxyConst.PROXY_STATUS_FAIL);
-            }
+            writeResponse(inChannelContext, false, null, r, record);
         }
-        writeResponse(inChannelContext, false, null, r, record);
-        //
         ctx.channel().close();
     }
 }

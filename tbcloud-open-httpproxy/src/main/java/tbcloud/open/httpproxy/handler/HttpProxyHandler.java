@@ -4,6 +4,7 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import tbcloud.httpproxy.model.HttpProxyOnline;
 import tbcloud.httpproxy.model.HttpProxyRecord;
@@ -154,5 +155,34 @@ public class HttpProxyHandler extends AbstractInboundHandler {
     protected void resetState() {
         if (outChannel != null && outChannel.isActive()) outChannel.close();
         outChannel = null;
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        LOG.error(cause.getMessage(), cause);
+
+        Result<Void> r = new Result<>();
+        r.setCode(ApiCode.ERROR_UNKNOWN);
+        r.setMsg(cause.getMessage());
+        if (record != null) {
+            record.setProxyStatus(HttpProxyConst.PROXY_STATUS_FAIL);
+        }
+
+        writeResponse(ctx, false, null, r, record);
+
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) { //timeout
+            Result<Void> r = new Result<>();
+            r.setCode(ApiCode.REQUEST_TIMEOUT);
+            r.setMsg("timeout");
+
+            if (record != null) {
+                record.setProxyStatus(HttpProxyConst.PROXY_STATUS_TIMEOUT);
+            }
+            writeResponse(ctx, false, null, r, record);
+        }
     }
 }
