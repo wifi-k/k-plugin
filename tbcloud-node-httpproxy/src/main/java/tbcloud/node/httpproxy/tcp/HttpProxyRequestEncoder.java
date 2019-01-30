@@ -6,6 +6,7 @@ import io.netty.handler.codec.MessageToMessageEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.httpproxy.protocol.ByteBufHttpProxy;
+import tbcloud.httpproxy.protocol.HttpProxyConst;
 import tbcloud.httpproxy.protocol.HttpProxyDataType;
 import tbcloud.httpproxy.protocol.codec.HttpProxyDataCodecFactory;
 import tbcloud.httpproxy.protocol.data.HttpProxyRequest;
@@ -29,7 +30,7 @@ public class HttpProxyRequestEncoder extends MessageToMessageEncoder<HttpProxyRe
 
     @Override
     protected void encode(ChannelHandlerContext ctx, HttpProxyRequest data, List<Object> out) throws Exception {
-        LOG.info("encode {} {}", data.getId(), data.getSeq());
+        //LOG.info("encode {} {}", data.getId(), data.getSeq());
         ByteBufHttpProxy msg = new ByteBufHttpProxy(); //push http request
         msg.magic(PacketConst.M);
         msg.version(PacketConst.V_20181130);
@@ -42,7 +43,8 @@ public class HttpProxyRequestEncoder extends MessageToMessageEncoder<HttpProxyRe
 
         out.add(msg);
 
-        LOG.info("push {} {} {}://{}:{} ", data.getNodeId(), data.getId(), data.getScheme(), data.getHost(), data.getPort());
+        LOG.info("push {} {} {} {}://{}:{} ", data.getNodeId(), data.getId(), data.getSeq(),
+                data.getScheme() == HttpProxyConst.SCHEME_HTTPS ? "https" : "http", data.getHost(), data.getPort());
     }
 
 }

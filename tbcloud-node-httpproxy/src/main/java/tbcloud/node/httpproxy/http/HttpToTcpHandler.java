@@ -36,7 +36,8 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
     @InjectPlugin
     static NodeHttpProxyPlugin Plugin;
 
-    private HttpProxyRequest request;
+    private String recordId;
+    private String nodeId;
 
     private short seqNum = 1;
 
@@ -44,8 +45,8 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
         LOG.info("nodes {}", Plugin.dispatch());
         if (msg instanceof HttpRequest) {
-            String nodeId = ((HttpRequest) msg).headers().get(ApiConst.HTTPPROXY_NODE);
-            String recordId = ((HttpRequest) msg).headers().get(ApiConst.HTTPPROXY_RECORD);
+            this.nodeId = ((HttpRequest) msg).headers().get(ApiConst.HTTPPROXY_NODE);
+            this.recordId = ((HttpRequest) msg).headers().get(ApiConst.HTTPPROXY_RECORD);
 
             // clear header
             ((HttpRequest) msg).headers().remove(ApiConst.HTTPPROXY_NODE);
@@ -64,7 +65,7 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
 
             //
             URI uri = URI.create(((HttpRequest) msg).uri());
-            this.request = new HttpProxyRequest();
+            HttpProxyRequest request = new HttpProxyRequest();
             request.setNodeId(nodeId);
             request.setId(recordId);
             request.setScheme("https".equals(uri.getScheme()) ? HttpProxyConst.SCHEME_HTTPS : HttpProxyConst.SCHEME_HTTP);
@@ -76,11 +77,15 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
             buf.clear();
             Plugin.dispatch().findNode(request.getNodeId()).writeRequest(ctx, request);
         } else if (msg instanceof HttpContent) {
+            HttpProxyRequest request = new HttpProxyRequest();
+            request.setNodeId(nodeId);
+            request.setId(recordId);
             if (msg instanceof LastHttpContent) {
                 request.setSeq(HttpProxyConst.SEQ_LAST_NUM);
             } else {
                 request.setSeq(++seqNum);
             }
+
             ByteBuf buf = ((HttpContent) msg).content();
             request.setHttp(ByteBuffer.wrap(buf.array(), 0, buf.readableBytes()));
             Plugin.dispatch().findNode(request.getNodeId()).writeRequest(ctx, request);
@@ -95,7 +100,7 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
         // close
         ctx.channel().close();
         // clear cache
-        Plugin.dispatch().findNode(request.getNodeId()).removeDispatchRecord(request.getId());
+        Plugin.dispatch().findNode(nodeId).removeDispatchRecord(recordId);
     }
 
     static class HttpRequestEncoder_EXT extends HttpRequestEncoder {
