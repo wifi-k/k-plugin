@@ -40,13 +40,11 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
+        LOG.info("HttpProxyBackendHandler reading");
         if (msg instanceof LastHttpContent) {
             inChannelContext.writeAndFlush(msg).addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) {
-                    //
-                    ctx.channel().close();
-                    //
                     if (future.isSuccess()) {
                         if (!keepAlive) {
                             inChannelContext.channel().close();
@@ -59,6 +57,8 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
                         r.setMsg("failed to write response");
                         writeResponse(inChannelContext, false, null, r, record);
                     }
+                    //
+                    ctx.channel().close();
                 }
             });
         } else {
@@ -81,7 +81,7 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
         // error result
         int errCode = ((HttpResponse) msg).headers().getInt(ApiConst.HTTPPROXY_ERROR_CODE, -1);
         if (errCode > 0) {
-            record.setProxyStatus(HttpProxyConst.PROXY_STATUS_FAIL);
+            record.setProxyStatus(errCode == ApiCode.RESPONSE_TIMEOUT ? HttpProxyConst.PROXY_STATUS_TIMEOUT : HttpProxyConst.PROXY_STATUS_FAIL);
             record.setRspCode(errCode);
             record.setRspReason(((HttpResponse) msg).headers().get(ApiConst.HTTPPROXY_ERROR_MSG));
         } else {
