@@ -139,8 +139,8 @@ public class HttpProxyHandler extends AbstractInboundHandler {
                     }
                 })
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10)
-                .option(ChannelOption.SO_TIMEOUT, 30);//TODO config
-        //.option(ChannelOption.AUTO_READ, false);
+                .option(ChannelOption.SO_TIMEOUT, 30)
+                .option(ChannelOption.AUTO_READ, true);
         ChannelFuture f = b.connect(online.getServerIp(), online.getServerPort());
         try {
             f.sync();
