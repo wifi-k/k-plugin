@@ -24,7 +24,7 @@ public class HttpProxyEncoder extends MessageToByteEncoder<ByteBufHttpProxy> {
 
     @Override
     protected void encode(ChannelHandlerContext ctx, ByteBufHttpProxy msg, ByteBuf out) throws Exception {
-        LOG.info("HttpProxyEncoder encode {}", msg.id());
+        //LOG.info("HttpProxyEncoder encode {}", msg.id());
         out.writeInt(msg.magic());
         out.writeInt(msg.version());
 
@@ -43,6 +43,8 @@ public class HttpProxyEncoder extends MessageToByteEncoder<ByteBufHttpProxy> {
         out.writeBytes(data);
         out.writeLong(0L); //TCP的时候忽略hash值
 //        out.writeBytes(codec.encode(msg).array());
+
+        LOG.info("write {} {}", msg.id(), msg.dataType());
     }
 
 }

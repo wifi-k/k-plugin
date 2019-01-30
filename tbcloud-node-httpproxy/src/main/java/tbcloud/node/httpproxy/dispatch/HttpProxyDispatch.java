@@ -32,10 +32,10 @@ public class HttpProxyDispatch implements AutoCloseable {
     }
 
     public void attachNode(String nodeId, ChannelHandlerContext context) {
-        DispatchNode prevGroup = dispatchNode.put(nodeId, new DispatchNode(context));
-        if (prevGroup != null) {
+        DispatchNode prevNode = dispatchNode.put(nodeId, new DispatchNode(context));
+        if (prevNode != null) {
             try {
-                prevGroup.close();
+                prevNode.close();
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
             }
@@ -44,10 +44,10 @@ public class HttpProxyDispatch implements AutoCloseable {
     }
 
     public void detachNode(String nodeId) {
-        DispatchNode group = dispatchNode.remove(nodeId);
-        if (group != null) {
+        DispatchNode node = dispatchNode.remove(nodeId);
+        if (node != null) {
             try {
-                group.close();
+                node.close();
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
             }
