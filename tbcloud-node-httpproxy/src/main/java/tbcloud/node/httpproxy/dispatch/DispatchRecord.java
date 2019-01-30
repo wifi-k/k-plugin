@@ -82,7 +82,7 @@ public class DispatchRecord implements AutoCloseable {
         }
     }
 
-    final static HttpResponseStatus code2Status(int code) {
+    public final static HttpResponseStatus code2Status(int code) {
         switch (code) {
             case ApiCode.SUCC:
                 return HttpResponseStatus.OK;

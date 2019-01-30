@@ -1,10 +1,13 @@
 package tbcloud.node.httpproxy.http;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.CharsetUtil;
 import jframe.core.plugin.annotation.InjectPlugin;
 import jframe.core.plugin.annotation.Injector;
 import org.slf4j.Logger;
@@ -12,9 +15,14 @@ import org.slf4j.LoggerFactory;
 import tbcloud.httpproxy.protocol.HttpProxyConst;
 import tbcloud.httpproxy.protocol.data.HttpProxyRequest;
 import tbcloud.httpproxy.protocol.data.HttpProxyResponse;
+import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
+import tbcloud.lib.api.Result;
 import tbcloud.node.httpproxy.NodeHttpProxyPlugin;
+import tbcloud.node.httpproxy.dispatch.DispatchNode;
+import tbcloud.node.httpproxy.dispatch.DispatchRecord;
 import tbcloud.node.protocol.PacketConst;
+import tbcloud.node.protocol.util.GsonUtil;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -76,7 +84,7 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
             request.setHttp(ByteBuffer.wrap(buf.array(), 0, buf.readableBytes()));
 
             buf.clear();
-            Plugin.dispatch().findNode(request.getNodeId()).writeRequest(ctx, request);
+            write(ctx, request);
         } else if (msg instanceof HttpContent) {
             HttpProxyRequest request = new HttpProxyRequest();
             request.setNodeId(nodeId);
@@ -89,8 +97,34 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
 
             ByteBuf buf = ((HttpContent) msg).content();
             request.setHttp(ByteBuffer.wrap(buf.array(), 0, buf.readableBytes()));
-            Plugin.dispatch().findNode(request.getNodeId()).writeRequest(ctx, request);
+            write(ctx, request);
         }
+    }
+
+    final void write(ChannelHandlerContext ctx, HttpProxyRequest request) {
+        DispatchNode dispatchNode = Plugin.dispatch().findNode(request.getNodeId());
+        if (dispatchNode == null) {
+            Result<Void> r = new Result<>();
+            r.setCode(ApiCode.NODE_NOT_FOUND);
+            r.setMsg("not found proxy node " + request.getNodeId());
+            writeError(ctx, r);
+        } else {
+            dispatchNode.writeRequest(ctx, request);
+        }
+    }
+
+    final void writeError(ChannelHandlerContext ctx, Result<?> r) {
+        String json = GsonUtil.toJson(r);
+
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, DispatchRecord.code2Status(r.getCode()),
+                Unpooled.copiedBuffer(json, CharsetUtil.UTF_8));
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json; charset=UTF-8");
+        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+        response.headers().set(ApiConst.HTTPPROXY_ERROR_CODE, r.getCode());
+        response.headers().set(ApiConst.HTTPPROXY_ERROR_MSG, r.getMsg());
+
+        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        LOG.info("write error {}", json);
     }
 
     @Override
