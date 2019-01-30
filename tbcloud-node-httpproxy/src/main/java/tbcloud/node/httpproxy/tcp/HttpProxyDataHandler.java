@@ -101,7 +101,8 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
         msg.data(DataCodecFactory.codec(msg.dataType(), msg.dataFormat()).encode(ack));
         msg.hash(0L);
 
-        LOG.info("write {}", ack);
+        if (ack.getCode() != ApiCode.SUCC)
+            LOG.warn("write {}", ack);
         return ctx.writeAndFlush(msg);
     }
 

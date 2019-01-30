@@ -1,6 +1,7 @@
 package tbcloud.node.httpproxy.dispatch;
 
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
@@ -61,6 +62,10 @@ public class DispatchRecord implements AutoCloseable {
     }
 
     public final void writeError(Result<?> r) {
+        writeError(r, true);
+    }
+
+    public final void writeError(Result<?> r, boolean close) {
         String json = GsonUtil.toJson(r);
 
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, code2Status(r.getCode()),
@@ -71,7 +76,8 @@ public class DispatchRecord implements AutoCloseable {
         response.headers().set(ApiConst.HTTPPROXY_ERROR_MSG, r.getMsg());
 
         if (httpContext != null) {
-            httpContext.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+            ChannelFuture f = httpContext.writeAndFlush(response);
+            if (close) f.addListener(ChannelFutureListener.CLOSE);
             LOG.info("write error {}", json);
         }
     }

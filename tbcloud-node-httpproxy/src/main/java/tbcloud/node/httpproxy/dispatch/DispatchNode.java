@@ -121,29 +121,33 @@ public class DispatchNode implements AutoCloseable {
     }
 
     public void writeResponse(HttpProxyResponse response) { //TODO ProxyCost
+        if (response == null) return;
+
         LOG.info("write rsp {} {}", response.getId(), response.getSeq());
         DispatchRecord record = findDispatchRecord(response.getId());
-        if (record == null)
-            return;
-
-        if (response.getProxyStatus() != HttpProxyConst.PROXY_STATUS_SUCC) {
-            Result<Void> r = new Result<>();
-            r.setCode(ApiCode.IO_ERROR);
-            r.setMsg("failed to proxy");
-            record.writeError(r);
-
-            removeDispatchRecord(record.getId());
+        if (record == null) {
+            LOG.error("not found record {}", response.getId());
             return;
         }
 
+        Result<Void> r = new Result<>();
         ByteBuffer httpContent = response.getHttp();
-        if (httpContent == null || httpContent.array().length == 0) {
-            Result<Void> r = new Result<>();
+        if (response.getProxyStatus() == HttpProxyConst.PROXY_STATUS_FAIL) {
             r.setCode(ApiCode.IO_ERROR);
-            r.setMsg("node's response is nil");
-            record.writeError(r);
+            r.setMsg("proxy failed");
+        } else if (response.getProxyStatus() == HttpProxyConst.PROXY_STATUS_TIMEOUT) {
+            r.setCode(ApiCode.RESPONSE_TIMEOUT);
+            r.setMsg("proxy timeout");
+        } else {
+            if (httpContent == null || httpContent.array().length == 0) {
+                r.setCode(ApiCode.IO_ERROR);
+                r.setMsg("node's response is nil");
+            }
+        }
 
-            removeDispatchRecord(record.getId());
+        if (r.getCode() != ApiCode.SUCC) {
+            record.writeError(r, false);
+            removeDispatchRecord(record.getId()); //close
             return;
         }
 

@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.httpproxy.protocol.HttpProxyConst;
 import tbcloud.httpproxy.protocol.data.HttpProxyRequest;
+import tbcloud.httpproxy.protocol.data.HttpProxyResponse;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.node.httpproxy.NodeHttpProxyPlugin;
 import tbcloud.node.protocol.PacketConst;
@@ -95,12 +96,15 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         LOG.error(cause.getMessage(), cause);
+
+        HttpProxyResponse response = new HttpProxyResponse();
+        response.setId(recordId);
         if (cause instanceof ReadTimeoutException) {
+            response.setProxyStatus(HttpProxyConst.PROXY_STATUS_TIMEOUT);
+        } else {
+            response.setProxyStatus(HttpProxyConst.PROXY_STATUS_FAIL);
         }
-        // close
-        ctx.channel().close();
-        // clear cache
-        Plugin.dispatch().findNode(nodeId).removeDispatchRecord(recordId);
+        Plugin.dispatch().findNode(nodeId).writeResponse(response);
     }
 
     static class HttpRequestEncoder_EXT extends HttpRequestEncoder {
