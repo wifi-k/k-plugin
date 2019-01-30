@@ -3,7 +3,6 @@ package tbcloud.open.httpproxy.handler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.ApiCode;
@@ -62,7 +61,7 @@ public class ApikeyHandler extends AbstractInboundHandler {
             // TODO 频率限制
 
         }
-        if (isValid) ctx.fireChannelRead(ReferenceCountUtil.retain(msg));
+        if (isValid) ctx.fireChannelRead(msg);
     }
 
 }

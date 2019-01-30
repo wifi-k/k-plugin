@@ -97,7 +97,7 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        LOG.error(cause.getMessage(), cause);
+        LOG.error("HttpProxyBackendHandler " + cause.getMessage(), cause);
 
         Result<Void> r = new Result<>();
         r.setCode(ApiCode.ERROR_UNKNOWN);
