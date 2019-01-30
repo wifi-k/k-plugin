@@ -64,5 +64,10 @@ public class ApikeyHandler extends AbstractInboundHandler {
         if (isValid) ctx.fireChannelRead(msg);
     }
 
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        ctx.fireExceptionCaught(cause);
+    }
+
 
 }
