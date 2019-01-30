@@ -7,7 +7,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
@@ -98,7 +98,9 @@ class TcpServerInitializer extends ChannelInitializer<SocketChannel> {
         ChannelPipeline p = ch.pipeline();
 
         // TODO 更新节点的离线信息
-        p.addLast(new ReadTimeoutHandler(ProtocolConst.HEARTBEAT_TICK * 5)); //5个心跳超时
+        //p.addLast(new ReadTimeoutHandler(ProtocolConst.HEARTBEAT_TICK * 5)); //5个心跳超时
+        int timeout = ProtocolConst.HEARTBEAT_TICK * 5;
+        p.addLast(new IdleStateHandler(timeout, timeout, 0));
         p.addLast(new HttpProxyEncoder());
         p.addLast(new HttpProxyRequestEncoder());
         p.addLast(new HttpProxyDecoder());

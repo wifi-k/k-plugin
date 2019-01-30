@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
-import io.netty.handler.timeout.ReadTimeoutException;
+import io.netty.handler.timeout.IdleStateEvent;
 import jframe.core.plugin.annotation.InjectPlugin;
 import jframe.core.plugin.annotation.Injector;
 import org.slf4j.Logger;
@@ -99,12 +99,19 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
 
         HttpProxyResponse response = new HttpProxyResponse();
         response.setId(recordId);
-        if (cause instanceof ReadTimeoutException) {
-            response.setProxyStatus(HttpProxyConst.PROXY_STATUS_TIMEOUT);
-        } else {
-            response.setProxyStatus(HttpProxyConst.PROXY_STATUS_FAIL);
-        }
+        response.setProxyStatus(HttpProxyConst.PROXY_STATUS_FAIL);
         Plugin.dispatch().findNode(nodeId).writeResponse(response);
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) { //timeout
+            HttpProxyResponse response = new HttpProxyResponse();
+            response.setId(recordId);
+            response.setProxyStatus(HttpProxyConst.PROXY_STATUS_TIMEOUT);
+
+            Plugin.dispatch().findNode(nodeId).writeResponse(response);
+        }
     }
 
     static class HttpRequestEncoder_EXT extends HttpRequestEncoder {

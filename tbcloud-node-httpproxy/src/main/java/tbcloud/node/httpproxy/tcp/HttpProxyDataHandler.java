@@ -4,7 +4,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.timeout.ReadTimeoutException;
+import io.netty.handler.timeout.IdleStateEvent;
 import jframe.core.msg.TextMsg;
 import jframe.core.plugin.annotation.InjectPlugin;
 import jframe.core.plugin.annotation.InjectService;
@@ -139,6 +139,7 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
         Plugin.sendToNode(new TextMsg().setType(MsgType.NODE_QUIT_HTTPPROXY).setValue(GsonUtil.toJson(offline)), nodeId);
 //        Plugin.send(new PluginMsg<HttpProxyOnline>().setType(MsgType.NODE_QUIT_HTTPPROXY).setValue(offline));
         // HttpProxyDao.updateHttpProxyOnline(offline);
+        LOG.warn("offline {}", nodeId);
     }
 
     private DataAck doProxyResponse(ByteBufHttpProxy msg) {
@@ -242,14 +243,16 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         LOG.error(cause.getMessage(), cause);
-        if (cause instanceof ReadTimeoutException) {
-            // update offline info
-            updateOffline(this.nodeId);
-        }
-        // close
-        ctx.channel().close();
-        //
+        updateOffline(this.nodeId);
         detachNode();
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) { //timeout
+            updateOffline(this.nodeId);
+            detachNode();
+        }
     }
 
     private void detachNode() {

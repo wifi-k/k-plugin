@@ -60,6 +60,7 @@ public class DispatchNode implements AutoCloseable {
                 }
             });
         }
+        if (tcpContext != null) tcpContext.close();
     }
 
     public DispatchRecord findDispatchRecord(String recordId) {
