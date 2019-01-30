@@ -108,7 +108,7 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
             if (record != null) {
                 record.setProxyStatus(HttpProxyConst.PROXY_STATUS_TIMEOUT);
             }
-            writeResponse(inChannelContext, false, null, r, record);
+            writeResponse(inChannelContext, keepAlive, null, r, record);
         } else {
             Result<Void> r = new Result<>();
             r.setCode(ApiCode.ERROR_UNKNOWN);
@@ -116,7 +116,7 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
             if (record != null) {
                 record.setProxyStatus(HttpProxyConst.PROXY_STATUS_FAIL);
             }
-            writeResponse(inChannelContext, false, null, r, record);
+            writeResponse(inChannelContext, keepAlive, null, r, record);
         }
 
         //

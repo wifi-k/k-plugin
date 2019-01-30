@@ -58,7 +58,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
             }
 
             if (outChannel == null || !outChannel.isActive()) {
-                writeResponse(ctx, false, null, newResult(ApiCode.NODE_NOT_FOUND, "failed to find proxy connection"),
+                writeResponse(ctx, false, null, newResult(ApiCode.NODE_NOT_FOUND, "failed to find proxy node"),
                         HttpProxyRecordUtil.toRecord(((HttpRequest) msg), HttpProxyConst.PROXY_STATUS_FAIL, null));
                 return;
             }
@@ -132,7 +132,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
                         // p.addLast(new HttpContentCompressor());
 
                         p.addLast(new HttpResponseDecoder(4096, 8192, 8192, true));
-                        p.addLast(new HttpContentDecompressor());
+                        //p.addLast(new HttpContentDecompressor());
 
                         p.addLast(new HttpProxyBackendHandler(ctx, keepAlive, record));
                     }
