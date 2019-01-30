@@ -40,7 +40,6 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
-        LOG.info("HttpProxyBackendHandler reading");
         if (msg instanceof LastHttpContent) {
             inChannelContext.writeAndFlush(msg).addListener(new ChannelFutureListener() {
                 @Override

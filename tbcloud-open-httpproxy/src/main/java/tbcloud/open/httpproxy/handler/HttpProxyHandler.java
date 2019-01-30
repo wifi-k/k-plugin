@@ -128,12 +128,13 @@ public class HttpProxyHandler extends AbstractInboundHandler {
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline p = ch.pipeline();
 
-                        p.addLast(new IdleStateHandler(30, 30, 0));
-                        p.addLast(new HttpRequestEncoder());
+                        p.addLast(new IdleStateHandler(0, 30, 0));
                         // p.addLast(new HttpContentCompressor());
 
                         p.addLast(new HttpResponseDecoder(4096, 8192, 8192, true));
                         //p.addLast(new HttpContentDecompressor());
+
+                        p.addLast(new HttpRequestEncoder());
 
                         p.addLast(new HttpProxyBackendHandler(ctx, keepAlive, record));
                     }
