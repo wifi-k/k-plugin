@@ -38,7 +38,11 @@ public class HttpProxyRequestEncoder extends MessageToMessageEncoder<HttpProxyRe
         msg.token("");
         msg.dataType(HttpProxyDataType.PUSH_HPROXY_REQUEST);
         msg.dataFormat((byte) PacketConst.DataFormat.BINARY.ordinal());
-        msg.data(DataCodecFactory.codec(msg.dataType(), msg.dataFormat()).encode(data));
+        try {
+            msg.data(DataCodecFactory.codec(msg.dataType(), msg.dataFormat()).encode(data));
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
         msg.hash(0L);
 
         out.add(msg);
