@@ -118,6 +118,9 @@ public class HttpProxyHandler extends AbstractInboundHandler {
     }
 
     private Channel connectNodeServer(ChannelHandlerContext ctx, boolean keepAlive, HttpProxyOnline online, HttpProxyRecord record) {
+        if (online.getServerPort() == null || StringUtil.isEmpty(online.getServerIp()))
+            return null;
+
         final Channel inChannel = ctx.channel();
 
         Bootstrap b = new Bootstrap();

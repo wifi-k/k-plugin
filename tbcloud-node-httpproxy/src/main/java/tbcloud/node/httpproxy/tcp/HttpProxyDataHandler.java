@@ -144,7 +144,7 @@ public class HttpProxyDataHandler extends SimpleChannelInboundHandler<ByteBufHtt
 
     private DataAck doProxyResponse(ByteBufHttpProxy msg) {
         HttpProxyResponse data = decodeData(msg, HttpProxyResponse.class);
-        String recordId = data.getId();
+        //String recordId = data.getId();
         String nodeId = data.getNodeId();
         if (!isValidToken(msg.token(), nodeId)) {
             DataAck ack = new DataAck();
