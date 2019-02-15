@@ -34,7 +34,8 @@ public class HttpProxyRecordUtil {
 
         record.setReqMethod(msg.method().name());
         record.setReqProtocol(msg.protocolVersion().protocolName());
-        record.setReqSize(msg.headers().getInt(HttpHeaderNames.CONTENT_LENGTH));
+        Integer contentLen = msg.headers().getInt(HttpHeaderNames.CONTENT_LENGTH);
+        record.setReqSize(contentLen == null ? 0 : contentLen);//
         record.setReqTime(System.currentTimeMillis());
 
         URI uri = URI.create(msg.uri());

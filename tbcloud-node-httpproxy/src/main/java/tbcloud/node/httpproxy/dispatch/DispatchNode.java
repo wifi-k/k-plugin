@@ -81,7 +81,7 @@ public class DispatchNode implements AutoCloseable {
 
     public void removeDispatchRecord(String recordId) {
         synchronized (httpContext) {
-            httpContext.removeIf(r -> {
+            httpContext.removeIf(r -> {  //TODO opt search node同时代理的http不会很多暂时这样
                 boolean bool = r.getId().equals(recordId);
                 if (bool) {
                     try {
