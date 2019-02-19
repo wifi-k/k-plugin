@@ -115,6 +115,58 @@ public class UserResource extends BaseResource {
         return r;
     }
 
+    /**
+     * FIXME 这是一个不安全的接口，会被刷短信
+     *
+     * @param ui
+     * @param version
+     * @param req
+     * @return
+     */
+    @POST
+    @Path("vcode/getv2")
+    public Result<String> getVCode_v2(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, MobileVcodeReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, req.toString());
+        Result<String> r = new Result<>();
+
+        String mobile = req.getMobile();
+        if (isInvalidMobile(mobile)) {
+            r.setCode(ApiCode.INVALID_PARAM);
+            r.setMsg("invalid mobile " + mobile);
+            return r;
+        }
+
+        String vcode = getFromRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_VCODE_ + mobile);
+        if (!StringUtil.isEmpty(vcode)) {
+            r.setCode(ApiCode.OP_MORE_THAN_LIMIT);
+            r.setMsg("request more than limit");
+            return r;
+        }
+
+        vcode = IDUtil.genMobileVcode(4);
+        if (Plugin.isDebug() && !Plugin.envName().equals(ApiConst.ENV_ONLINE)) {
+            r.setData(vcode);
+            r.setMsg("测试时返回");
+        }
+
+        if (!ApiConst.ENV_DEV.equals(Plugin.envName())) { // not send if dev
+            MobileVCode msg = new MobileVCode();
+            msg.setType(req.getType());//4
+            msg.setMobile(mobile);
+            msg.setCode(vcode);
+
+
+            Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.MOBILE_VCODE).setValue(GsonUtil.toJson(msg)));
+            //Plugin.send(new PluginMsg<MobileVCode>().setType(MsgType.MOBILE_VCODE).setValue(msg));
+        }
+
+        // cache
+        setToRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_VCODE_ + mobile, vcode, 60);
+
+        LOG.info("send vcode {} to {}", vcode, req.getMobile());
+        return r;
+    }
+
     @POST
     @Path("signup/passwd")
     public Result<Void> passwdSignUp(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, SignUpPasswdReq req) {
@@ -195,6 +247,65 @@ public class UserResource extends BaseResource {
         if (userInfoList == null || userInfoList.size() != 1) {
             r.setCode(ApiCode.DB_NOT_FOUND_RECORD);
             r.setMsg("check your passwd! not found user:" + mobile);
+            return r;
+        }
+
+        UserInfo userInfo = userInfoList.get(0);
+        String token = IDUtil.genToken(userInfo.getId());
+        // save to redis
+        setToRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_TOKEN_ + userInfo.getId(), token, ApiConst.REDIS_EXPIRED_1H * 12);
+
+        // send UserLogin
+        UserLogin msg = new UserLogin();
+        msg.setPlatform(ApiConst.PLATFORM_USER);
+        msg.setUserId(userInfo.getId());
+        msg.setDate(System.currentTimeMillis());
+        msg.setStatus(ApiConst.IS_ONLINE);
+        msg.setToken(token);
+        Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.LOGIN_OUT).setValue(GsonUtil.toJson(msg)), userInfo.getId());
+//        Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.USER_LOGIN).setValue(msg));
+
+        SignInRsp rsp = new SignInRsp();
+        rsp.setToken(token);
+        r.setData(rsp);
+        return r;
+    }
+
+    @POST
+    @Path("signin/vcode")
+    public Result<SignInRsp> vcodeSignIn(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, SignInVCodeReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, req.toString());
+        Result<SignInRsp> r = new Result<>();
+
+        String mobile = req.getMobile();
+
+        if (isInvalidMobile(mobile)) {
+            r.setCode(ApiCode.INVALID_PARAM);
+            r.setMsg("invalid mobile " + mobile);
+            return r;
+        }
+
+        // check vcode
+        String vcode = req.getVcode();
+        if (StringUtil.isEmpty(vcode)) {
+            r.setCode(ApiCode.INVALID_PARAM);
+            r.setMsg("invalid vcode");
+            return r;
+        }
+        // validate vcode
+        if (!isValidVcode(mobile, vcode)) {
+            r.setCode(ApiCode.INVALID_PARAM);
+            r.setMsg("invalid vcode:" + req.getVcode());
+            return r;
+        }
+
+        // select user
+        UserInfoExample example = new UserInfoExample();
+        example.createCriteria().andMobileEqualTo(mobile).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        List<UserInfo> userInfoList = UserDao.selectUserInfo(example);
+        if (userInfoList == null || userInfoList.size() != 1) {
+            r.setCode(ApiCode.DB_NOT_FOUND_RECORD);
+            r.setMsg("check your mobile! not found user:" + mobile);
             return r;
         }
 

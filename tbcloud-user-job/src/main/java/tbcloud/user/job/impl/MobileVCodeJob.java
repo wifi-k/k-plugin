@@ -60,10 +60,24 @@ public class MobileVCodeJob extends UserJob {
                 case ApiConst.MOBILE_VCODE_MOBILE_RESET:
                     resetMobile(vcodeSend);
                     break;
+                case ApiConst.MOBILE_VCODE_USER_LOGIN:
+                    loginUser(vcodeSend);
+                    break;
                 default:
                     LOG.error("error MobileVCode type:" + vcodeSend.getType());
             }
         }
+    }
+
+    private void loginUser(MobileVCode vcodeSend) {
+        SendSmsRequest request = new SendSmsRequest();
+        request.setMethod(MethodType.POST);
+        request.setPhoneNumbers(vcodeSend.getMobile());
+        request.setSignName("树熊云");
+        request.setTemplateCode("SMS_150480352");
+        request.setTemplateParam("{\"code\":\"" + vcodeSend.getCode() + "\"}");
+
+        doSend(ApiConst.ALISMS_ID_TBC, request);
     }
 
     private void resetMobile(MobileVCode vcodeSend) {
