@@ -217,6 +217,67 @@ public class UserResource extends BaseResource {
         return r;
     }
 
+
+    @POST
+    @Path("signup/vcode")
+    public Result<SignInRsp> vcodeSignUp(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, SignInVCodeReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, req.toString());
+        Result<SignInRsp> r = new Result<>();
+
+        String mobile = req.getMobile();
+        String vcode = req.getVcode();
+
+
+        if (StringUtil.isEmpty(mobile) || StringUtil.isEmpty(vcode)) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            return r;
+        }
+
+        // validate vcode
+        if (!isValidVcode(mobile, vcode)) {
+            r.setCode(ApiCode.INVALID_PARAM);
+            r.setMsg("invalid param vcode:" + req.getVcode());
+            return r;
+        }
+
+        // mobile must be not used  TODO opt
+        UserInfoExample example = new UserInfoExample();
+        example.createCriteria().andMobileEqualTo(mobile).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        List<UserInfo> userInfoList = UserDao.selectUserInfo(example);
+        if (userInfoList != null && userInfoList.size() > 0) {
+            r.setCode(ApiCode.DB_INSERT_ERROR);
+            r.setMsg("mobile existed " + mobile);
+            return r;
+        }
+
+        // insert user
+        UserInfo userInfo = new UserInfo();
+        userInfo.setMobile(req.getMobile());
+        //userInfo.setName(req.getName());
+        //TODO userInfo.setInviteCode("");
+        //userInfo.setPasswd(StringUtil.MD5Encode(req.getPasswd() + ApiConst.USER_PASSWD_SALT_1));
+        //userInfo.setApikey(IDUtil.genApikeyV1(userInfo.getId()));
+
+        if (UserDao.insertUserInfo(userInfo) != 1) {
+            r.setCode(ApiCode.DB_INSERT_ERROR);
+            r.setMsg("signup unknow error " + mobile);
+            return r;
+        } else {
+            LOG.info("create new userId:" + userInfo.getId());
+        }
+
+        // token
+        String token = IDUtil.genToken(userInfo.getId());
+        // save to redis
+        setToRedis(ApiConst.REDIS_ID_USER, ApiConst.REDIS_KEY_USER_TOKEN_ + userInfo.getId(), token, ApiConst.REDIS_EXPIRED_1H * 12);
+
+        SignInRsp rsp = new SignInRsp(); // 和SignInRsp相同
+        rsp.setToken(token);
+        r.setData(rsp);
+
+        return r;
+    }
+
     @POST
     @Path("signin/passwd")
     public Result<SignInRsp> passwdSignIn(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, SignInPasswdReq req) {
