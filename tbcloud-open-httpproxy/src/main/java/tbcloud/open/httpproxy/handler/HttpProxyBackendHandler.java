@@ -46,6 +46,7 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
             inChannelContext.writeAndFlush(ReferenceCountUtil.retain(msg)).addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) {
+                    LOG.info("write respoinse {} {}", future.isSuccess(), future.cause());
                     if (future.isSuccess()) {
                         if (!keepAlive) {
                             inChannelContext.channel().close();
