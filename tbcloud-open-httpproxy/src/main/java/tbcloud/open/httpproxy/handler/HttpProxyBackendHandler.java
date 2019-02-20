@@ -68,7 +68,7 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
                 updateRecordRsp((HttpResponse) msg);
             }
 
-            inChannelContext.write(msg);
+            inChannelContext.write(ReferenceCountUtil.retain(msg));
         }
     }
 
