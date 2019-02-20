@@ -124,7 +124,7 @@ public class DispatchNode implements AutoCloseable {
     public void writeResponse(HttpProxyResponse response) { //TODO ProxyCost
         if (response == null) return;
 
-        LOG.info("write rsp {} {}", response.getId(), response.getSeq());
+        LOG.info("write rsp {} {} {}", response.getId(), response.getSeq(), response.getProxyStatus());
         DispatchRecord record = findDispatchRecord(response.getId());
         if (record == null) {
             LOG.error("not found record {}", response.getId());
