@@ -51,6 +51,7 @@ public class DispatchRecord implements AutoCloseable {
     public void close() throws Exception {
         if (httpContext != null)
             httpContext.channel().close();
+        LOG.info("DispatchRecord closed {}", id);
     }
 
     @Override
