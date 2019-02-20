@@ -157,6 +157,8 @@ public class DispatchNode implements AutoCloseable {
         } catch (Exception e) {
         }
 
+        record.getHttpContext().pipeline().remove("encoder");
+
         record.getHttpContext().write(Unpooled.wrappedBuffer(httpContent));
         if (response.getSeq() == HttpProxyConst.SEQ_LAST_NUM) { // addListener(ChannelFutureListener.CLOSE);
             record.getHttpContext().writeAndFlush(Unpooled.EMPTY_BUFFER)
