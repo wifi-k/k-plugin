@@ -292,12 +292,12 @@ public class UserResource extends BaseResource {
             return r;
         }
 
-        // validate imgCode
-        if (!isValidImgCode(req.getImgCodeId(), req.getImgCode())) {
-            r.setCode(ApiCode.INVALID_PARAM);
-            r.setMsg("invalid param imgCode:" + req.getImgCode());
-            return r;
-        }
+        // validate imgCode TODO App没有验证机制去掉
+//        if (!isValidImgCode(req.getImgCodeId(), req.getImgCode())) {
+//            r.setCode(ApiCode.INVALID_PARAM);
+//            r.setMsg("invalid param imgCode:" + req.getImgCode());
+//            return r;
+//        }
 
         // select user
         UserInfoExample example = new UserInfoExample();
