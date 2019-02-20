@@ -156,8 +156,10 @@ public class DispatchNode implements AutoCloseable {
             LOG.info("write http {}", new String(httpContent.array(), httpContent.position(), httpContent.remaining(), "utf-8"));
         } catch (Exception e) {
         }
-        if (response.getSeq() == HttpProxyConst.SEQ_LAST_NUM) {
-            record.getHttpContext().writeAndFlush(Unpooled.wrappedBuffer(httpContent))
+
+        record.getHttpContext().write(Unpooled.wrappedBuffer(httpContent));
+        if (response.getSeq() == HttpProxyConst.SEQ_LAST_NUM) { // addListener(ChannelFutureListener.CLOSE);
+            record.getHttpContext().write(Unpooled.EMPTY_BUFFER)
                     .addListener(new ChannelFutureListener() {
                         @Override
                         public void operationComplete(ChannelFuture future) {
@@ -165,8 +167,6 @@ public class DispatchNode implements AutoCloseable {
                             removeDispatchRecord(record.getId());
                         }
                     });
-        } else {
-            record.getHttpContext().write(Unpooled.wrappedBuffer(httpContent));
         }
     }
 }
