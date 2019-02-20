@@ -88,6 +88,8 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
         } else {
             record.setProxyStatus(HttpProxyConst.PROXY_STATUS_SUCC);
         }
+
+        LOG.info("updateRecordRsp {} {}", record.getId(), record.getProxyStatus());
         return record;
     }
 
