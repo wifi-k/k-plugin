@@ -69,10 +69,10 @@ public class HttpProxyHandler extends AbstractInboundHandler {
             ((HttpRequest) msg).headers().add(ApiConst.HTTPPROXY_NODE, online.getNodeId());
             ((HttpRequest) msg).headers().add(ApiConst.HTTPPROXY_RECORD, record.getId());
             LOG.info("{} {} {} {} {}", userId, keepAlive, policy, online.getNodeId(), record.getId());
+            LOG.info("write record {}", GsonUtil.toJson(this.record));
         }
 
         if (outChannel != null) {
-            LOG.info("write record {}", GsonUtil.toJson(this.record));
             if (msg instanceof LastHttpContent) {
                 outChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
                     @Override
