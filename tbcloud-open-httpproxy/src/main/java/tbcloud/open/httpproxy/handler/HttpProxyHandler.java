@@ -13,6 +13,7 @@ import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.AppEnum;
 import tbcloud.lib.api.Result;
+import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.open.httpproxy.handler.util.HttpProxyRecordUtil;
@@ -71,6 +72,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
         }
 
         if (outChannel != null) {
+            LOG.info("write record {}", GsonUtil.toJson(this.record));
             if (msg instanceof LastHttpContent) {
                 outChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
                     @Override
