@@ -97,7 +97,7 @@ public class DispatchNode implements AutoCloseable {
     }
 
     public void writeRequest(ChannelHandlerContext httpContext, final HttpProxyRequest request) {
-        LOG.info("write req {} {}", request.getId(), request.getSeq());
+        LOG.info("write req {} {} {}", request.getId(), request.getSeq(), request.getHost());
         try {
             LOG.info("write http {}", new String(request.getHttp().array(), request.getHttp().position(), request.getHttp().remaining(), "utf-8"));
         } catch (UnsupportedEncodingException e) {
