@@ -40,7 +40,7 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
     static Logger LOG = LoggerFactory.getLogger(HttpToTcpHandler.class);
 
     private static final byte[] CRLF = {CR, LF};
-    static HttpRequestEncoder_EXT HttpRequestEncoderExt = new HttpRequestEncoder_EXT();
+    //static HttpRequestEncoder_EXT HttpRequestEncoderExt = new HttpRequestEncoder_EXT();
 
     @InjectPlugin
     static NodeHttpProxyPlugin Plugin;
@@ -73,6 +73,7 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
             // write header
             ByteBuf buf = ctx.alloc().heapBuffer(1024, PacketConst.MAX_SIZE);
             // Encode the message.
+            HttpRequestEncoder_EXT HttpRequestEncoderExt = new HttpRequestEncoder_EXT();
             HttpRequestEncoderExt.encodeInitialLine(buf, (HttpRequest) msg);
             HttpRequestEncoderExt.encodeHeaders(((HttpRequest) msg).headers(), buf);
             buf.writeBytes(CRLF);
