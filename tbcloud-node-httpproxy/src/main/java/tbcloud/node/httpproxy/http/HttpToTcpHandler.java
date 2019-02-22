@@ -40,7 +40,7 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
     static Logger LOG = LoggerFactory.getLogger(HttpToTcpHandler.class);
 
     private static final byte[] CRLF = {CR, LF};
-    //static HttpRequestEncoder_EXT HttpRequestEncoderExt = new HttpRequestEncoder_EXT();
+    static HttpRequestEncoder_EXT HttpRequestEncoderExt = new HttpRequestEncoder_EXT();
 
     @InjectPlugin
     static NodeHttpProxyPlugin Plugin;
@@ -71,11 +71,11 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
             ((HttpRequest) msg).headers().remove(HttpHeaderNames.PROXY_CONNECTION);
 
             // write header
-            // ByteBuf buf = ctx.alloc().heapBuffer(1024, PacketConst.MAX_SIZE);
-            ByteBuf buf = Unpooled.buffer(1024, PacketConst.MAX_SIZE);
+            ByteBuf buf = ctx.alloc().heapBuffer(1024, PacketConst.MAX_SIZE);
+            //ByteBuf buf = Unpooled.buffer(1024, PacketConst.MAX_SIZE);
             LOG.info("read buf {}", buf.readableBytes());
             // Encode the message.
-            HttpRequestEncoder_EXT HttpRequestEncoderExt = new HttpRequestEncoder_EXT();
+            //HttpRequestEncoder_EXT HttpRequestEncoderExt = new HttpRequestEncoder_EXT();
             HttpRequestEncoderExt.encodeInitialLine(buf, (HttpRequest) msg);
             HttpRequestEncoderExt.encodeHeaders(((HttpRequest) msg).headers(), buf);
             buf.writeBytes(CRLF);
@@ -83,15 +83,15 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
             //
             URI uri = URI.create(((HttpRequest) msg).uri());
             HttpProxyRequest request = new HttpProxyRequest();
+            request.setHttp(ByteBuffer.wrap(buf.array(), 0, buf.readableBytes()));
+            buf.release(); //
             request.setNodeId(nodeId);
             request.setId(recordId);
             request.setScheme("https".equals(uri.getScheme()) ? HttpProxyConst.SCHEME_HTTPS : HttpProxyConst.SCHEME_HTTP);
             request.setHost(uri.getHost());
             request.setPort(uri.getPort() < 0 ? 80 : uri.getPort());
             request.setSeq(seqNum);
-            request.setHttp(ByteBuffer.wrap(buf.array(), 0, buf.readableBytes()));
 
-            buf.clear();
             succ_w = write(ctx, request);
         } else if (succ_w && msg instanceof HttpContent) {
             HttpProxyRequest request = new HttpProxyRequest();
