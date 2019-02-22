@@ -48,7 +48,7 @@ public class TestUserResource {
 
     @Test
     public void genPasswdTest() {
-        String passwd = "daizhong";
+        String passwd = "123";
         LOG.info("{}", StringUtil.MD5Encode(StringUtil.MD5Encode(passwd) + ApiConst.USER_PASSWD_SALT_1));
     }
 
