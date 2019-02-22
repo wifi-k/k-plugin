@@ -12,6 +12,7 @@ import tbcloud.httpproxy.protocol.data.HttpProxyResponse;
 import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.Result;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
@@ -97,6 +98,10 @@ public class DispatchNode implements AutoCloseable {
 
     public void writeRequest(ChannelHandlerContext httpContext, final HttpProxyRequest request) {
         LOG.info("write req {} {}", request.getId(), request.getSeq());
+        try {
+            LOG.info("write http {}", new String(request.getHttp().array(), request.getHttp().position(), request.getHttp().remaining(), "utf-8"));
+        } catch (UnsupportedEncodingException e) {
+        }
         if (request.getSeq() == HttpProxyConst.SEQ_LAST_NUM) {
             tcpContext.writeAndFlush(request).addListener(new ChannelFutureListener() {
                 @Override
