@@ -84,7 +84,7 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
             URI uri = URI.create(((HttpRequest) msg).uri());
             HttpProxyRequest request = new HttpProxyRequest();
             request.setHttp(ByteBuffer.wrap(buf.array(), 0, buf.readableBytes()));
-            buf.release(); //
+            // buf.release(); //
             request.setNodeId(nodeId);
             request.setId(recordId);
             request.setScheme("https".equals(uri.getScheme()) ? HttpProxyConst.SCHEME_HTTPS : HttpProxyConst.SCHEME_HTTP);
