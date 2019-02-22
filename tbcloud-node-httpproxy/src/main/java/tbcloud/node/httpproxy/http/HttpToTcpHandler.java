@@ -71,11 +71,11 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
             ((HttpRequest) msg).headers().remove(HttpHeaderNames.PROXY_CONNECTION);
 
             // write header
-            ByteBuf buf = ctx.alloc().heapBuffer(1024, PacketConst.MAX_SIZE);
-            //ByteBuf buf = Unpooled.buffer(1024, PacketConst.MAX_SIZE);
+            //ByteBuf buf = ctx.alloc().heapBuffer(1024, PacketConst.MAX_SIZE);
+            ByteBuf buf = Unpooled.buffer(1024, PacketConst.MAX_SIZE);
             LOG.info("read buf {}", buf.readableBytes());
             // Encode the message.
-            HttpRequestEncoder_EXT HttpRequestEncoderExt = new HttpRequestEncoder_EXT();
+//            HttpRequestEncoder_EXT HttpRequestEncoderExt = new HttpRequestEncoder_EXT();
             HttpRequestEncoderExt.encodeInitialLine(buf, (HttpRequest) msg);
             HttpRequestEncoderExt.encodeHeaders(((HttpRequest) msg).headers(), buf);
             buf.writeBytes(CRLF);
