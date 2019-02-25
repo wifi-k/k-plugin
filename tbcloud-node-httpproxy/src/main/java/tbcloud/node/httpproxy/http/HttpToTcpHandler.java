@@ -104,7 +104,9 @@ public class HttpToTcpHandler extends SimpleChannelInboundHandler<HttpObject> {
             }
 
             ByteBuf buf = ((HttpContent) msg).content();
-            request.setHttp(ByteBuffer.wrap(buf.array(), 0, buf.readableBytes()));
+            byte[] bytes = new byte[buf.readableBytes()];
+            buf.getBytes(0, bytes); //TODO opt java.lang.UnsupportedOperationException: direct buffer
+            request.setHttp(ByteBuffer.wrap(bytes));
             succ_w = write(ctx, request);
         }
     }
