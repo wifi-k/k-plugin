@@ -34,9 +34,12 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
     private boolean keepAlive;
 
     public HttpProxyBackendHandler(ChannelHandlerContext inChannel, boolean keepAlive, HttpProxyRecord record) {
+        super(false);
+
         this.inChannelContext = inChannel;
         this.keepAlive = keepAlive;
         this.record = record;
+
     }
 
     @Override
@@ -44,7 +47,7 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
         LOG.info("HttpProxyBackendHandler msg start refCnt {}", ReferenceCountUtil.refCnt(msg));
         if (msg instanceof LastHttpContent) {
             // FIXED io.netty.util.IllegalReferenceCountException: refCnt: 0, decrement: 1
-            inChannelContext.writeAndFlush(ReferenceCountUtil.retain(msg)).addListener(new ChannelFutureListener() {
+            inChannelContext.writeAndFlush(msg).addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) {
                     LOG.info("operationComplete {} {}", future.isSuccess(), future.cause());
@@ -58,7 +61,7 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
                         Result<Void> r = new Result();
                         r.setCode(ApiCode.IO_ERROR);
                         r.setMsg("failed to write response");
-                        writeResponse(inChannelContext, false, null, r, record);
+                        writeResponse(inChannelContext, false, null, r, record, msg);
                     }
                     //
                     ctx.channel().close();
@@ -69,7 +72,7 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
                 updateRecordRsp((HttpResponse) msg);
             }
 
-            inChannelContext.write(ReferenceCountUtil.retain(msg));
+            inChannelContext.write(msg);
         }
         LOG.info("HttpProxyBackendHandler msg end refCnt {}", ReferenceCountUtil.refCnt(msg));
     }
@@ -112,7 +115,7 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
         if (record != null) {
             record.setProxyStatus(HttpProxyConst.PROXY_STATUS_FAIL);
         }
-        writeResponse(inChannelContext, false, null, r, record);
+        writeResponse(inChannelContext, false, null, r, record, null);
         //
         ctx.channel().close();
     }
@@ -127,7 +130,7 @@ class HttpProxyBackendHandler extends AbstractInboundHandler {
             if (record != null) {
                 record.setProxyStatus(HttpProxyConst.PROXY_STATUS_TIMEOUT);
             }
-            writeResponse(inChannelContext, false, null, r, record);
+            writeResponse(inChannelContext, false, null, r, record, null);
         }
         ctx.channel().close();
     }

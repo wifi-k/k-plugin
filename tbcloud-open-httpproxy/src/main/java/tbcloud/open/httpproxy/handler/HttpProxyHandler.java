@@ -33,6 +33,10 @@ public class HttpProxyHandler extends AbstractInboundHandler {
 
     private static final int MAX_RETRY = 3;
 
+    protected HttpProxyHandler() {
+        super(false);
+    }
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
         LOG.info("HttpProxyHandler msg start refCnt {}", ReferenceCountUtil.refCnt(msg));
@@ -63,7 +67,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
 
             if (outChannel == null || !outChannel.isActive()) {
                 writeResponse(ctx, false, null, newResult(ApiCode.NODE_NOT_FOUND, "failed to find proxy node"),
-                        HttpProxyRecordUtil.toRecord(((HttpRequest) msg), HttpProxyConst.PROXY_STATUS_FAIL, null));
+                        HttpProxyRecordUtil.toRecord(((HttpRequest) msg), HttpProxyConst.PROXY_STATUS_FAIL, null), msg);
                 return;
             }
 
@@ -87,7 +91,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
                             record.setProxyStatus(HttpProxyConst.PROXY_STATUS_FAIL);
                             record.setRspCode(r.getCode());
                             record.setRspReason(r.getMsg());
-                            writeResponse(ctx, false, null, r, record);
+                            writeResponse(ctx, false, null, r, record, msg);
                             // close outChannel;
                             future.channel().close();
                         }
@@ -178,7 +182,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
             record.setProxyStatus(HttpProxyConst.PROXY_STATUS_FAIL);
         }
 
-        writeResponse(ctx, false, null, r, record);
+        writeResponse(ctx, false, null, r, record, null);
 
     }
 
@@ -192,7 +196,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
             if (record != null) {
                 record.setProxyStatus(HttpProxyConst.PROXY_STATUS_TIMEOUT);
             }
-            writeResponse(ctx, false, null, r, record);
+            writeResponse(ctx, false, null, r, record, null);
         }
     }
 }

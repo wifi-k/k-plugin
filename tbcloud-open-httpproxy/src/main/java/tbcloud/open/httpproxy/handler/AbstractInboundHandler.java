@@ -9,6 +9,7 @@ import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.util.CharsetUtil;
+import io.netty.util.ReferenceCountUtil;
 import jframe.core.msg.TextMsg;
 import jframe.core.plugin.annotation.InjectPlugin;
 import jframe.core.plugin.annotation.InjectService;
@@ -57,7 +58,12 @@ public abstract class AbstractInboundHandler extends SimpleChannelInboundHandler
 
     protected HttpProxyRecord record;
 
-    public static final void writeResponse(ChannelHandlerContext ctx, boolean keepAlive, String cookieString, Result<?> r, HttpProxyRecord record) {
+    protected AbstractInboundHandler(boolean autoRelease) {
+        super(autoRelease);
+    }
+
+    public static final void writeResponse(ChannelHandlerContext ctx, boolean keepAlive, String cookieString, Result<?> r, HttpProxyRecord record, HttpObject msg) {
+        if (msg != null) ReferenceCountUtil.release(msg);
         if (!ctx.channel().isActive()) return;
 
         String json = GsonUtil.toJson(r);

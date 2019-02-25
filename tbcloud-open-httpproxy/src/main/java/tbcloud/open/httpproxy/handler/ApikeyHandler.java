@@ -3,7 +3,6 @@ package tbcloud.open.httpproxy.handler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.ApiCode;
@@ -21,6 +20,10 @@ public class ApikeyHandler extends AbstractInboundHandler {
 
     boolean isValid = true;
 
+    protected ApikeyHandler() {
+        super(false);
+    }
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
         if (msg instanceof HttpRequest) {
@@ -34,7 +37,7 @@ public class ApikeyHandler extends AbstractInboundHandler {
 
             if ("/api/test/ping".equals(uri)) { // health checking
                 isValid = false;
-                writeResponse(ctx, false, null, newResult(ApiCode.SUCC, "ping"), null);
+                writeResponse(ctx, false, null, newResult(ApiCode.SUCC, "ping"), null, msg);
                 return;
             }
 
@@ -44,7 +47,7 @@ public class ApikeyHandler extends AbstractInboundHandler {
 //                        HttpProxyRecordUtil.toRecord(((HttpRequest) msg), HttpProxyConst.PROXY_STATUS_FAIL, null));
 
                 writeResponse(ctx, false, null,
-                        newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey), null);
+                        newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey), null, msg);
                 return;
             }
 
@@ -55,14 +58,14 @@ public class ApikeyHandler extends AbstractInboundHandler {
 //                        HttpProxyRecordUtil.toRecord(((HttpRequest) msg), HttpProxyConst.PROXY_STATUS_FAIL, null));
 
                 writeResponse(ctx, false, null,
-                        newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey), null);
+                        newResult(ApiCode.INVALID_APIKEY, "invalid apikey " + apikey), null, msg);
                 return;
             }
 
             // TODO 频率限制
 
         }
-        if (isValid) ctx.fireChannelRead(ReferenceCountUtil.retain(msg));
+        if (isValid) ctx.fireChannelRead(msg);
     }
 
 }
