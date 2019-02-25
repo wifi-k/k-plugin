@@ -33,7 +33,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
 
     private static final int MAX_RETRY = 3;
 
-    protected HttpProxyHandler() {
+    public HttpProxyHandler() {
         super(false);
     }
 

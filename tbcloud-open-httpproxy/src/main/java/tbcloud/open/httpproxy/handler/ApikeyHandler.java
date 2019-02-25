@@ -20,7 +20,7 @@ public class ApikeyHandler extends AbstractInboundHandler {
 
     boolean isValid = true;
 
-    protected ApikeyHandler() {
+    public ApikeyHandler() {
         super(false);
     }
 
