@@ -6,6 +6,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.ReferenceCountUtil;
 import tbcloud.httpproxy.model.HttpProxyOnline;
 import tbcloud.httpproxy.model.HttpProxyRecord;
 import tbcloud.httpproxy.protocol.HttpProxyConst;
@@ -34,6 +35,7 @@ public class HttpProxyHandler extends AbstractInboundHandler {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
+        LOG.info("HttpProxyHandler msg start refCnt {}", ReferenceCountUtil.refCnt(msg));
         if (msg instanceof HttpRequest) {
             resetState();
 
@@ -95,6 +97,8 @@ public class HttpProxyHandler extends AbstractInboundHandler {
                 outChannel.write(msg);
             }
         }
+
+        LOG.info("HttpProxyHandler msg end refCnt {}", ReferenceCountUtil.refCnt(msg));
     }
 
     private HttpProxyOnline selectNode(long userId, String policy, String defautNodeId) {
