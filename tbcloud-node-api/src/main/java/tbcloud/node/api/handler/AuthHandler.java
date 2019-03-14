@@ -4,6 +4,7 @@ import jframe.core.msg.TextMsg;
 import tbcloud.lib.api.ApiCode;
 import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.ConfField;
+import tbcloud.lib.api.msg.MsgMeta;
 import tbcloud.lib.api.msg.MsgType;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.IDUtil;
@@ -64,8 +65,12 @@ public class AuthHandler extends DataHandler<NodeAuth> {
         info.setDownstream(dataReq.getDownstream());
         String ip = context().remote().getAddress().getHostAddress();
         if (!ip.equals(nodeInfo.getIp())) info.setIp(ip);
-        Plugin.sendToNode(new TextMsg().setType(MsgType.NODE_INFO_UPDATE).setValue(GsonUtil.toJson(info)), nodeId);
+        Plugin.sendToNode(new TextMsg().setType(MsgType.NODE_INFO_UPDATE)
+                .setValue(GsonUtil.toJson(info)).setMeta(MsgMeta.Node_Ssid_List, dataReq.getSsid()), nodeId);
 //        NodeDao.updateNodeInfo(info);
+
+        // upsert node_wifi
+
 
         // insert ip_info
 //        if (!ip.equals(nodeInfo.getIp())) {

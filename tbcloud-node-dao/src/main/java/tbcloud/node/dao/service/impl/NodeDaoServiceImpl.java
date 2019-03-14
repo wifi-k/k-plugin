@@ -17,10 +17,7 @@ import tbcloud.node.dao.service.NodeDaoService;
 import tbcloud.node.model.*;
 import tbcloud.node.model.ext.NodeInfoRt;
 import tbcloud.node.model.ext.NodeInfoRtExample;
-import tbcloud.node.model.mapper.NodeAppMapper;
-import tbcloud.node.model.mapper.NodeInfoMapper;
-import tbcloud.node.model.mapper.NodeInsMapper;
-import tbcloud.node.model.mapper.NodeRtMapper;
+import tbcloud.node.model.mapper.*;
 import tbcloud.node.model.mapper.ext.NodeInfoRtMapper;
 
 import java.lang.reflect.Type;
@@ -45,6 +42,81 @@ public class NodeDaoServiceImpl implements NodeDaoService {
 
     @InjectService(id = "jframe.service.jedis")
     static JedisService Jedis;
+
+    @Override
+    public NodeWifi selectNodeWifi(long id) {
+        NodeWifi nodeWifi = null;
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            nodeWifi = session.getMapper(NodeWifiMapper.class).selectByPrimaryKey(id);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return nodeWifi;
+    }
+
+    @Override
+    public int insertNodeWifi(NodeWifi nodeWifi) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                nodeWifi.setCreateTime(st);
+                nodeWifi.setUpdateTime(st);
+
+                int r = session.getMapper(NodeWifiMapper.class).insertSelective(nodeWifi);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(nodeWifi));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public List<NodeWifi> selectNodeWifi(NodeWifiExample example) {
+        List<NodeWifi> nodeWifiList = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            nodeWifiList = session.getMapper(NodeWifiMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return nodeWifiList;
+    }
+
+    @Override
+    public int updateNodeWifi(NodeWifi nodeWifi) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                nodeWifi.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeWifiMapper.class).updateByPrimaryKeySelective(nodeWifi);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateNodeWifiSelective(NodeWifi nodeWifi, NodeWifiExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                nodeWifi.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeWifiMapper.class).updateByExampleSelective(nodeWifi, example);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
 
     @Override
     public NodeApp selectNodeApp(long id) {

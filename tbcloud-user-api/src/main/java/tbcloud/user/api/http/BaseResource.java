@@ -33,7 +33,6 @@ public class BaseResource {
     @InjectService(id = "jframe.service.jedis")
     static JedisService Jedis;
 
-
     @InjectService(id = "jframe.service.qiniu")
     static QiniuService Qiniu;
 

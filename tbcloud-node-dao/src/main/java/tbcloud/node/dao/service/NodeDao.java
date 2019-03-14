@@ -13,6 +13,18 @@ import java.util.Set;
  */
 public interface NodeDao {
 
+    // node_wifi
+    NodeWifi selectNodeWifi(long id);
+
+    int insertNodeWifi(NodeWifi nodeWifi);
+
+    List<NodeWifi> selectNodeWifi(NodeWifiExample example);
+
+    int updateNodeWifi(NodeWifi nodeWifi);
+
+    int updateNodeWifiSelective(NodeWifi nodeWifi, NodeWifiExample example);
+
+    // node_app
     NodeApp selectNodeApp(long id);
 
     int insertNodeApp(NodeApp nodeApp);
@@ -23,6 +35,7 @@ public interface NodeDao {
 
     int updateNodeAppSelective(NodeApp nodeApp, NodeAppExample example);
 
+    // node_info
     int insertNodeInfo(NodeInfo nodeInfo);
 
     boolean batchInsertNodeInfo(Set<NodeInfo> nodeInfoList);
@@ -35,6 +48,7 @@ public interface NodeDao {
 
     long countNodeInfo(NodeInfoExample example);
 
+    // node_rt
     List<NodeInfoRt> selectNodeInfoLeftJoinRt(NodeInfoRtExample example);
 
     List<NodeInfoRt> selectNodeRtLeftJoinInfo(NodeRtInfoExample example);

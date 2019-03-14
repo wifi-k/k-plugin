@@ -918,6 +918,140 @@ public class UserResource extends BaseResource {
         return r;
     }
 
+    @POST
+    @Path("node/ssid/list")
+    public Result<PageRsp<NodeWifi>> listNodeSsid(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, Map<String, String> req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<PageRsp<NodeWifi>> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        String nodeId = req.get(ApiField.F_nodeId);
+        if (StringUtil.isEmpty(nodeId)) {
+            r.setCode(ApiCode.INVALID_PARAM);
+            r.setMsg("nodeId is nil");
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        Integer pageNo = 1;
+        Integer pageSize = 10;
+
+        NodeWifiExample example = new NodeWifiExample();
+        example.createCriteria().andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        example.setOrderByClause("create_time desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
+
+        List<NodeWifi> list = NodeDao.selectNodeWifi(example);
+
+        PageRsp<NodeWifi> data = new PageRsp<>();
+        data.setTotal(list.size());
+        data.setPage(list);
+        r.setData(data);
+        return r;
+    }
+
+
+    @POST
+    @Path("node/ssid/set")
+    public Result<Void> setNodeSsid(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeWifiReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<Void> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        String nodeId = req.getNodeId();
+        if (StringUtil.isEmpty(nodeId)) {
+            r.setCode(ApiCode.INVALID_PARAM);
+            r.setMsg("nodeId is nil");
+            return r;
+        }
+
+        Integer freq = req.getFreq();
+        if (freq == null) {
+            freq = ApiConst.WIFI_FREQ_ALL;
+        }
+
+        NodeWifi updated = new NodeWifi();
+        if (!StringUtil.isEmpty(req.getSsid())) {
+            updated.setSsid(req.getSsid());
+        }
+        if (!StringUtil.isEmpty(req.getPasswd())) {
+            updated.setPasswd(req.getPasswd());
+        }
+        if (req.getRssi() != null) {
+            updated.setFreq(req.getRssi());
+        }
+
+        NodeWifiExample example = new NodeWifiExample();
+        if (freq == ApiConst.WIFI_FREQ_ALL) {
+            example.createCriteria().andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        } else if (freq > 0) {
+            example.createCriteria().andNodeIdEqualTo(nodeId).andFreqEqualTo(freq).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        }
+        NodeDao.updateNodeWifiSelective(updated, example);
+        // TODO send msg to notify node
+
+        return r;
+    }
+
+    @POST
+    @Path("node/info/set")
+    public Result<Void> setNodeInfo(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, Map<String, String> req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<Void> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+        String nodeId = req.get("nodeId");
+        if (StringUtil.isEmpty(nodeId)) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            r.setMsg("miss nodeId");
+            return r;
+        }
+
+        NodeInfo nodeInfo = NodeDao.selectNodeInfo(nodeId);
+        if (nodeInfo == null) {
+            r.setCode(ApiCode.DB_NOT_FOUND_RECORD);
+            r.setMsg(nodeId + " not found");
+            return r;
+        }
+
+        if (nodeInfo.getIsBind() != NodeConst.IS_BIND) {
+            r.setCode(ApiCode.DB_UPDATE_ERROR);
+            r.setMsg(nodeId + " is not binded");
+            return r;
+        }
+
+        if (nodeInfo.getUserId() != userInfo.getId()) {
+            r.setCode(ApiCode.USR_INVALID);
+            r.setMsg("cann't not unbind others' node");
+            return r;
+        }
+
+        String name = req.get(ApiField.F_name);
+        if (!StringUtil.isEmpty(name)) {
+            NodeInfo updated = new NodeInfo();
+            updated.setNodeId(nodeInfo.getNodeId());
+            updated.setName(name);
+            NodeDao.updateNodeInfo(updated);
+        }
+        return r;
+    }
+
 
     @POST
     @Path("node/share/join")
@@ -952,15 +1086,15 @@ public class UserResource extends BaseResource {
             return r;
         }
 
-        if (nodeInfo.getIsShare() == NodeConst.IS_SHARE) {
-            r.setCode(ApiCode.DB_UPDATE_ERROR);
-            r.setMsg(nodeId + " is shared");
-            return r;
-        }
-
         if (nodeInfo.getUserId() != userInfo.getId()) {
             r.setCode(ApiCode.USR_INVALID);
             r.setMsg("cann't not unbind others' node");
+            return r;
+        }
+
+        if (nodeInfo.getIsShare() == NodeConst.IS_SHARE) {
+            r.setCode(ApiCode.DB_UPDATE_ERROR);
+            r.setMsg(nodeId + " is shared");
             return r;
         }
 
