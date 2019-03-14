@@ -919,6 +919,37 @@ public class UserResource extends BaseResource {
     }
 
     @POST
+    @Path("message/list")
+    public Result<PageRsp<UserMessage>> listMessage(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, PageReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<PageRsp<UserMessage>> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        Integer pageNo = req.getPageNo();
+        Integer pageSize = req.getPageSize();
+
+        UserMessageExample example = new UserMessageExample();
+        example.createCriteria().andUserIdEqualTo(userInfo.getId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        example.setOrderByClause("create_time desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
+
+        List<UserMessage> list = UserDao.selectUserMessage(example);
+
+        PageRsp<UserMessage> data = new PageRsp<>();
+        data.setTotal(list.size());
+        data.setPage(list);
+        r.setData(data);
+        return r;
+    }
+
+    @POST
     @Path("node/ssid/list")
     public Result<PageRsp<NodeWifi>> listNodeSsid(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, Map<String, String> req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);

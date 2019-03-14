@@ -1,9 +1,6 @@
 package tbcloud.user.dao.service;
 
-import tbcloud.user.model.UserInfo;
-import tbcloud.user.model.UserInfoExample;
-import tbcloud.user.model.UserOnline;
-import tbcloud.user.model.UserOnlineExample;
+import tbcloud.user.model.*;
 
 import java.util.List;
 
@@ -12,6 +9,15 @@ import java.util.List;
  * @date 2018-11-09 11:55
  */
 public interface UserDao {
+
+    List<UserMessage> selectUserMessage(UserMessageExample example);
+
+    UserMessage selectUserMessage(long id);
+
+    int insertUserMessage(UserMessage message);
+
+    int updateUserMessage(UserMessage message);
+
 
     List<UserInfo> selectUserInfo(UserInfoExample example);
 

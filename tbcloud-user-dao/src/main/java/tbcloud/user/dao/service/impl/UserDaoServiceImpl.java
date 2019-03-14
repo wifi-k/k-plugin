@@ -114,6 +114,65 @@ public class UserDaoServiceImpl implements UserDaoService {
 
 
     @Override
+    public List<UserMessage> selectUserMessage(UserMessageExample example) {
+        List<UserMessage> messageList = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            messageList = session.getMapper(UserMessageMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return messageList;
+    }
+
+    @Override
+    public UserMessage selectUserMessage(long id) {
+        UserMessage message = null;
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            message = session.getMapper(UserMessageMapper.class).selectByPrimaryKey(id);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return message;
+    }
+
+    @Override
+    public int insertUserMessage(UserMessage message) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                message.setCreateTime(st);
+                message.setUpdateTime(st);
+
+                int r = session.getMapper(UserMessageMapper.class).insertSelective(message);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(message));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateUserMessage(UserMessage message) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                message.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(UserMessageMapper.class).updateByPrimaryKeySelective(message);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
     public List<UserInfo> selectUserInfo(UserInfoExample example) {
         List<UserInfo> userInfoList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
