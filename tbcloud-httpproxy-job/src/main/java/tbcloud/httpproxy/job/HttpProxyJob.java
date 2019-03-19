@@ -130,6 +130,7 @@ public abstract class HttpProxyJob extends AbstractJob {
 
     public void sremFromRedis(String id, String key, String... members) {
         if (StringUtil.isEmpty(key)) return;
+        if (members == null || members.length == 0) return;
 
         try (redis.clients.jedis.Jedis jedis = Jedis.getJedis(id)) {
             if (jedis != null) {
