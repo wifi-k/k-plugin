@@ -473,7 +473,9 @@ public class UserResource extends BaseResource {
             return r;
         }
 
-        r.setData(reqContext.getUserInfo());
+        UserInfo userInfo = reqContext.getUserInfo();
+        userInfo.setAvatar(Qiniu.privateDownloadUrl(ApiConst.QINIU_ID_USER, userInfo.getAvatar(), -1));
+        r.setData(userInfo);
         return r;
     }
 
@@ -1296,6 +1298,28 @@ public class UserResource extends BaseResource {
         PageRsp<UserShareDay> data = new PageRsp<>();
         data.setPage(page);
         data.setTotal(count);
+        r.setData(data);
+        return r;
+    }
+
+    @POST
+    @Path("qiniu/get")
+    public Result<Map<String, String>> getQiniu(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<Map<String, String>> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        // TODO limit req
+        Map<String, String> data = new HashMap<>(1, 1);
+        data.put("token", Qiniu.uploadToken(ApiConst.QINIU_ID_USER, null));
+        //data.put("bucket", Qiniu.info(ApiConst.QINIU_ID_DEVELOPER, QiniuConfig.BUCKET));
         r.setData(data);
         return r;
     }
