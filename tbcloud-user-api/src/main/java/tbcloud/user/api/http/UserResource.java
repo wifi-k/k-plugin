@@ -1,6 +1,7 @@
 package tbcloud.user.api.http;
 
 import jframe.core.msg.PluginMsg;
+import jframe.core.msg.TextMsg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.ApiCode;
@@ -16,6 +17,8 @@ import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.model.*;
 import tbcloud.node.model.ext.NodeInfoRt;
+import tbcloud.node.model.util.NodeUtil;
+import tbcloud.node.protocol.data.ins.Ins;
 import tbcloud.user.api.http.req.*;
 import tbcloud.user.api.http.rsp.ImgCodeRsp;
 import tbcloud.user.api.http.rsp.PageRsp;
@@ -474,7 +477,8 @@ public class UserResource extends BaseResource {
         }
 
         UserInfo userInfo = reqContext.getUserInfo();
-        userInfo.setAvatar(Qiniu.privateDownloadUrl(ApiConst.QINIU_ID_USER, userInfo.getAvatar(), -1));
+        if (!StringUtil.isEmpty(userInfo.getAvatar()))
+            userInfo.setAvatar(Qiniu.privateDownloadUrl(ApiConst.QINIU_ID_USER, userInfo.getAvatar(), -1));
         r.setData(userInfo);
         return r;
     }
@@ -911,7 +915,40 @@ public class UserResource extends BaseResource {
         List<NodeInfoRt> nodeList = NodeDao.selectNodeRtLeftJoinInfo(example);
         long count = NodeDao.countNodeRt(countExample); //TODO cache
 
-        // TODO firmwareUpgrade NodeRsp
+        // firmwareUpgrade
+        if (nodeList != null) {
+            List<String> models = new ArrayList<>();
+            nodeList.forEach(info -> {
+                if (!models.contains(info.getModel()))
+                    models.add(info.getModel());
+            });
+
+            List<NodeFirmware> firmwareList = new ArrayList<>(models.size());
+            models.forEach(m -> {
+                NodeFirmwareExample firmwareExample = new NodeFirmwareExample();
+                firmwareExample.createCriteria().andModelEqualTo(m).andStartTimeGreaterThanOrEqualTo(System.currentTimeMillis())
+                        .andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+                firmwareExample.setOrderByClause("start_time desc limit 1");
+                List<NodeFirmware> latestFirmware = NodeDao.selectNodeFirmware(firmwareExample);
+                if (latestFirmware != null && latestFirmware.size() > 0)
+                    firmwareList.add(latestFirmware.get(0));
+            });
+
+            nodeList.forEach(info -> {
+                NodeFirmware newF = null;
+                for (NodeFirmware f : firmwareList) {
+                    if (f.getModel().equals(info.getModel())) {
+                        newF = f;
+                        break;
+                    }
+                }
+                if (newF != null) {
+                    if (NodeUtil.compareFireware(newF.getFirmware(), info.getFirmware()) > 0) {
+                        info.setFirmwareUpgrade(newF.getFirmware());
+                    }
+                }
+            });
+        }
 
         PageRsp<NodeInfoRt> data = new PageRsp<>();
         data.setTotal(count);
@@ -1033,6 +1070,71 @@ public class UserResource extends BaseResource {
         NodeDao.updateNodeWifiSelective(updated, example);
         // TODO send msg to notify node
 
+        return r;
+    }
+
+    /**
+     * TODO 通过redis防止多次请求
+     *
+     * @param ui
+     * @param version
+     * @param token
+     * @param req
+     * @return
+     */
+    @POST
+    @Path("node/firmware/upgrade")
+    public Result<Void> upgradeNodeFirmware(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<Void> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        String nodeId = req.getNodeId();
+        if (StringUtil.isEmpty(nodeId)) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            r.setMsg("nodeId is nil");
+            return r;
+        }
+
+        NodeInfo nodeInfo = NodeDao.selectNodeInfo(nodeId);
+        String model = nodeInfo.getModel();
+
+        NodeFirmwareExample firmwareExample = new NodeFirmwareExample();
+        firmwareExample.createCriteria().andModelEqualTo(model).andStartTimeGreaterThanOrEqualTo(System.currentTimeMillis())
+                .andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        firmwareExample.setOrderByClause("start_time desc limit 1");
+        List<NodeFirmware> latestFirmware = NodeDao.selectNodeFirmware(firmwareExample);
+        if (latestFirmware == null || latestFirmware.size() <= 0) {
+            r.setCode(ApiCode.NODE_FIRMWARE_LATEST);
+            r.setMsg("node's firmware is latest");
+            return r;
+        }
+        String newF = latestFirmware.get(0).getFirmware();
+        if (NodeUtil.compareFireware(newF, nodeInfo.getFirmware()) < 1) {
+            r.setCode(ApiCode.NODE_FIRMWARE_LATEST);
+            r.setMsg("node's firmware is latest");
+            return r;
+        }
+
+        // 正在升级的提示, 查询指令表
+        NodeInsExample insExample = new NodeInsExample();
+        insExample.createCriteria().andNodeIdEqualTo(nodeId).andInsEqualTo(Ins.INS_FIRMWAREUPGRADE)
+                .andStatusLessThanOrEqualTo(NodeConst.INS_STATUS_RECV).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        List<NodeIns> list = NodeDao.selectNodeIns(insExample);
+        if (list != null && !list.isEmpty()) {
+            r.setCode(ApiCode.NODE_FIRMWARE_UPGRADING);
+            r.setMsg("node is upgrading");
+            return r;
+        }
+
+        Plugin.sendToUser(new TextMsg().setType(MsgType.NODE_FIRMWARE_UPGRADE).setValue(nodeId), userInfo.getId());
         return r;
     }
 

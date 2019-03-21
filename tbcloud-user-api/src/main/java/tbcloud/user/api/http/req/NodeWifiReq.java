@@ -4,9 +4,7 @@ package tbcloud.user.api.http.req;
  * @author dzh
  * @date 2019-03-14 15:19
  */
-public class NodeWifiReq {
-
-    private String nodeId;
+public class NodeWifiReq extends NodeReq {
 
     private Integer freq;
 
@@ -15,14 +13,6 @@ public class NodeWifiReq {
     private String passwd;
 
     private Integer rssi;
-
-    public String getNodeId() {
-        return nodeId;
-    }
-
-    public void setNodeId(String nodeId) {
-        this.nodeId = nodeId;
-    }
 
     public Integer getFreq() {
         return freq;

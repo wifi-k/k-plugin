@@ -130,8 +130,4 @@ public class EmailModifyJob extends UserJob {
         return "<h2>确认您的电子邮件地址</h2><p>尊敬的" + name + "，</p><p>电子邮箱确认请点击链接并输入登录密码确认</p> <p><a href=\"" + link + "\">点击此处激活邮箱</a></p><p>此致 树熊云</p>";
     }
 
-    @Override
-    protected String id() {
-        return "EmailModifyJob";
-    }
 }

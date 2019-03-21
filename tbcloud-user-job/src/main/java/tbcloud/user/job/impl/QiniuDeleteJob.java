@@ -68,8 +68,4 @@ public class QiniuDeleteJob extends UserJob {
         LOG.info("batchDel {}", r);
     }
 
-    @Override
-    protected String id() {
-        return "QiniuDeleteJob";
-    }
 }

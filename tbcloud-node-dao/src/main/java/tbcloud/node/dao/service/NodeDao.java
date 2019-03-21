@@ -13,6 +13,17 @@ import java.util.Set;
  */
 public interface NodeDao {
 
+    // node_firmware
+    NodeFirmware selectNodeFirmware(long id);
+
+    int insertNodeFirmware(NodeFirmware firmware);
+
+    List<NodeFirmware> selectNodeFirmware(NodeFirmwareExample example);
+
+    int updateNodeFirmware(NodeFirmware firmware);
+
+    int updateNodeFirmwareSelective(NodeFirmware firmware, NodeFirmwareExample example);
+
     // node_wifi
     NodeWifi selectNodeWifi(long id);
 

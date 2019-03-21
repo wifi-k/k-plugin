@@ -89,8 +89,4 @@ public class NodeQuitShareJob extends UserJob {
         return false;
     }
 
-    @Override
-    protected String id() {
-        return "NodeQuitShareJob";
-    }
 }

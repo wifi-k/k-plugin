@@ -2,14 +2,13 @@ package tbcloud.user.job.impl;
 
 import jframe.core.msg.Msg;
 import tbcloud.lib.api.ApiConst;
-import tbcloud.lib.api.AppEnum;
-import tbcloud.lib.api.ConfField;
 import tbcloud.lib.api.msg.MsgType;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.model.*;
-import tbcloud.node.protocol.data.ins.HttpProxy;
+import tbcloud.node.model.util.NodeUtil;
+import tbcloud.node.protocol.data.ins.FirmwareUpgrade;
 import tbcloud.node.protocol.data.ins.Ins;
 import tbcloud.user.job.UserJob;
 
@@ -17,12 +16,12 @@ import java.util.List;
 
 /**
  * @author dzh
- * @date 2018-12-13 17:47
+ * @date 2019-03-21 16:23
  */
-public class NodeJoinShareJob extends UserJob {
+public class NodeUpgradeJob extends UserJob {
     @Override
     public int msgType() {
-        return MsgType.NODE_JOIN_SHARE;
+        return MsgType.NODE_FIRMWARE_UPGRADE;
     }
 
     @Override
@@ -32,42 +31,40 @@ public class NodeJoinShareJob extends UserJob {
             return;
         }
 
-        NodeInfo nodeInfo = null;
-        if (val instanceof String) { // maybe from mq
-            nodeInfo = GsonUtil.fromJson((String) val, NodeInfo.class);
-        } else if (val instanceof NodeInfo) {
-            nodeInfo = (NodeInfo) val;
-        } else {
+        String nodeId = String.valueOf(val);
+        NodeInfo nodeInfo = NodeDao.selectNodeInfo(nodeId);
+        String model = nodeInfo.getModel();
+
+        NodeFirmwareExample firmwareExample = new NodeFirmwareExample();
+        firmwareExample.createCriteria().andModelEqualTo(model).andStartTimeGreaterThanOrEqualTo(System.currentTimeMillis())
+                .andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        firmwareExample.setOrderByClause("start_time desc limit 1");
+        List<NodeFirmware> latestFirmware = NodeDao.selectNodeFirmware(firmwareExample);
+        if (latestFirmware == null || latestFirmware.size() <= 0) {
+            return;
+        }
+        NodeFirmware firmware = latestFirmware.get(0);
+        if (NodeUtil.compareFireware(firmware.getFirmware(), nodeInfo.getFirmware()) < 1) {
             return;
         }
 
-        String nodeId = nodeInfo.getNodeId();
-        // set node share
-        NodeDao.updateNodeInfo(nodeInfo);
+        // 正在升级的提示, 查询指令表
+//        NodeInsExample insExample = new NodeInsExample();
+//        insExample.createCriteria().andNodeIdEqualTo(nodeId).andInsEqualTo(Ins.INS_FIRMWAREUPGRADE)
+//                .andStatusLessThanOrEqualTo(NodeConst.INS_STATUS_RECV).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+//        List<NodeIns> list = NodeDao.selectNodeIns(insExample);
+//        if (list != null && !list.isEmpty()) {
+//            return ;
+//        }
 
-        // TODO how to select app for node
-        // httpproxy feature
-        NodeAppExample example = new NodeAppExample();
-        example.createCriteria().andNodeIdEqualTo(nodeId).andAppIdEqualTo(AppEnum.HTTP_PROXY.getId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
-        List<NodeApp> nodeApps = NodeDao.selectNodeApp(example);
-        if (nodeApps == null || nodeApps.isEmpty()) {
-            // insert share app
-            NodeApp nodeApp = new NodeApp();
-            nodeApp.setNodeId(nodeId);
-            nodeApp.setAppId(AppEnum.HTTP_PROXY.getId());
-            nodeApp.setAppName(AppEnum.HTTP_PROXY.getName());
-            NodeDao.insertNodeApp(nodeApp);
-        }
-        // insert node_ins
-        String insHost = plugin().getConfig(ConfField.NODE_HTTPPROXY_DOMAIN);
-        HttpProxy insHttpProxy = new HttpProxy();
-        insHttpProxy.setOp(HttpProxy.OP_ENABLE);
-        insHttpProxy.setHost(insHost);
+        FirmwareUpgrade insVal = new FirmwareUpgrade();
+        insVal.setFirmware(firmware.getFirmware());
+        insVal.setDownload(firmware.getDownload());
 
         Ins ins = new Ins();
-        ins.setId(IDUtil.genInsId(nodeId, Ins.INS_HTTPPROXY));
-        ins.setIns(Ins.INS_HTTPPROXY);
-        ins.setVal(GsonUtil.toJson(insHttpProxy));
+        ins.setId(IDUtil.genInsId(nodeId, Ins.INS_FIRMWAREUPGRADE));
+        ins.setIns(Ins.INS_FIRMWAREUPGRADE);
+        ins.setVal(GsonUtil.toJson(insVal));
 
         NodeIns nodeIns = new NodeIns();
         nodeIns.setId(ins.getId());

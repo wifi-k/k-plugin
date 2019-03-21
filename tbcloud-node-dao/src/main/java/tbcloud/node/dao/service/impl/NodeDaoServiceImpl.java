@@ -44,6 +44,81 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     static JedisService Jedis;
 
     @Override
+    public NodeFirmware selectNodeFirmware(long id) {
+        NodeFirmware firmware = null;
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            firmware = session.getMapper(NodeFirmwareMapper.class).selectByPrimaryKey(id);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return firmware;
+    }
+
+    @Override
+    public int insertNodeFirmware(NodeFirmware firmware) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                firmware.setCreateTime(st);
+                firmware.setUpdateTime(st);
+
+                int r = session.getMapper(NodeFirmwareMapper.class).insertSelective(firmware);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(firmware));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public List<NodeFirmware> selectNodeFirmware(NodeFirmwareExample example) {
+        List<NodeFirmware> firmwareList = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            firmwareList = session.getMapper(NodeFirmwareMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return firmwareList;
+    }
+
+    @Override
+    public int updateNodeFirmware(NodeFirmware firmware) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                firmware.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeFirmwareMapper.class).updateByPrimaryKeySelective(firmware);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateNodeFirmwareSelective(NodeFirmware firmware, NodeFirmwareExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                firmware.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeFirmwareMapper.class).updateByExampleSelective(firmware, example);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
     public NodeWifi selectNodeWifi(long id) {
         NodeWifi nodeWifi = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {

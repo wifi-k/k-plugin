@@ -134,5 +134,10 @@ public abstract class UserJob extends AbstractJob {
         }
     }
 
+    @Override
+    protected String id() {
+        return getClass().getSimpleName();
+    }
+
 
 }

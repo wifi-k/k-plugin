@@ -68,6 +68,10 @@
             <groupId>cn.treebear</groupId>
             <artifactId>tbcloud-elastic-model</artifactId>
         </dependency>
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-node-protocol</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>io.github.dzh</groupId>

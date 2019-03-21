@@ -97,8 +97,4 @@ public class UserLoginJob extends UserJob {
         return online;
     }
 
-    @Override
-    protected String id() {
-        return "UserLoginJob";
-    }
 }
