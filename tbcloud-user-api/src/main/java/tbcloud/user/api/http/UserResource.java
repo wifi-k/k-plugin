@@ -870,6 +870,45 @@ public class UserResource extends BaseResource {
     }
 
     @POST
+    @Path("node/select")
+    public Result<Void> SelectNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<Void> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        String selectedNode = req.getNodeId();
+        if (StringUtil.isEmpty(selectedNode)) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            r.setMsg("miss nodeId");
+            return r;
+        }
+
+        NodeRtExample example = new NodeRtExample();
+        example.createCriteria().andUserIdEqualTo(userInfo.getId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        List<NodeRt> nodeRts = NodeDao.selectNodeRt(example);
+        if (nodeRts != null) {
+            List<NodeRt> updated = new ArrayList<>(nodeRts.size());
+
+            nodeRts.forEach(rt -> {
+                NodeRt up = new NodeRt();
+                up.setNodeId(rt.getNodeId());
+                up.setIsSelect(rt.getNodeId().equals(selectedNode) ? ApiConst.IS_SELECT_Y : ApiConst.IS_SELECT_N);
+            });
+
+            NodeDao.batchUpdateNodeRt(updated);
+        }
+
+        return r;
+    }
+
+    @POST
     @Path("node/list")
     public Result<PageRsp<NodeInfoRt>> listNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeListReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);

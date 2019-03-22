@@ -64,6 +64,8 @@ public interface NodeDao {
 
     List<NodeInfoRt> selectNodeRtLeftJoinInfo(NodeRtInfoExample example);
 
+    void batchUpdateNodeRt(List<NodeRt> nodeRtList);
+
     int insertNodeRt(NodeRt nodeRt);
 
     List<NodeRt> selectNodeRt(NodeRtExample example);

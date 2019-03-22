@@ -401,6 +401,28 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     }
 
     @Override
+    public void batchUpdateNodeRt(List<NodeRt> nodeRtList) {
+        if (nodeRtList == null || nodeRtList.isEmpty()) return;
+
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                for (NodeRt nodeRt : nodeRtList) {
+                    nodeRt.setUpdateTime(st);
+
+                    session.getMapper(NodeRtMapper.class).updateByPrimaryKeySelective(nodeRt);
+                }
+
+                //LOG.info("batch update {} {}", nodeRtList.size(), GsonUtil.toJson(nodeRtList));
+                session.commit();
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+    }
+
+    @Override
     public int insertNodeRt(NodeRt nodeRt) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
             try {
@@ -559,7 +581,7 @@ public class NodeDaoServiceImpl implements NodeDaoService {
                     session.getMapper(NodeInsMapper.class).updateByPrimaryKeySelective(nodeIns);
                 }
 
-                LOG.info("batch update {} {}", nodeInsList.size(), GsonUtil.toJson(nodeInsList));
+                //LOG.info("batch update {} {}", nodeInsList.size(), GsonUtil.toJson(nodeInsList));
                 session.commit();
                 return true;
             } catch (Exception e) {
