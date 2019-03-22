@@ -690,7 +690,7 @@ public class UserResource extends BaseResource {
             }
 
             Long ownUserId = nodeInfo.getUserId();
-            if (ownUserId != null && ownUserId != userInfo.getId()) {
+            if (ownUserId != null && ownUserId > 0 && ownUserId != userInfo.getId()) {
                 r.setCode(ApiCode.USR_INVALID);
                 r.setMsg(nodeId + " be bound!");
                 return r;
