@@ -1180,7 +1180,7 @@ public class UserResource extends BaseResource {
             }
         });
 
-        exampleCritera.andNodeIdIn(nodeIds);  // 假设一个几个节点
+        exampleCritera.andNodeIdIn(nodeIds);  // 假设一个人几个节点
         countExampleCriteria.andNodeIdIn(nodeIds);
         // not delete
         exampleCritera.andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
