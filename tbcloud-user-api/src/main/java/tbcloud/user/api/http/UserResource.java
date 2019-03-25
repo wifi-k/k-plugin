@@ -20,10 +20,7 @@ import tbcloud.node.model.ext.NodeInfoRt;
 import tbcloud.node.model.util.NodeUtil;
 import tbcloud.node.protocol.data.ins.Ins;
 import tbcloud.user.api.http.req.*;
-import tbcloud.user.api.http.rsp.ImgCodeRsp;
-import tbcloud.user.api.http.rsp.PageRsp;
-import tbcloud.user.api.http.rsp.ShareSumRsp;
-import tbcloud.user.api.http.rsp.SignInRsp;
+import tbcloud.user.api.http.rsp.*;
 import tbcloud.user.model.*;
 
 import javax.ws.rs.*;
@@ -484,6 +481,40 @@ public class UserResource extends BaseResource {
     }
 
     @POST
+    @Path("info/getext")
+    public Result<UserInfoRsp> getExtInfo(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, UserReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<UserInfoRsp> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+        if (!StringUtil.isEmpty(userInfo.getAvatar()))
+            userInfo.setAvatar(Qiniu.privateDownloadUrl(ApiConst.QINIU_ID_USER, userInfo.getAvatar(), -1));
+
+        UserInfoRsp data = new UserInfoRsp();
+        data.setUser(userInfo);
+
+        Integer filter = req.getFilter();
+        if (filter != null) {
+            if ((filter & 1) > 0) { // user_node
+                UserNodeExample example = new UserNodeExample();
+                example.createCriteria().andUserIdEqualTo(userInfo.getId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+                List<UserNode> list = UserDao.selectUserNode(example);
+
+                data.setNodeSize(list == null ? 0 : list.size());
+            }
+        }
+
+        r.setData(data);
+        return r;
+    }
+
+    @POST
     @Path("info/set")
     public Result<UserInfo> setInfo(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, UserInfoSetReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
@@ -689,10 +720,20 @@ public class UserResource extends BaseResource {
 
         NodeInfo node = nodeList.get(0);
 
+        // check existed
+        UserNodeExample userNodeExample = new UserNodeExample();
+        userNodeExample.createCriteria().andNodeIdEqualTo(node.getNodeId()).andUserIdEqualTo(userInfo.getId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        long existedUser = UserDao.countUserNode(userNodeExample);
+        if (existedUser > 0) {
+            r.setCode(ApiCode.USR_INVALID);
+            r.setMsg(userInfo.getName() + " has joined");
+            return r;
+        }
+
         // check max family users
-        UserNodeExample existedExample = new UserNodeExample();
-        existedExample.createCriteria().andNodeIdEqualTo(node.getNodeId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
-        long existedUser = UserDao.countUserNode(existedExample);
+        UserNodeExample countExample = new UserNodeExample();
+        countExample.createCriteria().andNodeIdEqualTo(node.getNodeId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        existedUser = UserDao.countUserNode(countExample);
         if (existedUser >= 20) {
             r.setCode(ApiCode.USR_INVALID);
             r.setMsg("too many users");
