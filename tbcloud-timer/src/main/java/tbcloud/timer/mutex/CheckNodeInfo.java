@@ -17,7 +17,7 @@ public class CheckNodeInfo extends MutexTimer {
     protected int doTimer() {
         NodeInfoExample example = new NodeInfoExample();
         example.createCriteria().andInviteCodeIsNull().andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
-        example.setOrderByClause("create_time 1000");
+        example.setOrderByClause("create_time limit 1000");
 
 
         List<NodeInfo> list = NodeDao.selectNodeInfo(example);
