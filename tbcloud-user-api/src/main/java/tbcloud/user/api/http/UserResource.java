@@ -503,6 +503,14 @@ public class UserResource extends BaseResource {
         newUserInfo.setAvatar(req.getAvatar());
         UserDao.updateUserInfo(newUserInfo);
 
+        // update user_node
+        UserNodeExample example = new UserNodeExample();
+        example.createCriteria().andUserIdEqualTo(userInfo.getId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        UserNode updated = new UserNode();
+        //updated.setUserName(req.getName());
+        updated.setUserAvatar(req.getAvatar());
+        UserDao.updateUserNodeSelective(updated, example);
+
         return r;
     }
 
@@ -650,8 +658,8 @@ public class UserResource extends BaseResource {
     }
 
     @POST
-    @Path("node/bind")
-    public Result<Void> bindNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, Map<String, String> req) {
+    @Path("node/family/join")
+    public Result<Void> joinNodeFamily(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, UserNodeReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
         Result<Void> r = new Result<>();
 
@@ -663,71 +671,282 @@ public class UserResource extends BaseResource {
 
         UserInfo userInfo = reqContext.getUserInfo();
 
-        String nodeId = req.get(ApiField.F_nodeId);
+        String inviteCode = req.getInviteCode();
+        if (StringUtil.isEmpty(inviteCode)) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            r.setMsg("miss inviteCode");
+            return r;
+        }
+
+        NodeInfoExample example = new NodeInfoExample();
+        example.createCriteria().andInviteCodeEqualTo(inviteCode).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        List<NodeInfo> nodeList = NodeDao.selectNodeInfo(example);
+        if (nodeList == null || nodeList.isEmpty()) {
+            r.setCode(ApiCode.DB_NOT_FOUND_RECORD);
+            r.setMsg("not found node");
+            return r;
+        }
+
+        NodeInfo node = nodeList.get(0);
+
+        // check max family users
+        UserNodeExample existedExample = new UserNodeExample();
+        existedExample.createCriteria().andNodeIdEqualTo(node.getNodeId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        long existedUser = UserDao.countUserNode(existedExample);
+        if (existedUser >= 20) {
+            r.setCode(ApiCode.USR_INVALID);
+            r.setMsg("too many users");
+            return r;
+        }
+
+        UserNode userNode = new UserNode();
+        userNode.setUserId(userInfo.getId());
+        userNode.setUserAvatar(userInfo.getAvatar());
+        userNode.setUserName(userInfo.getName());
+        userNode.setUserMobile(userInfo.getMobile());
+        userNode.setRole(ApiConst.USER_NODE_ROLE_ADMIN);
+
+        userNode.setNodeId(node.getNodeId());
+        userNode.setNodeName(node.getName());
+
+        UserDao.insertUserNode(userNode);
+
+        return r;
+    }
+
+    @POST
+    @Path("node/family/set")
+    public Result<Void> setNodeFamily(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, UserNodeReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<Void> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        String nodeId = req.getNodeId();
         if (StringUtil.isEmpty(nodeId)) {
             r.setCode(ApiCode.HTTP_MISS_PARAM);
             r.setMsg("miss nodeId");
             return r;
         }
 
-        NodeInfo nodeInfo = NodeDao.selectNodeInfo(nodeId);
-        if (nodeInfo == null) { //insert
-            nodeInfo = new NodeInfo();
-            nodeInfo.setNodeId(nodeId);
-            nodeInfo.setBindTime(System.currentTimeMillis());
-            nodeInfo.setIsBind(NodeConst.IS_BIND);
-            nodeInfo.setUserId(userInfo.getId());
-            if (NodeDao.insertNodeInfo(nodeInfo) != 1) {
-                r.setCode(ApiCode.DB_INSERT_ERROR);
-                r.setMsg(nodeId + " bind error!");
-                return r;
-            }
-        } else {  //update
-            if (nodeInfo.getIsBind() == NodeConst.IS_BIND) {
-                r.setCode(ApiCode.INVALID_PARAM);
-                r.setMsg(nodeId + " be bound!");
-                return r;
-            }
+        UserNodeExample example = new UserNodeExample();
+        example.createCriteria().andNodeIdEqualTo(nodeId).andUserIdEqualTo(userInfo.getId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
 
-            Long ownUserId = nodeInfo.getUserId();
-            if (ownUserId != null && ownUserId > 0 && ownUserId != userInfo.getId()) {
-                r.setCode(ApiCode.USR_INVALID);
-                r.setMsg(nodeId + " be bound!");
-                return r;
-            }
+        UserNode userNode = new UserNode();
+        userNode.setNodeName(req.getUserName());
 
-            NodeInfo rebindNode = new NodeInfo();
-            rebindNode.setNodeId(nodeId);
-            rebindNode.setBindTime(System.currentTimeMillis());
-            rebindNode.setIsBind(NodeConst.IS_BIND);
-            rebindNode.setUserId(userInfo.getId());
-            if (NodeDao.updateNodeInfo(rebindNode) != 1) {
-                r.setCode(ApiCode.DB_UPDATE_ERROR);
-                r.setMsg(nodeId + " bind error!");
-                return r;
-            }
+        UserDao.updateUserNodeSelective(userNode, example);
+
+        return r;
+    }
+
+    @POST
+    @Path("node/family/quit")
+    public Result<PageRsp<UserNode>> quitNodeFamily(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, UserNodeReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<PageRsp<UserNode>> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
         }
 
-        // upsert node_rt
-        NodeRt nodeRt = NodeDao.selectNodeRt(nodeId);
-        if (nodeRt == null) {
-            nodeRt = new NodeRt();
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        String nodeId = req.getNodeId();
+        if (StringUtil.isEmpty(nodeId)) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            r.setMsg("miss nodeId");
+            return r;
+        }
+
+        // check role is 0
+        UserNodeExample example = new UserNodeExample();
+        example.createCriteria().andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        List<UserNode> userNodeList = UserDao.selectUserNode(example);
+
+        PageRsp<UserNode> data = new PageRsp<>();
+        data.setPage(userNodeList);
+        data.setTotal(userNodeList == null ? 0 : userNodeList.size());
+
+        r.setData(data);
+        return r;
+    }
+
+    @POST
+    @Path("node/family/list")
+    public Result<Void> listNodeFamily(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, UserNodeReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<Void> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        String nodeId = req.getNodeId();
+        if (StringUtil.isEmpty(nodeId)) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            r.setMsg("miss nodeId");
+            return r;
+        }
+
+        Long deletedUser = req.getUserId();
+        if (deletedUser == null) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            r.setMsg("miss userId");
+            return r;
+        }
+
+        // check role is 0
+        UserNodeExample example = new UserNodeExample();
+        example.createCriteria().andNodeIdEqualTo(nodeId).andUserIdEqualTo(userInfo.getId())
+                .andRoleEqualTo(ApiConst.USER_NODE_ROLE_ROOT).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        List<UserNode> userNodeList = UserDao.selectUserNode(example);
+        if (userNodeList != null && !userNodeList.isEmpty()) {
+
+            UserNode deleted = new UserNode();
+            deleted.setIsDelete(ApiConst.IS_DELETE_Y);
+
+            UserNodeExample deletedExample = new UserNodeExample();
+            deletedExample.createCriteria().andNodeIdEqualTo(nodeId).andUserIdEqualTo(deletedUser);
+
+            UserDao.updateUserNodeSelective(deleted, deletedExample);
+        }
+
+        return r;
+    }
+
+    @POST
+    @Path("node/bind")
+    public Result<Void> bindNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<Void> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        String nodeId = req.getNodeId();
+        if (StringUtil.isEmpty(nodeId)) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            r.setMsg("miss nodeId");
+            return r;
+        }
+
+//        NodeInfo nodeInfo = NodeDao.selectNodeInfo(nodeId);
+//        if (nodeInfo == null) { //insert
+//            nodeInfo = new NodeInfo();
+//            nodeInfo.setNodeId(nodeId);
+//            nodeInfo.setBindTime(System.currentTimeMillis());
+//            nodeInfo.setIsBind(NodeConst.IS_BIND);
+//            nodeInfo.setUserId(userInfo.getId());
+//            if (NodeDao.insertNodeInfo(nodeInfo) != 1) {
+//                r.setCode(ApiCode.DB_INSERT_ERROR);
+//                r.setMsg(nodeId + " bind error!");
+//                return r;
+//            }
+//        } else {  //update
+//            if (nodeInfo.getIsBind() == NodeConst.IS_BIND) {
+//                r.setCode(ApiCode.INVALID_PARAM);
+//                r.setMsg(nodeId + " be bound!");
+//                return r;
+//            }
+//
+//            Long ownUserId = nodeInfo.getUserId();
+//            if (ownUserId != null && ownUserId > 0 && ownUserId != userInfo.getId()) {
+//                r.setCode(ApiCode.USR_INVALID);
+//                r.setMsg(nodeId + " be bound!");
+//                return r;
+//            }
+//
+//            NodeInfo rebindNode = new NodeInfo();
+//            rebindNode.setNodeId(nodeId);
+//            rebindNode.setBindTime(System.currentTimeMillis());
+//            rebindNode.setIsBind(NodeConst.IS_BIND);
+//            rebindNode.setUserId(userInfo.getId());
+//            if (NodeDao.updateNodeInfo(rebindNode) != 1) {
+//                r.setCode(ApiCode.DB_UPDATE_ERROR);
+//                r.setMsg(nodeId + " bind error!");
+//                return r;
+//            }
+//        }
+//
+//        // upsert node_rt
+//        NodeRt nodeRt = NodeDao.selectNodeRt(nodeId);
+//        if (nodeRt == null) {
+//            nodeRt = new NodeRt();
+//            nodeRt.setNodeId(nodeId);
+//            //nodeRt.setStatus(NodeConst.STATUS_OFFLINE);
+//            nodeRt.setUserId(userInfo.getId());
+//            NodeDao.insertNodeRt(nodeRt);
+//        } else {
+//            NodeRt rebindNode = new NodeRt();
+//            rebindNode.setNodeId(nodeId);
+//            rebindNode.setUserId(userInfo.getId());
+//            //rebindNode.setStatus(NodeConst.STATUS_OFFLINE);
+//            NodeDao.updateNodeRt(rebindNode);
+//        }
+
+        // insert user_node
+        UserNodeExample example = new UserNodeExample();
+        example.createCriteria().andNodeIdEqualTo(nodeId).andRoleEqualTo(ApiConst.USER_NODE_ROLE_ROOT).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        List<UserNode> relatedList = UserDao.selectUserNode(example);
+        if (relatedList != null && !relatedList.isEmpty()) {
+            r.setCode(ApiCode.USR_INVALID);
+            r.setMsg(nodeId + " be bound!");
+            return r;
+        }
+
+        UserNode userNode = new UserNode();
+        userNode.setUserId(userInfo.getId());
+        userNode.setUserName(userInfo.getName());
+        userNode.setUserAvatar(userInfo.getAvatar());
+        userNode.setNodeId(nodeId);
+        userNode.setNodeName(req.getName());
+        userInfo.setRole(ApiConst.USER_NODE_ROLE_ROOT);
+        if (UserDao.insertUserNode(userNode) == 1) {
+            NodeInfo nodeInfo = new NodeInfo();
+            nodeInfo.setNodeId(nodeId);
+            nodeInfo.setName(req.getName());
+            nodeInfo.setIsBind(NodeConst.IS_BIND);
+            nodeInfo.setBindTime(System.currentTimeMillis());
+            nodeInfo.setUserId(userInfo.getId());
+
+            NodeRt nodeRt = new NodeRt();
             nodeRt.setNodeId(nodeId);
-            //nodeRt.setStatus(NodeConst.STATUS_OFFLINE);
             nodeRt.setUserId(userInfo.getId());
-            NodeDao.insertNodeRt(nodeRt);
-        } else {
-            NodeRt rebindNode = new NodeRt();
-            rebindNode.setNodeId(nodeId);
-            rebindNode.setUserId(userInfo.getId());
-            //rebindNode.setStatus(NodeConst.STATUS_OFFLINE);
-            NodeDao.updateNodeRt(rebindNode);
+
+            NodeInfo existed = NodeDao.selectNodeInfo(nodeId);
+            if (existed == null) {
+                NodeDao.insertNodeInfo(nodeInfo);
+                NodeDao.insertNodeRt(nodeRt);
+            } else {
+                NodeDao.updateNodeInfo(nodeInfo);
+                NodeDao.updateNodeRt(nodeRt);
+            }
         }
 
         return r;
     }
 
     /**
+     * TODO 需要重新写逻辑
+     *
      * @param ui
      * @param version
      * @param token
@@ -740,76 +959,81 @@ public class UserResource extends BaseResource {
         LOG.info("{} {} {}", ui.getPath(), version, token);
         Result<Void> r = new Result<>();
 
-        ReqContext reqContext = ReqContext.create(version, token);
-        r.setCode(validateToken(reqContext));
-        if (r.getCode() != ApiCode.SUCC) {
-            return r;
-        }
-        UserInfo userInfo = reqContext.getUserInfo();
-
-        // TODO
-        String fileType = req.get(ApiField.F_fileType);
-        String file = req.get(ApiField.F_file);
-        if (StringUtil.isEmpty(fileType) || StringUtil.isEmpty(file)) {
-            r.setCode(ApiCode.HTTP_MISS_PARAM);
-            r.setMsg("miss param");
-            return r;
-        }
-
-        switch (fileType) { //TODO aysnc to insert or limit req
-            case "1": { //换行符
-                String[] nodeIdList = file.split("[\r\n]+");
-                if (nodeIdList.length < 1 || nodeIdList.length > 1000) { //TODO config
-                    r.setCode(ApiCode.INVALID_PARAM);
-                    r.setMsg("nodes must be less than 1000");
-                    return r;
-                }
-
-                // 去重
-                Set<NodeInfo> nodeInfoList = new HashSet<>(nodeIdList.length);
-                Set<NodeRt> nodeRtList = new HashSet<>(nodeIdList.length);
-
-                long bindTime = System.currentTimeMillis();
-                for (int i = 0; i < nodeIdList.length; ++i) {
-                    String nodeId = nodeIdList[i].trim();
-                    if (StringUtil.isEmpty(nodeId)) continue; //skip empty nodeId
-
-                    if (NodeDao.selectNodeInfo(nodeId) != null) continue;  // 去重
-
-                    NodeInfo nodeInfo = new NodeInfo();
-                    nodeInfo.setNodeId(nodeId);
-                    nodeInfo.setBindTime(bindTime);
-                    nodeInfo.setIsBind(NodeConst.IS_BIND);
-                    nodeInfo.setUserId(userInfo.getId());
-
-                    nodeInfoList.add(nodeInfo);
-
-                    // node rt
-                    NodeRt nodeRt = new NodeRt();
-                    nodeRt.setNodeId(nodeId);
-                    nodeRt.setStatus(NodeConst.STATUS_OFFLINE);
-                    nodeRt.setUserId(userInfo.getId());
-                    nodeRtList.add(nodeRt);
-                }
-
-                if (nodeInfoList.isEmpty()) {
-                    r.setCode(ApiCode.INVALID_PARAM);
-                    r.setMsg("won't add any new node");
-                    return r;
-                }
-
-                if (NodeDao.batchInsertNodeInfo(nodeInfoList)) {
-                    NodeDao.batchInsertNodeRt(nodeRtList);
-                } else {
-                    r.setCode(ApiCode.DB_INSERT_ERROR);
-                    r.setMsg("batch insert error! check nodes' numbers");
-                    return r;
-                }
-                break;
-            }
-        }
-
+        //
+        r.setCode(ApiCode.ERROR_UNKNOWN);
+        r.setMsg("deprecated");
         return r;
+
+//        ReqContext reqContext = ReqContext.create(version, token);
+//        r.setCode(validateToken(reqContext));
+//        if (r.getCode() != ApiCode.SUCC) {
+//            return r;
+//        }
+//        UserInfo userInfo = reqContext.getUserInfo();
+//
+//        // TODO
+//        String fileType = req.get(ApiField.F_fileType);
+//        String file = req.get(ApiField.F_file);
+//        if (StringUtil.isEmpty(fileType) || StringUtil.isEmpty(file)) {
+//            r.setCode(ApiCode.HTTP_MISS_PARAM);
+//            r.setMsg("miss param");
+//            return r;
+//        }
+//
+//        switch (fileType) { //TODO aysnc to insert or limit req
+//            case "1": { //换行符
+//                String[] nodeIdList = file.split("[\r\n]+");
+//                if (nodeIdList.length < 1 || nodeIdList.length > 1000) { //TODO config
+//                    r.setCode(ApiCode.INVALID_PARAM);
+//                    r.setMsg("nodes must be less than 1000");
+//                    return r;
+//                }
+//
+//                // 去重
+//                Set<NodeInfo> nodeInfoList = new HashSet<>(nodeIdList.length);
+//                Set<NodeRt> nodeRtList = new HashSet<>(nodeIdList.length);
+//
+//                long bindTime = System.currentTimeMillis();
+//                for (int i = 0; i < nodeIdList.length; ++i) {
+//                    String nodeId = nodeIdList[i].trim();
+//                    if (StringUtil.isEmpty(nodeId)) continue; //skip empty nodeId
+//
+//                    if (NodeDao.selectNodeInfo(nodeId) != null) continue;  // 去重
+//
+//                    NodeInfo nodeInfo = new NodeInfo();
+//                    nodeInfo.setNodeId(nodeId);
+//                    nodeInfo.setBindTime(bindTime);
+//                    nodeInfo.setIsBind(NodeConst.IS_BIND);
+//                    nodeInfo.setUserId(userInfo.getId());
+//
+//                    nodeInfoList.add(nodeInfo);
+//
+//                    // node rt
+//                    NodeRt nodeRt = new NodeRt();
+//                    nodeRt.setNodeId(nodeId);
+//                    nodeRt.setStatus(NodeConst.STATUS_OFFLINE);
+//                    nodeRt.setUserId(userInfo.getId());
+//                    nodeRtList.add(nodeRt);
+//                }
+//
+//                if (nodeInfoList.isEmpty()) {
+//                    r.setCode(ApiCode.INVALID_PARAM);
+//                    r.setMsg("won't add any new node");
+//                    return r;
+//                }
+//
+//                if (NodeDao.batchInsertNodeInfo(nodeInfoList)) {
+//                    NodeDao.batchInsertNodeRt(nodeRtList);
+//                } else {
+//                    r.setCode(ApiCode.DB_INSERT_ERROR);
+//                    r.setMsg("batch insert error! check nodes' numbers");
+//                    return r;
+//                }
+//                break;
+//            }
+//        }
+//
+//        return r;
     }
 
     @POST
@@ -866,6 +1090,14 @@ public class UserResource extends BaseResource {
         nodeRt.setUserId(0L);
         NodeDao.updateNodeRt(nodeRt);
 
+        // delete user_node
+        UserNodeExample example = new UserNodeExample();
+        example.createCriteria().andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        UserNode deleted = new UserNode();
+        deleted.setNodeId(nodeId);
+        deleted.setIsDelete(ApiConst.IS_DELETE_Y);
+        UserDao.updateUserNodeSelective(deleted, example);
+
         return r;
     }
 
@@ -905,6 +1137,99 @@ public class UserResource extends BaseResource {
             NodeDao.batchUpdateNodeRt(updated);
         }
 
+        return r;
+    }
+
+    @POST
+    @Path("node/family/list")
+    public Result<PageRsp<NodeInfoRt>> listFamilyNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, PageReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<PageRsp<NodeInfoRt>> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        Integer pageNo = req.getPageNo();
+        Integer pageSize = req.getPageSize();
+
+        NodeRtInfoExample example = new NodeRtInfoExample();
+        NodeRtInfoExample.Criteria exampleCritera = example.createCriteria();
+
+        NodeRtExample countExample = new NodeRtExample(); //TODO opt
+        NodeRtExample.Criteria countExampleCriteria = countExample.createCriteria();
+
+        UserNodeExample userNodeExample = new UserNodeExample();
+        userNodeExample.createCriteria().andUserIdEqualTo(userInfo.getId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        List<UserNode> familyNode = UserDao.selectUserNode(userNodeExample);
+        if (familyNode == null || familyNode.isEmpty()) {
+            PageRsp<NodeInfoRt> data = new PageRsp<>();
+            data.setTotal(0L);
+            r.setData(data);
+            return r;
+        }
+
+        List<String> nodeIds = new ArrayList<>();
+        familyNode.forEach(userNode -> {
+            if (!nodeIds.contains(userNode.getNodeId())) {
+                nodeIds.add(userNode.getNodeId());
+            }
+        });
+
+        exampleCritera.andNodeIdIn(nodeIds);  // 假设一个几个节点
+        countExampleCriteria.andNodeIdIn(nodeIds);
+        // not delete
+        exampleCritera.andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        countExampleCriteria.andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        // page
+        example.setOrderByClause("create_time desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
+
+        List<NodeInfoRt> nodeList = NodeDao.selectNodeRtLeftJoinInfo(example);
+        long count = NodeDao.countNodeRt(countExample); //TODO cache
+
+        // firmwareUpgrade
+        if (nodeList != null) {
+            List<String> models = new ArrayList<>();
+            nodeList.forEach(info -> {
+                if (!models.contains(info.getModel()))
+                    models.add(info.getModel());
+            });
+
+            List<NodeFirmware> firmwareList = new ArrayList<>(models.size());
+            models.forEach(m -> {
+                NodeFirmwareExample firmwareExample = new NodeFirmwareExample();
+                firmwareExample.createCriteria().andModelEqualTo(m).andStartTimeGreaterThanOrEqualTo(System.currentTimeMillis())
+                        .andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+                firmwareExample.setOrderByClause("start_time desc limit 1");
+                List<NodeFirmware> latestFirmware = NodeDao.selectNodeFirmware(firmwareExample);
+                if (latestFirmware != null && latestFirmware.size() > 0)
+                    firmwareList.add(latestFirmware.get(0));
+            });
+
+            nodeList.forEach(info -> {
+                NodeFirmware newF = null;
+                for (NodeFirmware f : firmwareList) {
+                    if (f.getModel().equals(info.getModel())) {
+                        newF = f;
+                        break;
+                    }
+                }
+                if (newF != null) {
+                    if (NodeUtil.compareFireware(newF.getFirmware(), info.getFirmware()) > 0) {
+                        info.setFirmwareUpgrade(newF.getFirmware());
+                    }
+                }
+            });
+        }
+
+        PageRsp<NodeInfoRt> data = new PageRsp<>();
+        data.setTotal(count);
+        data.setPage(nodeList);
+        r.setData(data);
         return r;
     }
 
@@ -1077,10 +1402,21 @@ public class UserResource extends BaseResource {
             return r;
         }
 
+        UserInfo userInfo = reqContext.getUserInfo();
+
         String nodeId = req.getNodeId();
         if (StringUtil.isEmpty(nodeId)) {
             r.setCode(ApiCode.INVALID_PARAM);
             r.setMsg("nodeId is nil");
+            return r;
+        }
+
+        UserNodeExample userNodeExample = new UserNodeExample();
+        userNodeExample.createCriteria().andNodeIdEqualTo(nodeId).andUserIdEqualTo(userInfo.getId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        List<UserNode> userNodeList = UserDao.selectUserNode(userNodeExample);
+        if (userNodeList == null || userNodeList.isEmpty()) {
+            r.setCode(ApiCode.USR_INVALID);
+            r.setMsg("invalid user");
             return r;
         }
 
@@ -1179,7 +1515,7 @@ public class UserResource extends BaseResource {
 
     @POST
     @Path("node/info/set")
-    public Result<Void> setNodeInfo(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, Map<String, String> req) {
+    public Result<Void> setNodeInfo(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
         Result<Void> r = new Result<>();
 
@@ -1190,7 +1526,7 @@ public class UserResource extends BaseResource {
         }
 
         UserInfo userInfo = reqContext.getUserInfo();
-        String nodeId = req.get("nodeId");
+        String nodeId = req.getNodeId();
         if (StringUtil.isEmpty(nodeId)) {
             r.setCode(ApiCode.HTTP_MISS_PARAM);
             r.setMsg("miss nodeId");
@@ -1210,18 +1546,33 @@ public class UserResource extends BaseResource {
             return r;
         }
 
-        if (nodeInfo.getUserId() != userInfo.getId()) {
+//        if (nodeInfo.getUserId() != userInfo.getId()) {
+//            r.setCode(ApiCode.USR_INVALID);
+//            r.setMsg("cann't not unbind others' node");
+//            return r;
+//        }
+
+        UserNodeExample userNodeExample = new UserNodeExample();
+        userNodeExample.createCriteria().andNodeIdEqualTo(nodeId).andUserIdEqualTo(userInfo.getId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        List<UserNode> userNodeList = UserDao.selectUserNode(userNodeExample);
+        if (userNodeList == null || userNodeList.isEmpty()) {
             r.setCode(ApiCode.USR_INVALID);
-            r.setMsg("cann't not unbind others' node");
+            r.setMsg("invalid user");
             return r;
         }
 
-        String name = req.get(ApiField.F_name);
+        String name = req.getName();
         if (!StringUtil.isEmpty(name)) {
             NodeInfo updated = new NodeInfo();
-            updated.setNodeId(nodeInfo.getNodeId());
+            updated.setNodeId(nodeId);
             updated.setName(name);
             NodeDao.updateNodeInfo(updated);
+
+            UserNode userNode = new UserNode();
+            userNode.setNodeName(name);
+            UserNodeExample example = new UserNodeExample();
+            example.createCriteria().andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+            UserDao.updateUserNodeSelective(userNode, example);
         }
         return r;
     }

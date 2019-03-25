@@ -8,6 +8,16 @@ public class NodeReq {
 
     private String nodeId;
 
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getNodeId() {
         return nodeId;
     }

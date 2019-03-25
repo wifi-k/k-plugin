@@ -355,6 +355,7 @@ public class NodeDaoServiceImpl implements NodeDaoService {
                 nodeInfo.setUpdateTime(System.currentTimeMillis());
                 int r = session.getMapper(NodeInfoMapper.class).updateByPrimaryKeySelective(nodeInfo);
                 session.commit();
+
                 return r;
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
@@ -376,6 +377,29 @@ public class NodeDaoServiceImpl implements NodeDaoService {
             }
         }
         return -1L;
+    }
+
+    @Override
+    public void batchUpdateNodeInfo(List<NodeInfo> nodeList) {
+        if (nodeList == null || nodeList.isEmpty()) return;
+
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                for (NodeInfo nodeInfo : nodeList) {
+                    nodeInfo.setUpdateTime(st);
+                    session.getMapper(NodeInfoMapper.class).updateByPrimaryKeySelective(nodeInfo);
+                }
+                session.commit();
+
+                nodeList.forEach(node -> { //TODO pipeline
+                    deleteFromRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_INFO_ + node.getNodeId());
+                });
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
     }
 
     @Override

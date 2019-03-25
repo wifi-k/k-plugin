@@ -59,6 +59,8 @@ public interface NodeDao {
 
     long countNodeInfo(NodeInfoExample example);
 
+    void batchUpdateNodeInfo(List<NodeInfo> nodeList);
+
     // node_rt
     List<NodeInfoRt> selectNodeInfoLeftJoinRt(NodeInfoRtExample example);
 

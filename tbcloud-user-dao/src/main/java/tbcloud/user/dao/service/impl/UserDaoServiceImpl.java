@@ -114,6 +114,96 @@ public class UserDaoServiceImpl implements UserDaoService {
 
 
     @Override
+    public List<UserNode> selectUserNode(UserNodeExample example) {
+        List<UserNode> list = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            list = session.getMapper(UserNodeMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return list;
+    }
+
+    @Override
+    public UserNode selectUserNode(long id) {
+        UserNode userNode = null;
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            userNode = session.getMapper(UserNodeMapper.class).selectByPrimaryKey(id);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return userNode;
+    }
+
+    @Override
+    public int insertUserNode(UserNode userNode) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                userNode.setCreateTime(st);
+                userNode.setUpdateTime(st);
+
+                int r = session.getMapper(UserNodeMapper.class).insertSelective(userNode);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(userNode));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateUserNode(UserNode userNode) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                userNode.setCreateTime(st);
+                userNode.setUpdateTime(st);
+
+                int r = session.getMapper(UserNodeMapper.class).insertSelective(userNode);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(userNode));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateUserNodeSelective(UserNode userNode, UserNodeExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                userNode.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(UserNodeMapper.class).updateByExampleSelective(userNode, example);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public long countUserNode(UserNodeExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            return session.getMapper(UserNodeMapper.class).countByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return 0;
+    }
+
+    @Override
     public List<UserMessage> selectUserMessage(UserMessageExample example) {
         List<UserMessage> messageList = Collections.emptyList();
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {

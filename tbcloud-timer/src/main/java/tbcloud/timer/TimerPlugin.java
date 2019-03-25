@@ -34,6 +34,8 @@ public class TimerPlugin extends DefPlugin {
 
         startTimer(NodeOffline.class);
         startTimer(UserOffline.class);
+
+        startTimer(CheckNodeInfo.class);
     }
 
     private void startTimer(Class<? extends MutexTimer> clazz) {

@@ -148,7 +148,9 @@ public abstract class MutexTimer implements AutoCloseable {
      *
      * @return
      */
-    protected abstract String name();
+    protected String name() {
+        return getClass().getSimpleName();
+    }
 
     @Override
     public void close() throws Exception {

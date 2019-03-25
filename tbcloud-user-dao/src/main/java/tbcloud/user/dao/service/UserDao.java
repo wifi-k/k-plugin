@@ -10,6 +10,18 @@ import java.util.List;
  */
 public interface UserDao {
 
+    List<UserNode> selectUserNode(UserNodeExample example);
+
+    UserNode selectUserNode(long userId);
+
+    int insertUserNode(UserNode userNode);
+
+    int updateUserNode(UserNode userNode);
+
+    int updateUserNodeSelective(UserNode userNode, UserNodeExample example);
+
+    long countUserNode(UserNodeExample example);
+
     List<UserMessage> selectUserMessage(UserMessageExample example);
 
     UserMessage selectUserMessage(long id);
