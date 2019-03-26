@@ -789,7 +789,7 @@ public class UserResource extends BaseResource {
 
     @POST
     @Path("node/family/quit")
-    public Result<PageRsp<UserNode>> quitNodeFamily(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, UserNodeReq req) {
+    public Result<PageRsp<UserNode>> listNodeFamily(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, UserNodeReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
         Result<PageRsp<UserNode>> r = new Result<>();
 
@@ -808,7 +808,6 @@ public class UserResource extends BaseResource {
             return r;
         }
 
-        // check role is 0
         UserNodeExample example = new UserNodeExample();
         example.createCriteria().andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
         List<UserNode> userNodeList = UserDao.selectUserNode(example);
@@ -822,8 +821,8 @@ public class UserResource extends BaseResource {
     }
 
     @POST
-    @Path("node/family/list")
-    public Result<Void> listNodeFamily(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, UserNodeReq req) {
+    @Path("node/family/quit")
+    public Result<Void> quitNodeFamily(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, UserNodeReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
         Result<Void> r = new Result<>();
 
