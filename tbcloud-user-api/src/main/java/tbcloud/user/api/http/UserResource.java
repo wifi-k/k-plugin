@@ -788,7 +788,7 @@ public class UserResource extends BaseResource {
     }
 
     @POST
-    @Path("node/family/quit")
+    @Path("node/family/list")
     public Result<PageRsp<UserNode>> listNodeFamily(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, UserNodeReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
         Result<PageRsp<UserNode>> r = new Result<>();
