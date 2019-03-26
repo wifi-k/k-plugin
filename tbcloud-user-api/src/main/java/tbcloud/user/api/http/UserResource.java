@@ -861,6 +861,12 @@ public class UserResource extends BaseResource {
         List<UserNode> userNodeList = UserDao.selectUserNode(example);
         if (userNodeList != null && !userNodeList.isEmpty()) {
 
+            if (deletedUser == userInfo.getId()) { //root不能删除自己
+                r.setCode(ApiCode.USR_INVALID);
+                r.setMsg("invalid user");
+                return r;
+            }
+
             UserNode deleted = new UserNode();
             deleted.setIsDelete(ApiConst.IS_DELETE_Y);
 
@@ -961,10 +967,12 @@ public class UserResource extends BaseResource {
         UserNode userNode = new UserNode();
         userNode.setUserId(userInfo.getId());
         userNode.setUserName(userInfo.getName());
+        userNode.setUserMobile(userInfo.getMobile());
         userNode.setUserAvatar(userInfo.getAvatar());
         userNode.setNodeId(nodeId);
         userNode.setNodeName(req.getName());
         userInfo.setRole(ApiConst.USER_NODE_ROLE_ROOT);
+
         if (UserDao.insertUserNode(userNode) == 1) {
             NodeInfo nodeInfo = new NodeInfo();
             nodeInfo.setNodeId(nodeId);
