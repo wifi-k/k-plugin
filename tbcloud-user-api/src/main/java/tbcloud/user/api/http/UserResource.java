@@ -811,6 +811,12 @@ public class UserResource extends BaseResource {
         UserNodeExample example = new UserNodeExample();
         example.createCriteria().andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
         List<UserNode> userNodeList = UserDao.selectUserNode(example);
+        if (userNodeList != null) {
+            userNodeList.forEach(node -> {
+                if (!StringUtil.isEmpty(node.getUserAvatar()))
+                    node.setUserAvatar(Qiniu.privateDownloadUrl(ApiConst.QINIU_ID_USER, node.getUserAvatar(), -1));
+            });
+        }
 
         PageRsp<UserNode> data = new PageRsp<>();
         data.setPage(userNodeList);
@@ -1183,7 +1189,7 @@ public class UserResource extends BaseResource {
     }
 
     @POST
-    @Path("node/family/list")
+    @Path("node/listall")
     public Result<PageRsp<NodeInfoRt>> listFamilyNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, PageReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
         Result<PageRsp<NodeInfoRt>> r = new Result<>();
