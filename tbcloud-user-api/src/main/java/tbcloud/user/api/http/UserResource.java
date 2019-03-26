@@ -974,6 +974,8 @@ public class UserResource extends BaseResource {
 
             NodeInfo existed = NodeDao.selectNodeInfo(nodeId);
             if (existed == null) {
+                nodeInfo.setInviteCode(IDUtil.genNodeInviteCode());
+
                 NodeDao.insertNodeInfo(nodeInfo);
                 NodeDao.insertNodeRt(nodeRt);
             } else {
