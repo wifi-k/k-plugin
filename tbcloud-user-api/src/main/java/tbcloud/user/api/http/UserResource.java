@@ -1160,7 +1160,7 @@ public class UserResource extends BaseResource {
 
     @POST
     @Path("node/select")
-    public Result<Void> SelectNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeReq req) {
+    public Result<Void> selectNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
         Result<Void> r = new Result<>();
 
@@ -1258,7 +1258,8 @@ public class UserResource extends BaseResource {
                 if (!models.contains(info.getModel())) {
                     models.add(info.getModel());
                 }
-                info.setIsSelect(info.getNodeId().equals(selectedNode.getNodeId()) ? ApiConst.IS_SELECT_Y : ApiConst.IS_SELECT_N);
+                info.setIsSelect((selectedNode != null && info.getNodeId().equals(selectedNode.getNodeId())) ?
+                        ApiConst.IS_SELECT_Y : ApiConst.IS_SELECT_N);
             }
 
             List<NodeFirmware> firmwareList = new ArrayList<>(models.size());
