@@ -18,6 +18,8 @@ public interface UserDao {
 
     int updateUserNode(UserNode userNode);
 
+    void batchUpdateUserNode(List<UserNode> userNode);
+
     int updateUserNodeSelective(UserNode userNode, UserNodeExample example);
 
     long countUserNode(UserNodeExample example);

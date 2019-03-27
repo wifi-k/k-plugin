@@ -178,6 +178,29 @@ public class UserDaoServiceImpl implements UserDaoService {
     }
 
     @Override
+    public void batchUpdateUserNode(List<UserNode> nodes) {
+        if (nodes == null || nodes.isEmpty()) return;
+
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                for (UserNode node : nodes) {
+                    node.setUpdateTime(st);
+                    session.getMapper(UserNodeMapper.class).updateByPrimaryKeySelective(node);
+                }
+                session.commit();
+
+//                nodeList.forEach(node -> { //TODO pipeline
+//                    deleteFromRedis(ApiConst.REDIS_ID_NODE, ApiConst.REDIS_KEY_NODE_INFO_ + node.getNodeId());
+//                });
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+    }
+
+    @Override
     public int updateUserNodeSelective(UserNode userNode, UserNodeExample example) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
             try {

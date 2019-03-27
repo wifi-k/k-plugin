@@ -1179,19 +1179,19 @@ public class UserResource extends BaseResource {
             return r;
         }
 
-        NodeRtExample example = new NodeRtExample();
+        UserNodeExample example = new UserNodeExample();
         example.createCriteria().andUserIdEqualTo(userInfo.getId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
-        List<NodeRt> nodeRts = NodeDao.selectNodeRt(example);
-        if (nodeRts != null) {
-            List<NodeRt> updated = new ArrayList<>(nodeRts.size());
+        List<UserNode> nodes = UserDao.selectUserNode(example);
+        if (nodes != null) {
+            List<UserNode> updated = new ArrayList<>(nodes.size());
 
-            nodeRts.forEach(rt -> {
-                NodeRt up = new NodeRt();
+            nodes.forEach(rt -> {
+                UserNode up = new UserNode();
                 up.setNodeId(rt.getNodeId());
                 up.setIsSelect(rt.getNodeId().equals(selectedNode) ? ApiConst.IS_SELECT_Y : ApiConst.IS_SELECT_N);
             });
 
-            NodeDao.batchUpdateNodeRt(updated);
+            UserDao.batchUpdateUserNode(updated);
         }
 
         return r;
@@ -1199,7 +1199,7 @@ public class UserResource extends BaseResource {
 
     @POST
     @Path("node/listall")
-    public Result<PageRsp<NodeInfoRt>> listFamilyNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, PageReq req) {
+    public Result<PageRsp<NodeInfoRt>> listAllNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, PageReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
         Result<PageRsp<NodeInfoRt>> r = new Result<>();
 
@@ -1230,12 +1230,15 @@ public class UserResource extends BaseResource {
             return r;
         }
 
+        UserNode selectedNode = null;
         List<String> nodeIds = new ArrayList<>();
-        familyNode.forEach(userNode -> {
+        for (UserNode userNode : familyNode) {
             if (!nodeIds.contains(userNode.getNodeId())) {
                 nodeIds.add(userNode.getNodeId());
             }
-        });
+            if (userNode.getIsSelect() == ApiConst.IS_SELECT_Y)
+                selectedNode = userNode;
+        }
 
         exampleCritera.andNodeIdIn(nodeIds);  // 假设一个人几个节点
         countExampleCriteria.andNodeIdIn(nodeIds);
@@ -1251,10 +1254,12 @@ public class UserResource extends BaseResource {
         // firmwareUpgrade
         if (nodeList != null) {
             List<String> models = new ArrayList<>();
-            nodeList.forEach(info -> {
-                if (!models.contains(info.getModel()))
+            for (NodeInfoRt info : nodeList) {
+                if (!models.contains(info.getModel())) {
                     models.add(info.getModel());
-            });
+                }
+                info.setIsSelect(info.getNodeId().equals(selectedNode.getNodeId()) ? ApiConst.IS_SELECT_Y : ApiConst.IS_SELECT_N);
+            }
 
             List<NodeFirmware> firmwareList = new ArrayList<>(models.size());
             models.forEach(m -> {
