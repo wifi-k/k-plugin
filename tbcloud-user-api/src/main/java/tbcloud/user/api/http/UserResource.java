@@ -19,6 +19,7 @@ import tbcloud.node.model.*;
 import tbcloud.node.model.ext.NodeInfoRt;
 import tbcloud.node.model.util.NodeUtil;
 import tbcloud.node.protocol.data.ins.Ins;
+import tbcloud.node.protocol.data.ins.InsVal;
 import tbcloud.user.api.http.req.*;
 import tbcloud.user.api.http.rsp.*;
 import tbcloud.user.model.*;
@@ -1409,8 +1410,67 @@ public class UserResource extends BaseResource {
     }
 
     @POST
-    @Path("node/ssid/list")
-    public Result<PageRsp<NodeWifi>> listNodeSsid(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, Map<String, String> req) {
+    @Path("node/wifi/timer/get")
+    public Result<NodeWifiTimer> getNodeWifiTimer(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<NodeWifiTimer> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        String nodeId = req.getNodeId();
+        if (StringUtil.isEmpty(nodeId)) {
+            r.setCode(ApiCode.INVALID_PARAM);
+            r.setMsg("nodeId is nil");
+            return r;
+        }
+
+        NodeWifiTimer timer = NodeDao.selectNodeWifiTimer(nodeId);
+        if (timer == null) {
+            timer = new NodeWifiTimer();
+            timer.setNodeId(nodeId);
+            timer.setOp(InsVal.OP_DISABLE);
+        }
+        r.setData(timer);
+        return r;
+    }
+
+    @POST
+    @Path("node/wifi/timer/set")
+    public Result<Void> setNodeWifiTimer(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeWifiTimerReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<Void> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        String nodeId = req.getNodeId();
+        if (StringUtil.isEmpty(nodeId)) {
+            r.setCode(ApiCode.INVALID_PARAM);
+            r.setMsg("nodeId is nil");
+            return r;
+        }
+
+        NodeWifiTimer timer = new NodeWifiTimer();
+        timer.setNodeId(nodeId);
+        timer.setOp(req.getOp());
+        timer.setWifi(req.getWifi());
+
+        Plugin.sendToUser(new TextMsg().setType(MsgType.NODE_WIFI_TIMER).setValue(GsonUtil.toJson(timer)), userInfo.getId());
+        return r;
+    }
+
+    @POST
+    @Path("node/wifi/list")
+    public Result<PageRsp<NodeWifi>> listNodeWifi(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, Map<String, String> req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
         Result<PageRsp<NodeWifi>> r = new Result<>();
 
@@ -1445,10 +1505,9 @@ public class UserResource extends BaseResource {
         return r;
     }
 
-
     @POST
-    @Path("node/ssid/set")
-    public Result<Void> setNodeSsid(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeWifiReq req) {
+    @Path("node/wifi/set")
+    public Result<Void> setNodeWifi(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeWifiReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
         Result<Void> r = new Result<>();
 

@@ -13,6 +13,17 @@ import java.util.Set;
  */
 public interface NodeDao {
 
+    // node_wifi_timer
+    NodeWifiTimer selectNodeWifiTimer(String nodeId);
+
+    int insertNodeWifiTimer(NodeWifiTimer timer);
+
+    List<NodeWifiTimer> selectNodeWifiTimer(NodeWifiTimerExample example);
+
+    int updateNodeWifiTimer(NodeWifiTimer timer);
+
+    int updateNodeWifiTimerSelective(NodeWifiTimer timer, NodeWifiTimerExample example);
+
     // node_firmware
     NodeFirmware selectNodeFirmware(long id);
 

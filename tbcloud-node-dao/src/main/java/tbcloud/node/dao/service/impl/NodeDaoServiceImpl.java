@@ -44,6 +44,82 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     static JedisService Jedis;
 
     @Override
+    public NodeWifiTimer selectNodeWifiTimer(String nodeId) {
+        NodeWifiTimer timer = null;
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            timer = session.getMapper(NodeWifiTimerMapper.class).selectByPrimaryKey(nodeId);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return timer;
+
+    }
+
+    @Override
+    public int insertNodeWifiTimer(NodeWifiTimer timer) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                timer.setCreateTime(st);
+                timer.setUpdateTime(st);
+
+                int r = session.getMapper(NodeWifiTimerMapper.class).insertSelective(timer);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(timer));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public List<NodeWifiTimer> selectNodeWifiTimer(NodeWifiTimerExample example) {
+        List<NodeWifiTimer> timerList = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            timerList = session.getMapper(NodeWifiTimerMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return timerList;
+    }
+
+    @Override
+    public int updateNodeWifiTimer(NodeWifiTimer timer) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                timer.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeWifiTimerMapper.class).updateByPrimaryKeySelective(timer);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateNodeWifiTimerSelective(NodeWifiTimer timer, NodeWifiTimerExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                timer.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeWifiTimerMapper.class).updateByExampleSelective(timer, example);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
     public NodeFirmware selectNodeFirmware(long id) {
         NodeFirmware firmware = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {

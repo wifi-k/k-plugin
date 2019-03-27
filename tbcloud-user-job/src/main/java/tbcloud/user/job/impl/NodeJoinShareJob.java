@@ -7,11 +7,12 @@ import tbcloud.lib.api.ConfField;
 import tbcloud.lib.api.msg.MsgType;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.IDUtil;
-import tbcloud.lib.api.util.StringUtil;
-import tbcloud.node.model.*;
+import tbcloud.node.model.NodeApp;
+import tbcloud.node.model.NodeAppExample;
+import tbcloud.node.model.NodeInfo;
 import tbcloud.node.protocol.data.ins.HttpProxy;
 import tbcloud.node.protocol.data.ins.Ins;
-import tbcloud.user.job.UserJob;
+import tbcloud.user.job.InsJob;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ import java.util.List;
  * @author dzh
  * @date 2018-12-13 17:47
  */
-public class NodeJoinShareJob extends UserJob {
+public class NodeJoinShareJob extends InsJob {
     @Override
     public int msgType() {
         return MsgType.NODE_JOIN_SHARE;
@@ -69,34 +70,7 @@ public class NodeJoinShareJob extends UserJob {
         ins.setIns(Ins.INS_HTTPPROXY);
         ins.setVal(GsonUtil.toJson(insHttpProxy));
 
-        NodeIns nodeIns = new NodeIns();
-        nodeIns.setId(ins.getId());
-        nodeIns.setNodeId(nodeId);
-        nodeIns.setIns(ins.getIns());
-        nodeIns.setStatus(NodeConst.INS_STATUS_SEND);
-        nodeIns.setVal(ins.getVal());
-        nodeIns.setSendTime(System.currentTimeMillis());
-        nodeIns.setRetry(0);
-        NodeDao.insertNodeIns(nodeIns);
-
-        // send ins
-        addToRedis(nodeId, ins);
-    }
-
-    boolean addToRedis(String nodeId, Ins ins) { //TODO mq 在一个地方统一发送,一个节点的发送保持有序
-        if (StringUtil.isEmpty(nodeId) || ins == null) {
-            LOG.error("nodeId is nil");
-            return false;
-        }
-        try (redis.clients.jedis.Jedis jedis = Jedis.getJedis(ApiConst.REDIS_ID_NODE)) { //TODO 并行指令、指令预测
-            long count = jedis.scard(ApiConst.REDIS_KEY_NODE_INS_ + nodeId);
-            if (count == 0) {
-                jedis.sadd(ApiConst.REDIS_KEY_NODE_INS_ + nodeId, GsonUtil.toJson(ins));
-                LOG.info("node {}, add ins {} {} {}", nodeId, ins.getId(), ins.getIns(), ins.getVal());
-                return true;
-            }
-        }
-        return false;
+        saveThenSend(nodeId, ins);
     }
 
 }
