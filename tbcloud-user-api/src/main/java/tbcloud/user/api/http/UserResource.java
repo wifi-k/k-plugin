@@ -1185,10 +1185,10 @@ public class UserResource extends BaseResource {
         if (nodes != null) {
             List<UserNode> updated = new ArrayList<>(nodes.size());
 
-            nodes.forEach(rt -> {
+            nodes.forEach(node -> {
                 UserNode up = new UserNode();
-                up.setNodeId(rt.getNodeId());
-                up.setIsSelect(rt.getNodeId().equals(selectedNode) ? ApiConst.IS_SELECT_Y : ApiConst.IS_SELECT_N);
+                up.setId(node.getId());
+                up.setIsSelect(node.getNodeId().equals(selectedNode) ? ApiConst.IS_SELECT_Y : ApiConst.IS_SELECT_N);
             });
 
             UserDao.batchUpdateUserNode(updated);
