@@ -40,8 +40,8 @@ public class NodeWifiTimerJob extends InsJob {
         String nodeId = timer.getNodeId();
         if (StringUtil.isEmpty(nodeId)) return;
 
-        timer = NodeDao.selectNodeWifiTimer(timer.getNodeId());
-        if (timer == null) { //insert
+        NodeWifiTimer existedTimer = NodeDao.selectNodeWifiTimer(timer.getNodeId());
+        if (existedTimer == null) { //insert
             NodeDao.insertNodeWifiTimer(timer);
         } else {
             NodeDao.updateNodeWifiTimer(timer);
