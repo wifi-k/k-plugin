@@ -1182,13 +1182,15 @@ public class UserResource extends BaseResource {
         UserNodeExample example = new UserNodeExample();
         example.createCriteria().andUserIdEqualTo(userInfo.getId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
         List<UserNode> nodes = UserDao.selectUserNode(example);
-        if (nodes != null) {
+        if (nodes != null && !nodes.isEmpty()) {
             List<UserNode> updated = new ArrayList<>(nodes.size());
 
             nodes.forEach(node -> {
                 UserNode up = new UserNode();
                 up.setId(node.getId());
                 up.setIsSelect(node.getNodeId().equals(selectedNode) ? ApiConst.IS_SELECT_Y : ApiConst.IS_SELECT_N);
+
+                updated.add(up);
             });
 
             UserDao.batchUpdateUserNode(updated);
