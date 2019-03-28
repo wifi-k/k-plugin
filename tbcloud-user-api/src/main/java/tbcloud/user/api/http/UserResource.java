@@ -881,6 +881,76 @@ public class UserResource extends BaseResource {
     }
 
     @POST
+    @Path("node/device/list")
+    public Result<PageRsp<NodeDevice>> listNodeDevice(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<PageRsp<NodeDevice>> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        String nodeId = req.getNodeId();
+        if (StringUtil.isEmpty(nodeId)) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            r.setMsg("miss nodeId");
+            return r;
+        }
+
+        Integer pageNo = req.getPageNo();
+        Integer pageSize = req.getPageSize();
+
+        NodeDeviceExample example = new NodeDeviceExample();
+        example.createCriteria().andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        example.setOrderByClause("update_time desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
+        List<NodeDevice> devices = NodeDao.selectNodeDevice(example);
+        long total = NodeDao.countNodeDevice(example);
+
+        PageRsp<NodeDevice> data = new PageRsp<>();
+        data.setTotal(total);
+        data.setPage(devices);
+
+        r.setData(data);
+        return r;
+    }
+
+    @POST
+    @Path("node/device/set")
+    public Result<Void> setNodeDevice(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeDevice req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<Void> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        String nodeId = req.getNodeId();
+        if (StringUtil.isEmpty(nodeId)) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            r.setMsg("miss nodeId");
+            return r;
+        }
+
+        String mac = req.getMac();
+        if (StringUtil.isEmpty(mac)) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            r.setMsg("miss mac");
+            return r;
+        }
+
+        Plugin.sendToUser(new TextMsg().setType(MsgType.NODE_DEVICE_BLOCK).setValue(GsonUtil.toJson(req)), userInfo.getId());
+        return r;
+    }
+
+    @POST
     @Path("node/bind")
     public Result<Void> bindNode(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);

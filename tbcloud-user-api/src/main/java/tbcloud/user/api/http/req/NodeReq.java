@@ -4,7 +4,7 @@ package tbcloud.user.api.http.req;
  * @author dzh
  * @date 2019-03-21 15:48
  */
-public class NodeReq {
+public class NodeReq extends PageReq {
 
     private String nodeId;
 

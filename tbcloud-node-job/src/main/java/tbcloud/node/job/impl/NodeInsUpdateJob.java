@@ -35,8 +35,4 @@ public class NodeInsUpdateJob extends NodeJob {
         NodeDao.updateNodeIns(nodeIns);
     }
 
-    @Override
-    protected String id() {
-        return "NodeInsUpdateJob";
-    }
 }

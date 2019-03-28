@@ -13,6 +13,23 @@ import java.util.Set;
  */
 public interface NodeDao {
 
+    // node_device
+    NodeDevice selectNodeDevice(String mac);
+
+    void batchInsertNodeDevice(List<NodeDevice> devices);
+
+    void batchUpdateNodeDevice(List<NodeDevice> devices);
+
+    int insertNodeDevice(NodeDevice device);
+
+    List<NodeDevice> selectNodeDevice(NodeDeviceExample example);
+
+    long countNodeDevice(NodeDeviceExample example);
+
+    int updateNodeDevice(NodeDevice device);
+
+    int updateNodeDeviceSelective(NodeDevice device, NodeDeviceExample example);
+
     // node_wifi_timer
     NodeWifiTimer selectNodeWifiTimer(String nodeId);
 

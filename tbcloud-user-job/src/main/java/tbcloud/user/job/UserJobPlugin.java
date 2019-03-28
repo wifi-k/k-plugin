@@ -18,7 +18,7 @@ import java.util.Map;
  */
 @Message(isSender = true, isRecver = true, msgTypes = {MsgType.LOGIN_OUT, MsgType.EMAIL_MODIFY, MsgType.MOBILE_VCODE,
         MsgType.NODE_JOIN_SHARE, MsgType.NODE_QUIT_SHARE, MsgType.DELETE_QINIU_OBJECT, MsgType.NODE_FIRMWARE_UPGRADE,
-        MsgType.NODE_WIFI_TIMER})
+        MsgType.NODE_WIFI_TIMER, MsgType.NODE_DEVICE_BLOCK})
 public class UserJobPlugin extends PluginSenderRecver {
 
     static Logger LOG = LoggerFactory.getLogger(UserJobPlugin.class);
@@ -41,6 +41,7 @@ public class UserJobPlugin extends PluginSenderRecver {
         startJob(NodeUpgradeJob.class);
 
         startJob(NodeWifiTimerJob.class);
+        startJob(NodeDeviceJob.class);
     }
 
     void startJob(Class<? extends UserJob> clazz) {

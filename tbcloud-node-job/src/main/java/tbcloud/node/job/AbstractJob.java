@@ -6,6 +6,8 @@ package tbcloud.node.job;
  */
 public abstract class AbstractJob implements AutoCloseable {
 
-    abstract protected String id();
+    protected String id() {
+        return getClass().getSimpleName();
+    }
 
 }

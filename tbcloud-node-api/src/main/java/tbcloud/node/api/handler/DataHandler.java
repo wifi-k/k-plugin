@@ -33,6 +33,8 @@ public abstract class DataHandler<T extends DataReq> implements Runnable {
 
     protected static final Logger LOG = LoggerFactory.getLogger(DataHandler.class);
 
+    public static final DataRsp<Void> SUCC = new DataRsp<>();
+
     @InjectPlugin
     static NodeApiPlugin Plugin;
 

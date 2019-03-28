@@ -52,6 +52,10 @@
             <artifactId>tbcloud-httpproxy-dao</artifactId>
             <classifier>plugin</classifier>
         </dependency>
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-node-protocol</artifactId>
+        </dependency>
 
     </dependencies>
 

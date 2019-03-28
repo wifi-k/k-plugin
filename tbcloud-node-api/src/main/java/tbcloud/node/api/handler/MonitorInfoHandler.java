@@ -45,8 +45,7 @@ public class MonitorInfoHandler extends DataHandler<MonitorInfo> {
             Plugin.sendToNode(new TextMsg().setType(MsgType.NODE_RT_UPDATE).setValue(GsonUtil.toJson(nodeRt)), nodeId);
         }
 
-        DataRsp<Void> rsp = new DataRsp<>();
-        return rsp;
+        return SUCC;
     }
 
     @Override

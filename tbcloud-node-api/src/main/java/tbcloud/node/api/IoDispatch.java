@@ -2,10 +2,7 @@ package tbcloud.node.api;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tbcloud.node.api.handler.AuthHandler;
-import tbcloud.node.api.handler.HeartbeatHandler;
-import tbcloud.node.api.handler.InsStatusHandler;
-import tbcloud.node.api.handler.MonitorInfoHandler;
+import tbcloud.node.api.handler.*;
 import tbcloud.node.protocol.ByteBufNodePacket;
 import tbcloud.node.protocol.DataType;
 import tbcloud.node.protocol.codec.DataCodecFactory;
@@ -64,6 +61,9 @@ public class IoDispatch implements Closeable {
                     break;
                 case DataType.INS_STATUS:
                     handlerThread.submit(new InsStatusHandler(context));
+                    break;
+                case DataType.DEVICE:
+                    handlerThread.submit(new DeviceInfoHandler(context));
                     break;
                 default:
                     LOG.warn("unknown packet {} {} {}", req.id(), req.token(), req.dataType());

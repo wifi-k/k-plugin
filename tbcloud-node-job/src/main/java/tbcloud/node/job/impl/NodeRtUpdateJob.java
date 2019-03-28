@@ -56,8 +56,4 @@ public class NodeRtUpdateJob extends NodeJob {
         NodeDao.updateNodeRt(nodeRt);
     }
 
-    @Override
-    protected String id() {
-        return "NodeRtUpdateJob";
-    }
 }

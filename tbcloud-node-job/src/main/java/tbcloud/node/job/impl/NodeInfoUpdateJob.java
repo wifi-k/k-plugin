@@ -84,8 +84,4 @@ public class NodeInfoUpdateJob extends NodeJob {
 
     }
 
-    @Override
-    protected String id() {
-        return "NodeInfoUpdateJob";
-    }
 }

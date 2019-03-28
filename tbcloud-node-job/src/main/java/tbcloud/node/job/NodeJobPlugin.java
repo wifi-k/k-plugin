@@ -7,6 +7,7 @@ import jframe.core.plugin.annotation.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.lib.api.msg.MsgType;
+import tbcloud.node.job.impl.NodeDeviceJob;
 import tbcloud.node.job.impl.NodeInfoUpdateJob;
 import tbcloud.node.job.impl.NodeInsUpdateJob;
 import tbcloud.node.job.impl.NodeRtUpdateJob;
@@ -19,7 +20,7 @@ import java.util.Map;
  * @date 2018-12-13 13:54
  */
 @Message(isSender = true, isRecver = true, msgTypes = {MsgType.NODE_ONLINE, MsgType.NODE_OFFLINE,
-        MsgType.NODE_INFO_UPDATE, MsgType.NODE_RT_UPDATE, MsgType.NODE_INS_UPDATE})
+        MsgType.NODE_INFO_UPDATE, MsgType.NODE_RT_UPDATE, MsgType.NODE_INS_UPDATE, MsgType.NODE_WIFI_DEVICE})
 public class NodeJobPlugin extends PluginSenderRecver {
 
     static Logger LOG = LoggerFactory.getLogger(NodeJobPlugin.class);
@@ -36,6 +37,8 @@ public class NodeJobPlugin extends PluginSenderRecver {
         startJob(NodeInfoUpdateJob.class);
         startJob(NodeRtUpdateJob.class);
         startJob(NodeInsUpdateJob.class);
+
+        startJob(NodeDeviceJob.class);
     }
 
     void startJob(Class<? extends NodeJob> clazz) {
