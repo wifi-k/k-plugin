@@ -2,6 +2,7 @@ package tbcloud.node.job.impl;
 
 import com.google.gson.reflect.TypeToken;
 import jframe.core.msg.Msg;
+import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.msg.MsgType;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.StringUtil;
@@ -82,6 +83,12 @@ public class NodeDeviceJob extends NodeJob {
         r.setName(dev.getName());
         r.setOnTime(dev.getOnTime());
         r.setOffTime(dev.getOffTime());
+
+        if (dev.getOnTime() != null && dev.getOnTime() > 0) {
+            r.setStatus(ApiConst.IS_ONLINE);
+        } else {
+            r.setStatus(ApiConst.IS_OFFLINE);
+        }
 
         return r;
     }

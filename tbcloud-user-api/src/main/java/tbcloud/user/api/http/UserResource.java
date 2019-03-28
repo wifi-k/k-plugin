@@ -908,6 +908,7 @@ public class UserResource extends BaseResource {
         example.createCriteria().andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
         example.setOrderByClause("update_time desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
         List<NodeDevice> devices = NodeDao.selectNodeDevice(example);
+
         long total = NodeDao.countNodeDevice(example);
 
         PageRsp<NodeDevice> data = new PageRsp<>();
