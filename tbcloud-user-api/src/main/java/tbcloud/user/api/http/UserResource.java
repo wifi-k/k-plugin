@@ -1295,6 +1295,7 @@ public class UserResource extends BaseResource {
 
         UserNodeExample userNodeExample = new UserNodeExample();
         userNodeExample.createCriteria().andUserIdEqualTo(userInfo.getId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        userNodeExample.setOrderByClause("is_select desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
         List<UserNode> familyNode = UserDao.selectUserNode(userNodeExample);
         if (familyNode == null || familyNode.isEmpty()) {
             PageRsp<NodeInfoRt> data = new PageRsp<>();
@@ -1319,12 +1320,12 @@ public class UserResource extends BaseResource {
         exampleCritera.andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
         countExampleCriteria.andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
         // page
-        example.setOrderByClause("create_time desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
+        //example.setOrderByClause("create_time desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
 
         List<NodeInfoRt> nodeList = NodeDao.selectNodeRtLeftJoinInfo(example);
         long count = NodeDao.countNodeRt(countExample); //TODO cache
 
-        // firmwareUpgrade
+        // firmwareU
         if (nodeList != null) {
             List<String> models = new ArrayList<>();
             for (NodeInfoRt info : nodeList) {
