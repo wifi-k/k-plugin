@@ -19,7 +19,7 @@ public class NodeDeviceJob extends InsJob {
 
     @Override
     public int msgType() {
-        return MsgType.NODE_WIFI_DEVICE;
+        return MsgType.NODE_DEVICE_BLOCK;
     }
 
     @Override
