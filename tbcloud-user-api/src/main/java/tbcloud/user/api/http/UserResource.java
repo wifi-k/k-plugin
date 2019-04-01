@@ -1586,6 +1586,121 @@ public class UserResource extends BaseResource {
     }
 
     @POST
+    @Path("node/device/allow/set")
+    public Result<Void> setNodeDeviceAllow(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeDeviceAllow req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<Void> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        String nodeId = req.getNodeId();
+        if (StringUtil.isEmpty(nodeId)) {
+            r.setCode(ApiCode.INVALID_PARAM);
+            r.setMsg("nodeId is nil");
+            return r;
+        }
+
+        // max 100
+        NodeDeviceAllowExample example = new NodeDeviceAllowExample();
+        example.createCriteria().andNodeIdEqualTo(nodeId).andOpEqualTo(1).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        long count = NodeDao.countNodeDeviceAllow(example);
+        if (count > 100) {
+            r.setCode(ApiCode.OP_MORE_THAN_LIMIT);
+            r.setMsg("too many config");
+            return r;
+        }
+
+        String mac = req.getMac(); //mac 最多10个
+        if (!StringUtil.isEmpty(mac) && mac.length() > 400) {
+            r.setCode(ApiCode.TEXT_SIZE_OVER);
+            r.setMsg("mac size overflow");
+            return r;
+        }
+
+        Plugin.sendToUser(new TextMsg().setType(MsgType.NODE_DEVICE_ALLOW).setValue(GsonUtil.toJson(req)), userInfo.getId());
+        return r;
+    }
+
+    @POST
+    @Path("node/device/allow/list")
+    public Result<PageRsp<NodeDeviceAllow>> listNodeDeviceAllow(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<PageRsp<NodeDeviceAllow>> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        String nodeId = req.getNodeId();
+        if (StringUtil.isEmpty(nodeId)) {
+            r.setCode(ApiCode.INVALID_PARAM);
+            r.setMsg("nodeId is nil");
+            return r;
+        }
+
+        // max 100
+        NodeDeviceAllowExample example = new NodeDeviceAllowExample();
+        example.createCriteria().andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        example.setOrderByClause("update_time desc limit 100");
+        List<NodeDeviceAllow> page = NodeDao.selectNodeDeviceAllow(example);
+
+        PageRsp<NodeDeviceAllow> data = new PageRsp<>();
+        data.setTotal(page.size());
+        data.setPage(page);
+        r.setData(data);
+
+        return r;
+    }
+
+    @POST
+    @Path("node/device/allow/del")
+    public Result<Void> delNodeDeviceAllow(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeDeviceAllow req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<Void> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        String nodeId = req.getNodeId();
+        if (StringUtil.isEmpty(nodeId)) {
+            r.setCode(ApiCode.INVALID_PARAM);
+            r.setMsg("nodeId is nil");
+            return r;
+        }
+
+        Long id = req.getId();
+        if (id == null || id == 0) {
+            r.setCode(ApiCode.INVALID_PARAM);
+            r.setMsg("id is nil");
+            return r;
+        }
+
+        NodeDeviceAllow deleted = new NodeDeviceAllow();
+        deleted.setId(id);
+        deleted.setOp(InsVal.OP_DISABLE);
+        deleted.setIsDelete(ApiConst.IS_DELETE_Y);
+
+        Plugin.sendToUser(new TextMsg().setType(MsgType.NODE_DEVICE_ALLOW).setValue(GsonUtil.toJson(req)), userInfo.getId());
+        return r;
+    }
+
+
+    @POST
     @Path("node/wifi/set")
     public Result<Void> setNodeWifi(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeWifiReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);

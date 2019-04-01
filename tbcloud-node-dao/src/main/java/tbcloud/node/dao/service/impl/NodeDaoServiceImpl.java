@@ -44,6 +44,93 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     static JedisService Jedis;
 
     @Override
+    public NodeDeviceAllow selectNodeDeviceAllow(long id) {
+        NodeDeviceAllow deviceAllow = null;
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            deviceAllow = session.getMapper(NodeDeviceAllowMapper.class).selectByPrimaryKey(id);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return deviceAllow;
+    }
+
+    @Override
+    public int insertNodeDeviceAllow(NodeDeviceAllow deviceAllow) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                deviceAllow.setCreateTime(st);
+                deviceAllow.setUpdateTime(st);
+
+                int r = session.getMapper(NodeDeviceAllowMapper.class).insertSelective(deviceAllow);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(deviceAllow));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public List<NodeDeviceAllow> selectNodeDeviceAllow(NodeDeviceAllowExample example) {
+        List<NodeDeviceAllow> devices = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            devices = session.getMapper(NodeDeviceAllowMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return devices;
+    }
+
+    @Override
+    public long countNodeDeviceAllow(NodeDeviceAllowExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                return session.getMapper(NodeDeviceAllowMapper.class).countByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return -1L;
+    }
+
+    @Override
+    public int updateNodeDeviceAllow(NodeDeviceAllow deviceAllow) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                deviceAllow.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeDeviceAllowMapper.class).updateByPrimaryKeySelective(deviceAllow);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateNodeDeviceAllowSelective(NodeDeviceAllow deviceAllow, NodeDeviceAllowExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                deviceAllow.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeDeviceAllowMapper.class).updateByExampleSelective(deviceAllow, example);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
     public NodeDevice selectNodeDevice(String mac) {
         NodeDevice device = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {

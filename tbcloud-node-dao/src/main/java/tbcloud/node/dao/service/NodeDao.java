@@ -13,6 +13,19 @@ import java.util.Set;
  */
 public interface NodeDao {
 
+    // node_device_allow
+    NodeDeviceAllow selectNodeDeviceAllow(long id);
+
+    int insertNodeDeviceAllow(NodeDeviceAllow deviceAllow);
+
+    List<NodeDeviceAllow> selectNodeDeviceAllow(NodeDeviceAllowExample example);
+
+    long countNodeDeviceAllow(NodeDeviceAllowExample example);
+
+    int updateNodeDeviceAllow(NodeDeviceAllow deviceAllow);
+
+    int updateNodeDeviceAllowSelective(NodeDeviceAllow deviceAllow, NodeDeviceAllowExample example);
+
     // node_device
     NodeDevice selectNodeDevice(String mac);
 
@@ -110,7 +123,7 @@ public interface NodeDao {
 
     boolean batchInsertNodeRt(Set<NodeRt> nodeRtList);
 
-
+    // node_ins
     int insertNodeIns(NodeIns nodeIns);
 
     int updateNodeIns(NodeIns nodeIns);
