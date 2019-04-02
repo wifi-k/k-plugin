@@ -29,6 +29,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 用户平台
@@ -908,6 +909,9 @@ public class UserResource extends BaseResource {
         example.createCriteria().andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
         example.setOrderByClause("update_time desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
         List<NodeDevice> devices = NodeDao.selectNodeDevice(example);
+        devices.forEach(dev -> {
+            dev.setMacIcon(Qiniu.privateDownloadUrl(ApiConst.QINIU_ID_USER, dev.getMacIcon(), -1));
+        });
 
         long total = NodeDao.countNodeDevice(example);
 
@@ -1587,7 +1591,7 @@ public class UserResource extends BaseResource {
 
     @POST
     @Path("node/device/allow/set")
-    public Result<Void> setNodeDeviceAllow(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeDeviceAllow req) {
+    public Result<Void> setNodeDeviceAllow(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeDeviceAllowReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
         Result<Void> r = new Result<>();
 
@@ -1616,22 +1620,23 @@ public class UserResource extends BaseResource {
             return r;
         }
 
-        String mac = req.getMac(); //mac 最多10个
-        if (!StringUtil.isEmpty(mac) && mac.length() > 400) {
-            r.setCode(ApiCode.TEXT_SIZE_OVER);
-            r.setMsg("mac size overflow");
+        List<String> mac = req.getMac(); //mac 最多10个
+        if (mac != null && mac.size() > 10) {
+            r.setCode(ApiCode.INVALID_PARAM);
+            r.setMsg("mac size more than 10");
             return r;
         }
 
-        Plugin.sendToUser(new TextMsg().setType(MsgType.NODE_DEVICE_ALLOW).setValue(GsonUtil.toJson(req)), userInfo.getId());
+        Plugin.sendToUser(new TextMsg().setType(MsgType.NODE_DEVICE_ALLOW)
+                .setValue(GsonUtil.toJson(req.toNodeDeviceAllow())), userInfo.getId());
         return r;
     }
 
     @POST
     @Path("node/device/allow/list")
-    public Result<PageRsp<NodeDeviceAllow>> listNodeDeviceAllow(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeReq req) {
+    public Result<PageRsp<NodeDeviceAllowRsp>> listNodeDeviceAllow(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
-        Result<PageRsp<NodeDeviceAllow>> r = new Result<>();
+        Result<PageRsp<NodeDeviceAllowRsp>> r = new Result<>();
 
         ReqContext reqContext = ReqContext.create(version, token);
         r.setCode(validateToken(reqContext));
@@ -1654,9 +1659,13 @@ public class UserResource extends BaseResource {
         example.setOrderByClause("update_time desc limit 100");
         List<NodeDeviceAllow> page = NodeDao.selectNodeDeviceAllow(example);
 
-        PageRsp<NodeDeviceAllow> data = new PageRsp<>();
+        PageRsp<NodeDeviceAllowRsp> data = new PageRsp<>();
         data.setTotal(page.size());
-        data.setPage(page);
+        if (page != null) {
+            data.setPage(page.stream().map(allow -> {
+                return NodeDeviceAllowRsp.from(allow);
+            }).collect(Collectors.toList()));
+        }
         r.setData(data);
 
         return r;

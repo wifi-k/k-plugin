@@ -13,6 +13,9 @@ import java.util.Set;
  */
 public interface NodeDao {
 
+    // mac_space
+    MacSpace selectMacSpace(long id);
+
     // node_device_allow
     NodeDeviceAllow selectNodeDeviceAllow(long id);
 

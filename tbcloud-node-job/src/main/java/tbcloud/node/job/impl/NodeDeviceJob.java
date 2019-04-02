@@ -3,10 +3,13 @@ package tbcloud.node.job.impl;
 import com.google.gson.reflect.TypeToken;
 import jframe.core.msg.Msg;
 import tbcloud.lib.api.ApiConst;
+import tbcloud.lib.api.DeviceVendorEnum;
 import tbcloud.lib.api.msg.MsgType;
 import tbcloud.lib.api.util.GsonUtil;
+import tbcloud.lib.api.util.MacUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.job.NodeJob;
+import tbcloud.node.model.MacSpace;
 import tbcloud.node.model.NodeDevice;
 import tbcloud.node.model.NodeInfo;
 import tbcloud.node.protocol.data.WifiDeviceInfo;
@@ -78,8 +81,10 @@ public class NodeDeviceJob extends NodeJob {
     }
 
     private NodeDevice record(WifiDeviceInfo.DeviceInfo dev) {
+        String mac = dev.getMac();
+
         NodeDevice r = new NodeDevice();
-        r.setMac(dev.getMac());
+        r.setMac(mac);
         r.setName(dev.getName());
         r.setOnTime(dev.getOnTime());
         r.setOffTime(dev.getOffTime());
@@ -88,6 +93,29 @@ public class NodeDeviceJob extends NodeJob {
             r.setStatus(ApiConst.IS_ONLINE);
         } else {
             r.setStatus(ApiConst.IS_OFFLINE);
+        }
+
+        if (StringUtil.isEmpty(mac)) {
+            DeviceVendorEnum deviceVendorEnum = DeviceVendorEnum.Default;
+
+            mac = MacUtil.clean(mac).substring(0, 6);
+            MacSpace macSpace = NodeDao.selectMacSpace(MacUtil.macValue(mac));
+            if (macSpace != null) {
+                String com = macSpace.getCompany();
+                if (!StringUtil.isEmpty(com)) {
+                    com = com.toLowerCase();
+                    DeviceVendorEnum[] devs = DeviceVendorEnum.values();
+                    for (int i = 0; i < devs.length; ++i) {
+                        if (com.indexOf(devs[i].getCompany().toLowerCase()) >= 0) {
+                            deviceVendorEnum = devs[i];
+                            break;
+                        }
+                    }
+                }
+            }
+
+            r.setMacVendor(deviceVendorEnum.getCompany());
+            r.setMacIcon(deviceVendorEnum.getIcon());
         }
 
         return r;

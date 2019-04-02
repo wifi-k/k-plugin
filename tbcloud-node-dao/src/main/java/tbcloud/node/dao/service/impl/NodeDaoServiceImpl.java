@@ -44,6 +44,17 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     static JedisService Jedis;
 
     @Override
+    public MacSpace selectMacSpace(long id) {
+        MacSpace macSpace = null;
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            macSpace = session.getMapper(MacSpaceMapper.class).selectByPrimaryKey(id);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return macSpace;
+    }
+
+    @Override
     public NodeDeviceAllow selectNodeDeviceAllow(long id) {
         NodeDeviceAllow deviceAllow = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
