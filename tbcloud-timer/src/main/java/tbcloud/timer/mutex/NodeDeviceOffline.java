@@ -1,6 +1,10 @@
 package tbcloud.timer.mutex;
 
 import tbcloud.lib.api.ApiConst;
+import tbcloud.lib.api.DeviceVendorEnum;
+import tbcloud.lib.api.util.MacUtil;
+import tbcloud.lib.api.util.StringUtil;
+import tbcloud.node.model.MacSpace;
 import tbcloud.node.model.NodeDevice;
 import tbcloud.node.model.NodeDeviceExample;
 
@@ -29,6 +33,30 @@ public class NodeDeviceOffline extends MutexTimer {
             NodeDevice up = new NodeDevice();
             up.setMac(dev.getMac());
             up.setStatus(ApiConst.IS_OFFLINE);
+
+            String mac = up.getMac();
+            if (StringUtil.isEmpty(mac)) {
+                DeviceVendorEnum deviceVendorEnum = DeviceVendorEnum.Default;
+
+                mac = MacUtil.clean(mac).substring(0, 6);
+                MacSpace macSpace = NodeDao.selectMacSpace(MacUtil.macValue(mac));
+                if (macSpace != null) {
+                    String com = macSpace.getCompany();
+                    if (!StringUtil.isEmpty(com)) {
+                        com = com.toLowerCase();
+                        DeviceVendorEnum[] devs = DeviceVendorEnum.values();
+                        for (int i = 0; i < devs.length; ++i) {
+                            if (com.indexOf(devs[i].getCompany().toLowerCase()) >= 0) {
+                                deviceVendorEnum = devs[i];
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                up.setMacVendor(deviceVendorEnum.getCompany());
+                up.setMacIcon(deviceVendorEnum.getIcon());
+            }
 
             updated.add(up);
         });
