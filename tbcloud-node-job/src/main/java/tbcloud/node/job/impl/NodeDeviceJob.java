@@ -95,7 +95,7 @@ public class NodeDeviceJob extends NodeJob {
             r.setStatus(ApiConst.IS_OFFLINE);
         }
 
-        if (StringUtil.isEmpty(mac)) {
+        if (!StringUtil.isEmpty(mac)) {
             DeviceVendorEnum deviceVendorEnum = DeviceVendorEnum.Default;
 
             mac = MacUtil.clean(mac).substring(0, 6);

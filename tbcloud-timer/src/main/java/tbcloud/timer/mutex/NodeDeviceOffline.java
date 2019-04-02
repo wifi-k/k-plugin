@@ -35,7 +35,7 @@ public class NodeDeviceOffline extends MutexTimer {
             up.setStatus(ApiConst.IS_OFFLINE);
 
             String mac = up.getMac();
-            if (StringUtil.isEmpty(mac)) {
+            if (!StringUtil.isEmpty(mac)) {
                 DeviceVendorEnum deviceVendorEnum = DeviceVendorEnum.Default;
 
                 mac = MacUtil.clean(mac).substring(0, 6);
