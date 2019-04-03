@@ -11,14 +11,18 @@ import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.job.NodeJob;
 import tbcloud.node.model.MacSpace;
 import tbcloud.node.model.NodeDevice;
+import tbcloud.node.model.NodeDeviceExample;
 import tbcloud.node.model.NodeInfo;
 import tbcloud.node.protocol.data.WifiDeviceInfo;
 
 import java.lang.reflect.Type;
-import java.util.LinkedList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
+ * wifi上传当前在线设备
  * TODO 批量入库
  *
  * @author dzh
@@ -54,30 +58,84 @@ public class NodeDeviceJob extends NodeJob {
         String nodeId = wifiDeviceInfo.getNodeId();
         List<WifiDeviceInfo.DeviceInfo> devices = GsonUtil.fromJson(wifiDeviceInfo.getDevice(), DevicesType);
 
-        if (devices != null) {
-            List<NodeDevice> inserted = new LinkedList<>();
-            List<NodeDevice> updated = new LinkedList<>();
+        // 直接处理上下线
+        devices.forEach(devInfo -> {
+            NodeDevice device = record(devInfo);
+            device.setNodeId(nodeId);
 
-            for (WifiDeviceInfo.DeviceInfo dev : devices) {
-                if (StringUtil.isEmpty(dev.getMac())) continue;
-
-                NodeDevice r = record(dev);
-                if (r != null) r.setNodeId(nodeId);
-
-                if (NodeDao.selectNodeDevice(r.getMac()) == null) {
-                    inserted.add(r);
-                } else {
-                    updated.add(r);
-                }
+            NodeDeviceExample example = new NodeDeviceExample();
+            example.createCriteria().andNodeIdEqualTo(nodeId).andMacEqualTo(device.getMac()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+            List<NodeDevice> list = NodeDao.selectNodeDevice(example);
+            if (list == null || list.isEmpty()) {
+                NodeDao.insertNodeDevice(device);
+            } else {
+                NodeDao.updateNodeDeviceSelective(device, example);
             }
 
-            if (!inserted.isEmpty()) {
-                NodeDao.batchInsertNodeDevice(inserted);
+            //TODO msg
+            if (device.getStatus() == ApiConst.IS_ONLINE) {
+                // online
+
+            } else {
+                // offline
+
             }
-            if (!updated.isEmpty()) {
-                NodeDao.batchUpdateNodeDevice(updated);
-            }
+
+        });
+
+        // 由wifi判断好上下线,下面的代码没用了
+//        Map<String, WifiDeviceInfo.DeviceInfo> devicesMap = toMap(devices); //current online devices
+//        if (devices != null) {
+//            NodeDeviceExample example = new NodeDeviceExample();
+//            example.createCriteria().andNodeIdEqualTo(nodeId).andStatusEqualTo(ApiConst.IS_ONLINE).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+//            example.setOrderByClause("on_time limit 1000");
+//            List<NodeDevice> prevOnlineNodes = NodeDao.selectNodeDevice(example);
+//
+//            List<NodeDevice> onlineNodes = new LinkedList<>();
+//            List<NodeDevice> offlineNodes = new LinkedList<>();
+//            for (NodeDevice dev : prevOnlineNodes) {
+//                WifiDeviceInfo.DeviceInfo currentOnline = devicesMap.remove(dev.getMac());
+//                if (currentOnline != null) { //online
+//                    NodeDevice r = record(currentOnline);
+//                    r.setId(dev.getId());
+//                    onlineNodes.add(r);
+//                } else { //offline
+//                    dev.setStatus(ApiConst.IS_OFFLINE);
+//                    dev.setOffTime(System.currentTimeMillis());
+//                    offlineNodes.add(dev);
+//                    // TODO send offline msg
+//                }
+//            }
+//            NodeDao.batchUpdateNodeDevice(onlineNodes);
+//            NodeDao.batchUpdateNodeDevice(offlineNodes);
+//
+//            for (WifiDeviceInfo.DeviceInfo dev : devicesMap.values()) {
+//                if (StringUtil.isEmpty(dev.getMac())) continue;
+//
+//                NodeDevice r = record(dev);
+//                r.setNodeId(nodeId);
+//
+//                example = new NodeDeviceExample();
+//                example.createCriteria().andNodeIdEqualTo(nodeId).andMacEqualTo(dev.getMac()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+//                List<NodeDevice> list = NodeDao.selectNodeDevice(example);
+//                if (list == null || list.isEmpty()) {
+//                    NodeDao.insertNodeDevice(r);
+//                } else {
+//                    r.setId(list.get(0).getId());
+//                    NodeDao.updateNodeDevice(r);
+//                }
+//            }
+//        }
+    }
+
+    private Map<String, WifiDeviceInfo.DeviceInfo> toMap(List<WifiDeviceInfo.DeviceInfo> devices) {
+        if (devices == null || devices.isEmpty()) return Collections.emptyMap();
+
+        Map<String, WifiDeviceInfo.DeviceInfo> deviceInfoMap = new HashMap<>();
+        for (WifiDeviceInfo.DeviceInfo dev : devices) {
+            deviceInfoMap.put(dev.getMac(), dev);
         }
+        return deviceInfoMap;
     }
 
     private NodeDevice record(WifiDeviceInfo.DeviceInfo dev) {
@@ -88,6 +146,7 @@ public class NodeDeviceJob extends NodeJob {
         r.setName(dev.getName());
         r.setOnTime(dev.getOnTime());
         r.setOffTime(dev.getOffTime());
+        r.setLocalIp(dev.getIp());
 
         if (dev.getOnTime() != null && dev.getOnTime() > 0) {
             r.setStatus(ApiConst.IS_ONLINE);

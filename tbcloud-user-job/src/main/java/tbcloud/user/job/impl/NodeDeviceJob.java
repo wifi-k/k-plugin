@@ -1,11 +1,13 @@
 package tbcloud.user.job.impl;
 
 import jframe.core.msg.Msg;
+import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.msg.MsgType;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.model.NodeDevice;
+import tbcloud.node.model.NodeDeviceExample;
 import tbcloud.node.model.NodeInfo;
 import tbcloud.node.protocol.data.ins.DeviceBlock;
 import tbcloud.node.protocol.data.ins.Ins;
@@ -38,10 +40,14 @@ public class NodeDeviceJob extends InsJob {
             return;
         }
 
-        if (StringUtil.isEmpty(device.getMac())) return;
-        if (StringUtil.isEmpty(device.getNodeId())) return;
+        String nodeId = device.getNodeId();
+        String mac = device.getMac();
+        if (StringUtil.isEmpty(mac)) return;
+        if (StringUtil.isEmpty(nodeId)) return;
 
-        NodeDao.updateNodeDevice(device);
+        NodeDeviceExample example = new NodeDeviceExample();
+        example.createCriteria().andNodeIdEqualTo(nodeId).andMacEqualTo(mac).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        NodeDao.updateNodeDeviceSelective(device, example);
 
         if (device.getIsBlock() != null) {
             DeviceBlock insVal = new DeviceBlock();
@@ -54,7 +60,7 @@ public class NodeDeviceJob extends InsJob {
             ins.setVal(GsonUtil.toJson(insVal));
 
             // send ins
-            saveThenSend(device.getNodeId(), ins);
+            saveThenSend(nodeId, ins);
         }
     }
 }

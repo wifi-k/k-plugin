@@ -12,11 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * offline: online and  onTime < now() - 10Min
+ * offline: online and  onTime < now() - 24H
+ * <p>
+ * 离线判断在NodeDeviceJob
  *
  * @author dzh
  * @date 2019-03-28 17:09
  */
+@Deprecated
 public class NodeDeviceOffline extends MutexTimer {
 
     @Override

@@ -142,10 +142,10 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     }
 
     @Override
-    public NodeDevice selectNodeDevice(String mac) {
+    public NodeDevice selectNodeDevice(Long id) {
         NodeDevice device = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
-            device = session.getMapper(NodeDeviceMapper.class).selectByPrimaryKey(mac);
+            device = session.getMapper(NodeDeviceMapper.class).selectByPrimaryKey(id);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }

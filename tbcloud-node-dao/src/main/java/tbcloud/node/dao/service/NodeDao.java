@@ -30,7 +30,7 @@ public interface NodeDao {
     int updateNodeDeviceAllowSelective(NodeDeviceAllow deviceAllow, NodeDeviceAllowExample example);
 
     // node_device
-    NodeDevice selectNodeDevice(String mac);
+    NodeDevice selectNodeDevice(Long id);
 
     void batchInsertNodeDevice(List<NodeDevice> devices);
 
