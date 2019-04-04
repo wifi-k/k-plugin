@@ -80,7 +80,6 @@ public class NodeDeviceJob extends NodeJob {
                 // offline
 
             }
-
         });
 
         // 由wifi判断好上下线,下面的代码没用了

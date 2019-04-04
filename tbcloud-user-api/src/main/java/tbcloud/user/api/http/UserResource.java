@@ -1,5 +1,6 @@
 package tbcloud.user.api.http;
 
+import com.alibaba.druid.util.StringUtils;
 import jframe.core.msg.PluginMsg;
 import jframe.core.msg.TextMsg;
 import org.slf4j.Logger;
@@ -812,6 +813,8 @@ public class UserResource extends BaseResource {
 
         UserNodeExample example = new UserNodeExample();
         example.createCriteria().andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        example.setOrderByClause("nodeId limit 1000"); //max 1000
+
         List<UserNode> userNodeList = UserDao.selectUserNode(example);
         if (userNodeList != null) {
             userNodeList.forEach(node -> {
@@ -907,13 +910,13 @@ public class UserResource extends BaseResource {
 
         NodeDeviceExample example = new NodeDeviceExample();
         example.createCriteria().andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        long total = NodeDao.countNodeDevice(example);
+
         example.setOrderByClause("update_time desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
         List<NodeDevice> devices = NodeDao.selectNodeDevice(example);
         devices.forEach(dev -> {
             dev.setMacIcon(Qiniu.privateDownloadUrl(ApiConst.QINIU_ID_USER, dev.getMacIcon(), -1));
         });
-
-        long total = NodeDao.countNodeDevice(example);
 
         PageRsp<NodeDevice> data = new PageRsp<>();
         data.setTotal(total);
@@ -1272,6 +1275,64 @@ public class UserResource extends BaseResource {
         }
 
         return r;
+    }
+
+    @POST
+    @Path("node/device/week/list")
+    public Result<PageRsp<DeviceWeekRsp>> listNodeDeviceWeek(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, DeviceWeekReq req) {
+        LOG.info("{} {} {}", ui.getPath(), version, token);
+        Result<PageRsp<DeviceWeekRsp>> r = new Result<>();
+
+        ReqContext reqContext = ReqContext.create(version, token);
+        r.setCode(validateToken(reqContext));
+        if (r.getCode() != ApiCode.SUCC) {
+            return r;
+        }
+
+        String nodeId = req.getNodeId();
+        if (StringUtils.isEmpty(nodeId)) {
+            r.setCode(ApiCode.HTTP_MISS_PARAM);
+            r.setMsg("miss nodeId");
+            return r;
+        }
+
+        UserInfo userInfo = reqContext.getUserInfo();
+
+        Calendar c = Calendar.getInstance();
+
+        Integer year = req.getYear();
+        if (year == null) {
+            year = c.get(Calendar.YEAR);
+        }
+
+        Integer week = req.getWeek();
+        if (week == null) {
+            week = c.get(Calendar.WEEK_OF_YEAR) - 1;
+        }
+
+        Integer pageNo = req.getPageNo();
+        Integer pageSize = req.getPageSize();
+
+        NodeDeviceWeekExample example = new NodeDeviceWeekExample();
+        example.createCriteria().andNodeIdEqualTo(nodeId).andYearEqualTo(year).andWeekEqualTo(week).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        long count = NodeDao.countNodeDeviceWeek(example);
+
+        example.setOrderByClause("nodeId limit" + (pageNo - 1) * pageSize + "," + pageSize);
+        List<NodeDeviceWeek> deviceWeeks = NodeDao.selectNodeDeviceWeek(example);
+
+        if (deviceWeeks != null) {
+            List<DeviceWeekRsp> rspList = new ArrayList<>();
+            deviceWeeks.forEach(deviceWeek -> {
+                rspList.add(DeviceWeekRsp.from(deviceWeek));
+            });
+
+            PageRsp<DeviceWeekRsp> page = new PageRsp<>();
+            page.setPage(rspList);
+            page.setTotal(count);
+            r.setData(page);
+        }
+
+        return null;
     }
 
     @POST

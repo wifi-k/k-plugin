@@ -44,6 +44,222 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     static JedisService Jedis;
 
     @Override
+    public NodeDeviceWeek selectNodeDeviceWeek(Long id) {
+        NodeDeviceWeek device = null;
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            device = session.getMapper(NodeDeviceWeekMapper.class).selectByPrimaryKey(id);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return device;
+    }
+
+    @Override
+    public void batchInsertNodeDeviceWeek(List<NodeDeviceWeek> devices) {
+        if (devices == null || devices.isEmpty()) return;
+
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                for (NodeDeviceWeek deviceWeek : devices) {
+                    long st = System.currentTimeMillis();
+                    deviceWeek.setCreateTime(st);
+                    deviceWeek.setUpdateTime(st);
+
+                    session.getMapper(NodeDeviceWeekMapper.class).insertSelective(deviceWeek);
+                }
+
+                session.commit();
+                LOG.info("batchInsertNodeDeviceWeek {}", devices.size());
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+    }
+
+    @Override
+    public void batchUpdateNodeDeviceWeek(List<NodeDeviceWeek> devices) {
+        if (devices == null || devices.isEmpty()) return;
+
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                for (NodeDeviceWeek nodeInfo : devices) {
+                    nodeInfo.setUpdateTime(st);
+                    session.getMapper(NodeDeviceWeekMapper.class).updateByPrimaryKeySelective(nodeInfo);
+                }
+                session.commit();
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+    }
+
+    @Override
+    public int insertNodeDeviceWeek(NodeDeviceWeek device) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                device.setCreateTime(st);
+                device.setUpdateTime(st);
+
+                int r = session.getMapper(NodeDeviceWeekMapper.class).insertSelective(device);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(device));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public List<NodeDeviceWeek> selectNodeDeviceWeek(NodeDeviceWeekExample example) {
+        List<NodeDeviceWeek> devices = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            devices = session.getMapper(NodeDeviceWeekMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return devices;
+    }
+
+    @Override
+    public long countNodeDeviceWeek(NodeDeviceWeekExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                return session.getMapper(NodeDeviceWeekMapper.class).countByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return -1L;
+    }
+
+    @Override
+    public int updateNodeDeviceWeek(NodeDeviceWeek device) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                device.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeDeviceWeekMapper.class).updateByPrimaryKeySelective(device);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateNodeDeviceWeekSelective(NodeDeviceWeek device, NodeDeviceWeekExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                device.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeDeviceWeekMapper.class).updateByExampleSelective(device, example);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public NodeDeviceDay selectNodeDeviceDay(Long id) {
+        NodeDeviceDay deviceDay = null;
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            deviceDay = session.getMapper(NodeDeviceDayMapper.class).selectByPrimaryKey(id);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return deviceDay;
+    }
+
+    @Override
+    public int insertNodeDeviceDay(NodeDeviceDay device) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                device.setCreateTime(st);
+                device.setUpdateTime(st);
+
+                int r = session.getMapper(NodeDeviceDayMapper.class).insertSelective(device);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(device));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public List<NodeDeviceDay> selectNodeDeviceDay(NodeDeviceDayExample example) {
+        List<NodeDeviceDay> devices = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            devices = session.getMapper(NodeDeviceDayMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return devices;
+    }
+
+    @Override
+    public long countNodeDeviceDay(NodeDeviceDayExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                return session.getMapper(NodeDeviceDayMapper.class).countByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return -1L;
+    }
+
+    @Override
+    public int updateNodeDeviceDay(NodeDeviceDay device) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                device.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeDeviceDayMapper.class).updateByPrimaryKeySelective(device);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateNodeDeviceDaySelective(NodeDeviceDay device, NodeDeviceDayExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                device.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeDeviceDayMapper.class).updateByExampleSelective(device, example);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
     public MacSpace selectMacSpace(long id) {
         MacSpace macSpace = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {

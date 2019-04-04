@@ -13,6 +13,36 @@ import java.util.Set;
  */
 public interface NodeDao {
 
+    // node_device_week
+    NodeDeviceWeek selectNodeDeviceWeek(Long id);
+
+    void batchInsertNodeDeviceWeek(List<NodeDeviceWeek> devices);
+
+    void batchUpdateNodeDeviceWeek(List<NodeDeviceWeek> devices);
+
+    int insertNodeDeviceWeek(NodeDeviceWeek device);
+
+    List<NodeDeviceWeek> selectNodeDeviceWeek(NodeDeviceWeekExample example);
+
+    long countNodeDeviceWeek(NodeDeviceWeekExample example);
+
+    int updateNodeDeviceWeek(NodeDeviceWeek device);
+
+    int updateNodeDeviceWeekSelective(NodeDeviceWeek device, NodeDeviceWeekExample example);
+
+    // node_device_day
+    NodeDeviceDay selectNodeDeviceDay(Long id);
+
+    int insertNodeDeviceDay(NodeDeviceDay device);
+
+    List<NodeDeviceDay> selectNodeDeviceDay(NodeDeviceDayExample example);
+
+    long countNodeDeviceDay(NodeDeviceDayExample example);
+
+    int updateNodeDeviceDay(NodeDeviceDay device);
+
+    int updateNodeDeviceDaySelective(NodeDeviceDay device, NodeDeviceDayExample example);
+
     // mac_space
     MacSpace selectMacSpace(long id);
 
