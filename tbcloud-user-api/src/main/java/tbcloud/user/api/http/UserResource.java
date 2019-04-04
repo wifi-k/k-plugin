@@ -1328,19 +1328,23 @@ public class UserResource extends BaseResource {
         example.setOrderByClause("nodeId limit" + (pageNo - 1) * pageSize + "," + pageSize);
         List<NodeDeviceWeek> deviceWeeks = NodeDao.selectNodeDeviceWeek(example);
 
+        PageRsp<DeviceWeekRsp> page = new PageRsp<>();
         if (deviceWeeks != null) {
             List<DeviceWeekRsp> rspList = new ArrayList<>();
             deviceWeeks.forEach(deviceWeek -> {
                 rspList.add(DeviceWeekRsp.from(deviceWeek));
             });
 
-            PageRsp<DeviceWeekRsp> page = new PageRsp<>();
             page.setPage(rspList);
             page.setTotal(count);
-            r.setData(page);
+        } else {
+            page.setPage(Collections.emptyList());
+            page.setTotal(0L);
         }
 
-        return null;
+        r.setData(page);
+
+        return r;
     }
 
     @POST
