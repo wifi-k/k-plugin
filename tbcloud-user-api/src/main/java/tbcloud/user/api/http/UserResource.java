@@ -886,7 +886,7 @@ public class UserResource extends BaseResource {
 
     @POST
     @Path("node/device/list")
-    public Result<PageRsp<NodeDevice>> listNodeDevice(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeReq req) {
+    public Result<PageRsp<NodeDevice>> listNodeDevice(@Context UriInfo ui, @HeaderParam(ApiConst.API_VERSION) String version, @HeaderParam(ApiConst.API_TOKEN) String token, NodeDeviceReq req) {
         LOG.info("{} {} {}", ui.getPath(), version, token);
         Result<PageRsp<NodeDevice>> r = new Result<>();
 
@@ -909,9 +909,17 @@ public class UserResource extends BaseResource {
         Integer pageSize = req.getPageSize();
 
         NodeDeviceExample example = new NodeDeviceExample();
-        example.createCriteria().andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        NodeDeviceExample.Criteria criteria = example.createCriteria();
+        criteria.andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+        if (req.getIsBlock() != null) {
+            criteria.andIsBlockEqualTo(req.getIsBlock().byteValue());
+        }
+        if (req.getIsRecord() != null) {
+            criteria.andIsRecordEqualTo(req.getIsRecord().byteValue());
+        }
+        // count
         long total = NodeDao.countNodeDevice(example);
-
+        // select
         example.setOrderByClause("update_time desc limit " + (pageNo - 1) * pageSize + "," + pageSize);
         List<NodeDevice> devices = NodeDao.selectNodeDevice(example);
         devices.forEach(dev -> {
