@@ -44,6 +44,93 @@ public class NodeDaoServiceImpl implements NodeDaoService {
     static JedisService Jedis;
 
     @Override
+    public NodeDeviceRecord selectNodeDeviceRecord(Long id) {
+        NodeDeviceRecord record = null;
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            record = session.getMapper(NodeDeviceRecordMapper.class).selectByPrimaryKey(id);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return record;
+    }
+
+    @Override
+    public int insertNodeDeviceRecord(NodeDeviceRecord record) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                long st = System.currentTimeMillis();
+                record.setCreateTime(st);
+                record.setUpdateTime(st);
+
+                int r = session.getMapper(NodeDeviceRecordMapper.class).insertSelective(record);
+                session.commit();
+
+                LOG.info("insert {} {}", r, GsonUtil.toJson(record));
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public List<NodeDeviceRecord> selectNodeDeviceRecord(NodeDeviceRecordExample example) {
+        List<NodeDeviceRecord> devices = Collections.emptyList();
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            devices = session.getMapper(NodeDeviceRecordMapper.class).selectByExample(example);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return devices;
+    }
+
+    @Override
+    public long countNodeDeviceRecord(NodeDeviceRecordExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                return session.getMapper(NodeDeviceRecordMapper.class).countByExample(example);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+        return -1L;
+    }
+
+    @Override
+    public int updateNodeDeviceRecord(NodeDeviceRecord record) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                record.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeDeviceRecordMapper.class).updateByPrimaryKeySelective(record);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateNodeDeviceRecordSelective(NodeDeviceRecord record, NodeDeviceRecordExample example) {
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                record.setUpdateTime(System.currentTimeMillis());
+                int r = session.getMapper(NodeDeviceRecordMapper.class).updateByExampleSelective(record, example);
+                session.commit();
+                return r;
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return 0;
+    }
+
+    @Override
     public NodeDeviceWeek selectNodeDeviceWeek(Long id) {
         NodeDeviceWeek device = null;
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {

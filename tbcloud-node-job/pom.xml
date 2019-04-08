@@ -37,6 +37,18 @@
         </dependency>
 
         <dependency>
+            <groupId>io.github.dzh</groupId>
+            <artifactId>jframe-umeng</artifactId>
+            <classifier>plugin</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.treebear</groupId>
+            <artifactId>tbcloud-user-dao</artifactId>
+            <classifier>plugin</classifier>
+        </dependency>
+
+        <dependency>
             <groupId>cn.treebear</groupId>
             <artifactId>tbcloud-node-dao</artifactId>
             <classifier>plugin</classifier>

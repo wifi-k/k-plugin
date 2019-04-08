@@ -28,6 +28,8 @@ public interface UserDao {
 
     UserMessage selectUserMessage(long id);
 
+    int batchInsertUserMessage(List<UserMessage> message);
+
     int insertUserMessage(UserMessage message);
 
     int updateUserMessage(UserMessage message);

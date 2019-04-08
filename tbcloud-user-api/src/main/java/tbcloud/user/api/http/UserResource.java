@@ -326,6 +326,9 @@ public class UserResource extends BaseResource {
         msg.setDate(System.currentTimeMillis());
         msg.setStatus(ApiConst.IS_ONLINE);
         msg.setToken(token);
+        msg.setDevToken(req.getDevToken());
+        msg.setDevType(req.getDevType());
+        msg.setDevOs(req.getDevOs());
         Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.LOGIN_OUT).setValue(GsonUtil.toJson(msg)), userInfo.getId());
 //        Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.USER_LOGIN).setValue(msg));
 
@@ -385,6 +388,9 @@ public class UserResource extends BaseResource {
         msg.setDate(System.currentTimeMillis());
         msg.setStatus(ApiConst.IS_ONLINE);
         msg.setToken(token);
+        msg.setDevToken(req.getDevToken());
+        msg.setDevType(req.getDevType());
+        msg.setDevOs(req.getDevOs());
         Plugin.sendToUser(new PluginMsg<String>().setType(MsgType.LOGIN_OUT).setValue(GsonUtil.toJson(msg)), userInfo.getId());
 //        Plugin.send(new PluginMsg<UserLogin>().setType(MsgType.USER_LOGIN).setValue(msg));
 

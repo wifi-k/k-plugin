@@ -249,6 +249,30 @@ public class UserDaoServiceImpl implements UserDaoService {
     }
 
     @Override
+    public int batchInsertUserMessage(List<UserMessage> messages) {
+        if (messages == null || messages.isEmpty()) return 0;
+
+        try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
+            try {
+                for (UserMessage message : messages) {
+                    long st = System.currentTimeMillis();
+                    message.setCreateTime(st);
+                    message.setUpdateTime(st);
+
+                    session.getMapper(UserMessageMapper.class).insertSelective(message);
+                }
+
+                session.commit();
+                LOG.info("batchInsertUserMessage {}", messages.size());
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                session.rollback();
+            }
+        }
+        return messages.size();
+    }
+
+    @Override
     public int insertUserMessage(UserMessage message) {
         try (SqlSession session = MultiMybatisSvc.getSqlSessionFactory(ApiConst.MYSQL_TBCLOUD).openSession()) {
             try {

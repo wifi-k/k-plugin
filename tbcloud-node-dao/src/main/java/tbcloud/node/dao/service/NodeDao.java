@@ -13,6 +13,19 @@ import java.util.Set;
  */
 public interface NodeDao {
 
+    // node_device_day
+    NodeDeviceRecord selectNodeDeviceRecord(Long id);
+
+    int insertNodeDeviceRecord(NodeDeviceRecord record);
+
+    List<NodeDeviceRecord> selectNodeDeviceRecord(NodeDeviceRecordExample example);
+
+    long countNodeDeviceRecord(NodeDeviceRecordExample example);
+
+    int updateNodeDeviceRecord(NodeDeviceRecord record);
+
+    int updateNodeDeviceRecordSelective(NodeDeviceRecord record, NodeDeviceRecordExample example);
+
     // node_device_week
     NodeDeviceWeek selectNodeDeviceWeek(Long id);
 

@@ -4,6 +4,7 @@ import jframe.core.msg.Msg;
 import jframe.core.plugin.annotation.InjectService;
 import jframe.core.plugin.annotation.Injector;
 import jframe.jedis.service.JedisService;
+import jframe.umeng.service.UmengService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tbcloud.common.dao.service.CommonDaoService;
@@ -12,6 +13,7 @@ import tbcloud.lib.api.ApiConst;
 import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.dao.service.NodeDaoService;
+import tbcloud.user.dao.service.UserDaoService;
 
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -48,9 +50,13 @@ public abstract class NodeJob extends AbstractJob {
     @InjectService(id = "tbcloud.service.common.dao")
     protected static CommonDaoService CommonDao;
 
+    @InjectService(id = "jframe.service.umeng")
+    protected static UmengService Umeng;
+
+    @InjectService(id = "tbcloud.service.user.dao")
+    protected static UserDaoService UserDao;
 
     public NodeJob() {
-
     }
 
     void plugin(NodeJobPlugin plugin) {

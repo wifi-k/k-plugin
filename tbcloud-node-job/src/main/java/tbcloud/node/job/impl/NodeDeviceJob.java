@@ -14,16 +14,16 @@ import tbcloud.node.model.NodeDevice;
 import tbcloud.node.model.NodeDeviceExample;
 import tbcloud.node.model.NodeInfo;
 import tbcloud.node.protocol.data.WifiDeviceInfo;
+import tbcloud.user.model.UserMessage;
+import tbcloud.user.model.UserNode;
+import tbcloud.user.model.UserNodeExample;
+import tbcloud.user.model.UserOnline;
 
 import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * wifi上传当前在线设备
- * TODO 批量入库
+ * 设备上下线
  *
  * @author dzh
  * @date 2019-03-28 15:40
@@ -63,22 +63,39 @@ public class NodeDeviceJob extends NodeJob {
             NodeDevice device = record(devInfo);
             device.setNodeId(nodeId);
 
+            String devName = device.getName();
+            boolean push = false;
+            boolean newDev = false;
+
             NodeDeviceExample example = new NodeDeviceExample();
             example.createCriteria().andNodeIdEqualTo(nodeId).andMacEqualTo(device.getMac()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
             List<NodeDevice> list = NodeDao.selectNodeDevice(example);
             if (list == null || list.isEmpty()) {
                 NodeDao.insertNodeDevice(device);
+                newDev = true;
             } else {
                 NodeDao.updateNodeDeviceSelective(device, example);
+                if (StringUtil.isEmpty(devName))
+                    devName = list.get(0).getNote();
+
+
+                if (list.get(0).getIsOnline() == ApiConst.IS_SELECT_Y) push = true;
             }
 
-            //TODO msg
-            if (device.getStatus() == ApiConst.IS_ONLINE) {
-                // online
+            UserNodeExample userNodeExample = new UserNodeExample();
+            userNodeExample.createCriteria().andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
+            List<UserNode> users = UserDao.selectUserNode(userNodeExample);
+            if (users.isEmpty()) return;
 
+            //TODO msg
+            if (device.getStatus() == ApiConst.IS_ONLINE) {  // online
+                if (push) { //发送给所有的家庭成员 TODO async
+                    pushOnlineNotification(users, device.getNodeId(), devName);
+                }
+                insertUserMessageOnline(users, devName, newDev ? "【新设备上线】" : "【设备上线】");
             } else {
                 // offline
-
+                insertUserMessageOffline(users, devName, newDev ? "【设备下线】" : "【设备上线】");
             }
         });
 
@@ -125,6 +142,56 @@ public class NodeDeviceJob extends NodeJob {
 //                }
 //            }
 //        }
+    }
+
+    private void insertUserMessageOnline(List<UserNode> users, String devName, String title) {
+        List<UserMessage> list = new ArrayList<>(users.size());
+        for (UserNode userNode : users) {
+            UserMessage message = new UserMessage();
+            message.setUserId(userNode.getUserId());
+            message.setTitle(title);
+            message.setContent(devName + "上线啦");
+
+            list.add(message);
+        }
+        UserDao.batchInsertUserMessage(list);
+    }
+
+    private void insertUserMessageOffline(List<UserNode> users, String devName, String title) {
+        List<UserMessage> list = new ArrayList<>(users.size());
+        for (UserNode userNode : users) {
+            UserMessage message = new UserMessage();
+            message.setUserId(userNode.getUserId());
+            message.setTitle(title);
+            message.setContent(devName + "下线"); //TODO 文案
+
+            list.add(message);
+        }
+        UserDao.batchInsertUserMessage(list);
+    }
+
+    private void pushOnlineNotification(List<UserNode> users, String nodeId, String devName) {
+        if (StringUtil.isEmpty(nodeId)) return;
+
+        for (UserNode userNode : users) {
+            // send
+            UserOnline userOnline = UserDao.selectUserOnline(userNode.getUserId());
+            if (userOnline.getDevType() == 0 || StringUtil.isEmpty(userOnline.getDevToken())) {
+                continue;
+            }
+
+            int devType = userOnline.getDevType();
+            try {
+                if (ApiConst.DEV_TYPE_IOS == devType) {
+                    Umeng.sendIOSUnicast(ApiConst.UMENG_ID_IOSU, userOnline.getDevToken(), "【设备上线】" + devName + "上线啦", null, null, null);
+                } else if (ApiConst.DEV_TYPE_AND == devType) {
+
+                    Umeng.sendAndUnicast(ApiConst.UMENG_ID_IOSU, userOnline.getDevToken(), "xiaok通知", "【设备上线】", devName + "上线啦", null);
+                }
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
     }
 
     private Map<String, WifiDeviceInfo.DeviceInfo> toMap(List<WifiDeviceInfo.DeviceInfo> devices) {

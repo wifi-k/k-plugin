@@ -175,6 +175,12 @@
                 <version>${jframe.version}</version>
                 <classifier>plugin</classifier>
             </dependency>
+            <dependency>
+                <groupId>io.github.dzh</groupId>
+                <artifactId>jframe-umeng</artifactId>
+                <version>${jframe.version}</version>
+                <classifier>plugin</classifier>
+            </dependency>
 
             <dependency>
                 <groupId>com.google.code.gson</groupId>
