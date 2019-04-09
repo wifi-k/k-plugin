@@ -9,10 +9,7 @@ import tbcloud.lib.api.util.GsonUtil;
 import tbcloud.lib.api.util.MacUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.job.NodeJob;
-import tbcloud.node.model.MacSpace;
-import tbcloud.node.model.NodeDevice;
-import tbcloud.node.model.NodeDeviceExample;
-import tbcloud.node.model.NodeInfo;
+import tbcloud.node.model.*;
 import tbcloud.node.protocol.data.WifiDeviceInfo;
 import tbcloud.user.model.UserMessage;
 import tbcloud.user.model.UserNode;
@@ -87,9 +84,9 @@ public class NodeDeviceJob extends NodeJob {
             List<UserNode> users = UserDao.selectUserNode(userNodeExample);
             if (users.isEmpty()) return;
 
-            //TODO msg
+            //TODO msg async
             if (device.getStatus() == ApiConst.IS_ONLINE) {  // online
-                if (push) { //发送给所有的家庭成员 TODO async
+                if (push) { //发送给所有的家庭成员
                     pushOnlineNotification(users, device.getNodeId(), devName);
                 }
                 insertUserMessageOnline(users, devName, newDev ? "【新设备上线】" : "【设备上线】");
@@ -97,6 +94,8 @@ public class NodeDeviceJob extends NodeJob {
                 // offline
                 insertUserMessageOffline(users, devName, newDev ? "【设备下线】" : "【设备上线】");
             }
+
+            insertNodeDeviceRecord(device);
         });
 
         // 由wifi判断好上下线,下面的代码没用了
@@ -142,6 +141,23 @@ public class NodeDeviceJob extends NodeJob {
 //                }
 //            }
 //        }
+    }
+
+    private void insertNodeDeviceRecord(NodeDevice device) {
+        NodeDeviceRecord record = new NodeDeviceRecord();
+        record.setNodeId(device.getNodeId());
+        record.setMac(device.getMac());
+        int status = device.getStatus();
+        record.setStatus(status);
+        record.setTime(status == ApiConst.IS_ONLINE ? device.getOnTime() : device.getOffTime());
+
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(record.getTime());
+        record.setYear(c.get(Calendar.YEAR));
+        record.setWeek(c.get(Calendar.WEEK_OF_YEAR));
+        record.setDay(c.get(Calendar.DAY_OF_YEAR));
+
+        NodeDao.insertNodeDeviceRecord(record);
     }
 
     private void insertUserMessageOnline(List<UserNode> users, String devName, String title) {

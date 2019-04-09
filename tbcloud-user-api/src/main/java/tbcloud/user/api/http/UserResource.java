@@ -789,7 +789,7 @@ public class UserResource extends BaseResource {
         example.createCriteria().andNodeIdEqualTo(nodeId).andUserIdEqualTo(userInfo.getId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
 
         UserNode userNode = new UserNode();
-        userNode.setNodeName(req.getUserName());
+        userNode.setUserName(req.getUserName());
 
         UserDao.updateUserNodeSelective(userNode, example);
 
@@ -1088,6 +1088,9 @@ public class UserResource extends BaseResource {
                 NodeDao.updateNodeInfo(nodeInfo);
                 NodeDao.updateNodeRt(nodeRt);
             }
+        } else {
+            r.setCode(ApiCode.DB_INSERT_ERROR);
+            r.setMsg("bind error!");
         }
 
         return r;
