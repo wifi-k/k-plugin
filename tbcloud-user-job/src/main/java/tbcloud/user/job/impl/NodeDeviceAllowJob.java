@@ -66,6 +66,7 @@ public class NodeDeviceAllowJob extends InsJob {
             insVal.setSt(deviceAllow.getSt());
             insVal.setEt(deviceAllow.getEt());
             insVal.setWt(deviceAllow.getWt());
+            insVal.setId(deviceAllow.getId());
 
             Ins ins = new Ins();
             ins.setId(IDUtil.genInsId(nodeId, Ins.INS_DEVICEALLOW));
