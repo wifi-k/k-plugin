@@ -151,8 +151,11 @@ public class NodeDeviceJob extends NodeJob {
         record.setStatus(status);
         record.setTime(status == ApiConst.IS_ONLINE ? device.getOnTime() : device.getOffTime());
 
-        if (record.getTime() <= 0) {
-            record.setTime(System.currentTimeMillis());
+        // 设备可能传s, 转成ms
+        int len = String.valueOf(record.getTime()).length();
+        int stLen = String.valueOf(System.currentTimeMillis()).length();
+        if (stLen - len >= 3) {
+            record.setTime(record.getTime() * 1000);
         }
 
         Calendar c = Calendar.getInstance();
