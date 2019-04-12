@@ -1782,11 +1782,12 @@ public class UserResource extends BaseResource {
         }
 
         NodeDeviceAllow deleted = new NodeDeviceAllow();
+        deleted.setNodeId(nodeId);
         deleted.setId(id);
         deleted.setOp(InsVal.OP_DISABLE);
         deleted.setIsDelete(ApiConst.IS_DELETE_Y);
 
-        Plugin.sendToUser(new TextMsg().setType(MsgType.NODE_DEVICE_ALLOW).setValue(GsonUtil.toJson(req)), userInfo.getId());
+        Plugin.sendToUser(new TextMsg().setType(MsgType.NODE_DEVICE_ALLOW).setValue(GsonUtil.toJson(deleted)), userInfo.getId());
         return r;
     }
 
