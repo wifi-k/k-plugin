@@ -8,7 +8,6 @@ import tbcloud.lib.api.util.IDUtil;
 import tbcloud.lib.api.util.StringUtil;
 import tbcloud.node.model.NodeDevice;
 import tbcloud.node.model.NodeDeviceExample;
-import tbcloud.node.model.NodeInfo;
 import tbcloud.node.protocol.data.ins.DeviceBlock;
 import tbcloud.node.protocol.data.ins.Ins;
 import tbcloud.user.job.InsJob;
@@ -34,7 +33,7 @@ public class NodeDeviceJob extends InsJob {
         NodeDevice device = null;
         if (val instanceof String) { // maybe from mq
             device = GsonUtil.fromJson((String) val, NodeDevice.class);
-        } else if (val instanceof NodeInfo) {
+        } else if (val instanceof NodeDevice) {
             device = (NodeDevice) val;
         } else {
             return;

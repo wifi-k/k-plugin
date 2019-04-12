@@ -32,7 +32,7 @@ public class NodeDeviceAllowJob extends InsJob {
         NodeDeviceAllow deviceAllow = null;
         if (val instanceof String) { // maybe from mq
             deviceAllow = GsonUtil.fromJson((String) val, NodeDeviceAllow.class);
-        } else if (val instanceof NodeInfo) {
+        } else if (val instanceof NodeDeviceAllow) {
             deviceAllow = (NodeDeviceAllow) val;
         } else {
             return;
