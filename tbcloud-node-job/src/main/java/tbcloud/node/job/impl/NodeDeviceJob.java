@@ -151,6 +151,10 @@ public class NodeDeviceJob extends NodeJob {
         record.setStatus(status);
         record.setTime(status == ApiConst.IS_ONLINE ? device.getOnTime() : device.getOffTime());
 
+        if (record.getTime() <= 0) {
+            record.setTime(System.currentTimeMillis());
+        }
+
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(record.getTime());
         record.setYear(c.get(Calendar.YEAR));
