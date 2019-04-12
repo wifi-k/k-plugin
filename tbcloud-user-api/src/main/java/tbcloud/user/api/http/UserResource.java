@@ -729,6 +729,12 @@ public class UserResource extends BaseResource {
 
         NodeInfo node = nodeList.get(0);
 
+        if (node.getIsBind() == NodeConst.IS_UNBIND) {
+            r.setCode(ApiCode.NODE_IS_UNBIND);
+            r.setMsg("invalid node status");
+            return r;
+        }
+
         // check existed
         UserNodeExample userNodeExample = new UserNodeExample();
         userNodeExample.createCriteria().andNodeIdEqualTo(node.getNodeId()).andUserIdEqualTo(userInfo.getId()).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
