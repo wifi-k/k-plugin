@@ -825,7 +825,7 @@ public class UserResource extends BaseResource {
 
         UserNodeExample example = new UserNodeExample();
         example.createCriteria().andNodeIdEqualTo(nodeId).andIsDeleteEqualTo(ApiConst.IS_DELETE_N);
-        example.setOrderByClause("nodeId limit 1000"); //max 1000
+        example.setOrderByClause("node_id limit 1000"); //max 1000
 
         List<UserNode> userNodeList = UserDao.selectUserNode(example);
         if (userNodeList != null) {
