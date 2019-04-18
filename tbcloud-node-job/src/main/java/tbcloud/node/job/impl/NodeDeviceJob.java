@@ -75,7 +75,6 @@ public class NodeDeviceJob extends NodeJob {
                 if (StringUtil.isEmpty(devName))
                     devName = list.get(0).getNote();
 
-
                 if (list.get(0).getIsOnline() == ApiConst.IS_SELECT_Y) push = true;
             }
 
@@ -151,13 +150,6 @@ public class NodeDeviceJob extends NodeJob {
         record.setStatus(status);
         record.setTime(status == ApiConst.IS_ONLINE ? device.getOnTime() : device.getOffTime());
 
-        // 设备可能传s, 转成ms
-        int len = String.valueOf(record.getTime()).length();
-        int stLen = String.valueOf(System.currentTimeMillis()).length();
-        if (stLen - len >= 3) {
-            record.setTime(record.getTime() * 1000);
-        }
-
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(record.getTime());
         record.setYear(c.get(Calendar.YEAR));
@@ -197,15 +189,15 @@ public class NodeDeviceJob extends NodeJob {
         if (StringUtil.isEmpty(nodeId)) return;
 
         for (UserNode userNode : users) {
-            // send
             UserOnline userOnline = UserDao.selectUserOnline(userNode.getUserId());
+
+            LOG.info("push {} {} {} {}", nodeId, userOnline.getUserId(), userOnline.getDevToken(), devName);
             if (userOnline.getDevType() == 0 || StringUtil.isEmpty(userOnline.getDevToken())) {
                 continue;
             }
 
             int devType = userOnline.getDevType();
             try {
-                LOG.info("push {} {} {} {}", nodeId, userOnline.getUserId(), userOnline.getDevToken(), devName);
                 if (ApiConst.DEV_TYPE_IOS == devType) {
                     Umeng.sendIOSUnicast(ApiConst.UMENG_ID_IOSU, userOnline.getDevToken(), "【设备上线】" + devName + "上线啦", null, null, null);
                 } else if (ApiConst.DEV_TYPE_AND == devType) {
@@ -236,6 +228,21 @@ public class NodeDeviceJob extends NodeJob {
         r.setOnTime(dev.getOnTime());
         r.setOffTime(dev.getOffTime());
         r.setLocalIp(dev.getIp());
+
+        // 设备可能传s, 转成ms
+        int stLen = String.valueOf(System.currentTimeMillis()).length();
+        if (r.getOnTime() != null) {
+            int len = String.valueOf(r.getOnTime()).length();
+            if (stLen - len >= 3) {
+                r.setOnTime(r.getOnTime() * 1000);
+            }
+        }
+        if (r.getOffTime() != null) {
+            int len = String.valueOf(r.getOffTime()).length();
+            if (stLen - len >= 3) {
+                r.setOffTime(r.getOffTime() * 1000);
+            }
+        }
 
         if (dev.getOnTime() != null && dev.getOnTime() > 0) {
             r.setStatus(ApiConst.IS_ONLINE);
