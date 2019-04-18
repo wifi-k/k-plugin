@@ -205,10 +205,10 @@ public class NodeDeviceJob extends NodeJob {
 
             int devType = userOnline.getDevType();
             try {
+                LOG.info("push {} {} {} {}", nodeId, userOnline.getUserId(), userOnline.getDevToken(), devName);
                 if (ApiConst.DEV_TYPE_IOS == devType) {
                     Umeng.sendIOSUnicast(ApiConst.UMENG_ID_IOSU, userOnline.getDevToken(), "【设备上线】" + devName + "上线啦", null, null, null);
                 } else if (ApiConst.DEV_TYPE_AND == devType) {
-
                     Umeng.sendAndUnicast(ApiConst.UMENG_ID_IOSU, userOnline.getDevToken(), "xiaok通知", "【设备上线】", devName + "上线啦", null);
                 }
             } catch (Exception e) {
@@ -239,8 +239,10 @@ public class NodeDeviceJob extends NodeJob {
 
         if (dev.getOnTime() != null && dev.getOnTime() > 0) {
             r.setStatus(ApiConst.IS_ONLINE);
+            r.setOffTime(null);
         } else {
             r.setStatus(ApiConst.IS_OFFLINE);
+            r.setOnTime(null);
         }
 
         if (!StringUtil.isEmpty(mac)) {
